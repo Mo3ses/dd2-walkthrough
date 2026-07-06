@@ -1,0 +1,57 @@
+# GitHub Actions workflow: Python build → GitHub Pages
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate site
+        run: python3 scripts/build.py
+
+      - name: Verify output
+        run: |
+          echo "--- dist/ contents ---"
+          find dist -type f | sort
+          echo "--- tracker JS in stage-1.html ---"
+          grep -c "dd2-tracker-v1" dist/stage-1.html
+          echo "--- data-track-id count in stage-1.html ---"
+          grep -c "data-track-id" dist/stage-1.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

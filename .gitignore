@@ -1,0 +1,17 @@
+# Build output
+dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+
+# Claude / agent local state
+.claude/
+
+# Obsidian workspace (local-only, regenerated)
+.obsidian/workspace
