@@ -260,21 +260,35 @@ def collect_quests(roots: Iterable[Path]) -> list[Quest]:
 # ---------------------------------------------------------------------------
 
 def render_inline(text: str) -> str:
-    """Apply inline transforms: wiki-links → anchors, escape HTML, bold."""
-    text = html.escape(text)
-    # Wiki-links: [[File]] or [[File|Alias]] → <a href="...">Alias or File</a>
-    def link_repl(m: re.Match) -> str:
+    """Apply inline transforms: wiki-links → anchors, escape HTML, bold, code.
+
+    Walks the text once, splitting on wiki-link matches. Plain text
+    segments get html.escape()'d ONCE; wiki-link matches are
+    substituted with already-properly-escaped <a> HTML. Without this
+    split, calling html.escape() on the entire text and then again on
+    the wiki-link alias double-escapes characters like `'` (the
+    apostrophe in "Tale's Beginning"), surfacing as the literal entity
+    `&amp;#x27;` in the rendered page.
+    """
+    parts: list[str] = []
+    last_end = 0
+    for m in WIKILINK_RE.finditer(text):
+        # Escape everything BEFORE the wiki-link match
+        parts.append(html.escape(text[last_end:m.start()]))
+        # Build the <a> with both href and alias escaped exactly once
         target = m.group(1)
         if "|" in target:
             target, alias = target.split("|", 1)
         else:
             alias = target.rsplit("/", 1)[-1].rsplit(".", 1)[0]
         href = resolve_wikilink(target)
-        return f'<a href="{href}">{html.escape(alias)}</a>'
-    text = WIKILINK_RE.sub(link_repl, text)
-    # Bold
+        parts.append(f'<a href="{html.escape(href)}">{html.escape(alias)}</a>')
+        last_end = m.end()
+    # Escape the trailing text after the last wiki-link (or all of it if none)
+    parts.append(html.escape(text[last_end:]))
+    text = "".join(parts)
+    # Bold then inline code (these patterns don't collide with HTML tags)
     text = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", text)
-    # Inline code
     text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
     return text
 
