@@ -44,6 +44,7 @@ from typing import Iterable
 FRONTMATTER_RE = re.compile(r"^---\s*\n(?P<body>.*?)\n---\s*$", re.DOTALL | re.MULTILINE)
 KV_RE = re.compile(r"^([a-zA-Z_][\w-]*)\s*:\s*(.*?)\s*$")
 LIST_ITEM_RE = re.compile(r"^(?P<indent>\s*)- (?P<body>.+?)\s*$")
+NUMBERED_ITEM_RE = re.compile(r"^\s*\d+\.\s+(?P<body>.+?)\s*$")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(?P<text>.+?)\s*$")
 CHECKBOX_RE = re.compile(r"^\[(?P<state>[ xX])\]\s+(?P<text>.+?)\s*$")
 WIKILINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
@@ -358,6 +359,16 @@ def render_md_block(text: str) -> str:
             out.append("<ul>" + "".join(items) + "</ul>")
             continue
 
+        # Numbered list (e.g. "1. Acompanhe o Pathfinder")
+        if NUMBERED_ITEM_RE.match(line):
+            items: list[str] = []
+            while i < len(lines) and NUMBERED_ITEM_RE.match(lines[i]):
+                m = NUMBERED_ITEM_RE.match(lines[i])
+                items.append(f'<li>{render_inline(m.group("body"))}</li>')
+                i += 1
+            out.append("<ol>" + "".join(items) + "</ol>")
+            continue
+
         # Table (simple |---| syntax)
         if "|" in stripped and i + 1 < len(lines) and re.match(r"^\s*\|?[\s\-:|]+\|?\s*$", lines[i + 1]):
             header = [c.strip() for c in stripped.strip("|").split("|")]
@@ -383,7 +394,7 @@ def render_md_block(text: str) -> str:
         # Default: paragraph (greedy until blank line)
         para = [stripped]
         i += 1
-        while i < len(lines) and lines[i].strip() and not LIST_ITEM_RE.match(lines[i]) and not HEADING_RE.match(lines[i]) and not CALLOUT_RE.match(lines[i].strip()):
+        while i < len(lines) and lines[i].strip() and not LIST_ITEM_RE.match(lines[i]) and not NUMBERED_ITEM_RE.match(lines[i]) and not HEADING_RE.match(lines[i]) and not CALLOUT_RE.match(lines[i].strip()):
             para.append(lines[i].strip())
             i += 1
         out.append("<p>" + render_inline(" ".join(para)) + "</p>")
