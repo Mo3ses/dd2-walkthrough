@@ -394,15 +394,22 @@ def render_md_block(text: str) -> str:
 def render_quest_objectives_html(quest: Quest, index_offset: int = 1) -> tuple[str, list[tuple[str, bool]]]:
     """Render objectives as <li><input type=checkbox data-track-id=...> for
     the cheat sheet. Returns (html, list of (track_id, done)) for the
-    tracker."""
+    tracker.
+
+    IMPORTANT: We never emit the `checked` attribute here, even if the
+    source MD has `- [x]`. The published site should show a fresh
+    tracking slate on every visit; user-supplied state lives in
+    localStorage, not in the HTML. The MD's `- [x]` markers stay useful
+    as an authoring hint for the human writing the files but they do
+    NOT drive the published checkbox state.
+    """
     items: list[str] = []
     tracks: list[tuple[str, bool]] = []
     for i, obj in enumerate(quest.objectives, index_offset):
         tid = f"{quest.track_prefix}-{i}"
-        checked = " checked" if obj.done else ""
         items.append(
             f'<li data-track-id="{tid}">'
-            f'<label><input type="checkbox" data-track-id="{tid}"{checked}> '
+            f'<label><input type="checkbox" data-track-id="{tid}"> '
             f'<span class="obj-text">{html.escape(obj.text)}</span>'
             f'</label></li>'
         )
@@ -617,6 +624,29 @@ SHARED_JS = r"""
   const STORAGE_KEY = "dd2-tracker-v1";
   const DEBUG = true;  // set to false to silence the diagnostic banner
 
+  // ----- diagnostic banner (visible feedback) -----
+  let diagTimer = null;
+  function showDiag(msg, level, autoHideMs) {
+    if (!DEBUG) return;
+    let el = document.getElementById("dd2-diag");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "dd2-diag";
+      el.style.cssText = "position:fixed;bottom:1rem;right:1rem;padding:0.5rem 0.9rem;border-radius:6px;font:13px ui-monospace,monospace;z-index:9999;box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:opacity 0.3s;max-width:90vw;text-align:right;";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity = "1";
+    if (level === "ok") el.style.background = "#2e7d32";
+    else if (level === "err") el.style.background = "#c62828";
+    else el.style.background = "#37474f";
+    el.style.color = "#fff";
+    if (diagTimer) clearTimeout(diagTimer);
+    if (autoHideMs) {
+      diagTimer = setTimeout(() => { el.style.opacity = "0"; }, autoHideMs);
+    }
+  }
+
   // ----- storage helpers (with explicit error reporting) -----
   function loadState() {
     try {
@@ -633,7 +663,7 @@ SHARED_JS = r"""
   function saveState(state) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      showDiag("Salvo ✓", "ok", 1500);
+      showDiag("Salvo ✓ (" + Object.keys(state).length + " marcados)", "ok", 1200);
       return true;
     } catch (e) {
       showDiag("Erro salvando localStorage: " + e.message, "err");
@@ -641,40 +671,26 @@ SHARED_JS = r"""
     }
   }
 
-  // ----- diagnostic banner (visible feedback) -----
-  let diagTimer = null;
-  function showDiag(msg, level, autoHideMs) {
-    if (!DEBUG) return;
-    let el = document.getElementById("dd2-diag");
-    if (!el) {
-      el = document.createElement("div");
-      el.id = "dd2-diag";
-      el.style.cssText = "position:fixed;bottom:1rem;right:1rem;padding:0.5rem 0.9rem;border-radius:6px;font:13px ui-monospace,monospace;z-index:9999;box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:opacity 0.3s;";
-      document.body.appendChild(el);
-    }
-    el.textContent = msg;
-    el.style.opacity = "1";
-    if (level === "ok") el.style.background = "#2e7d32";
-    else if (level === "err") el.style.background = "#c62828";
-    else el.style.background = "#37474f";
-    el.style.color = "#fff";
-    if (diagTimer) clearTimeout(diagTimer);
-    if (autoHideMs) {
-      diagTimer = setTimeout(() => { el.style.opacity = "0"; }, autoHideMs);
+  function clearAll() {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      return true;
+    } catch (e) {
+      showDiag("Erro limpando localStorage: " + e.message, "err");
+      return false;
     }
   }
 
-  // ----- apply state to a single checkbox -----
+  // ----- apply state to a single checkbox (overrides HTML's checked attr) -----
   function applyTo(cb, state) {
     const id = cb.getAttribute("data-track-id");
     if (!id) return;
-    if (state[id]) {
-      cb.checked = true;
-      cb.closest("li")?.classList.add("is-checked");
-    } else {
-      cb.checked = false;
-      cb.closest("li")?.classList.remove("is-checked");
-    }
+    const want = !!state[id];
+    // Set BOTH the property AND the attribute to be defensive
+    cb.checked = want;
+    if (want) cb.setAttribute("checked", "checked");
+    else cb.removeAttribute("checked");
+    cb.closest("li")?.classList.toggle("is-checked", want);
   }
 
   function updateTotals() {
@@ -701,13 +717,16 @@ SHARED_JS = r"""
       localStorage.removeItem("__dd2_probe");
     } catch (e) {
       showDiag("localStorage BLOQUEADO neste browser/contexto. Progresso não vai persistir.", "err");
+      return;
     }
 
     const state = loadState();
     const items = document.querySelectorAll("input[type=checkbox][data-track-id]");
     items.forEach((cb) => applyTo(cb, state));
     updateTotals();
-    if (DEBUG) showDiag("Tracker ativo: " + items.length + " checkboxes", "ok", 1500);
+
+    const doneCount = Object.values(state).filter(Boolean).length;
+    if (DEBUG) showDiag("Tracker ativo: " + items.length + " checkboxes · " + doneCount + " marcados", "ok", 2000);
 
     // Event delegation — one listener on document catches all checkbox toggles
     document.addEventListener("change", (e) => {
@@ -717,7 +736,8 @@ SHARED_JS = r"""
       const id = t.getAttribute("data-track-id");
       if (!id) return;
       const s = loadState();
-      s[id] = t.checked;
+      if (t.checked) s[id] = true;
+      else delete s[id];
       t.closest("li")?.classList.toggle("is-checked", t.checked);
       const ok = saveState(s);
       if (ok) updateTotals();
@@ -728,15 +748,16 @@ SHARED_JS = r"""
     if (reset) {
       reset.addEventListener("click", () => {
         if (confirm("Reset ALL progress? This clears localStorage for this site.")) {
-          try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-          showDiag("Progresso resetado ✓", "ok");
-          setTimeout(() => location.reload(), 300);
+          if (clearAll()) {
+            showDiag("Resetado ✓ Recarregando…", "ok");
+            setTimeout(() => location.reload(), 400);
+          }
         }
       });
     }
   }
 
-  // Robust initialization: try multiple paths
+  // Robust initialization
   function boot() {
     try { init(); }
     catch (e) { showDiag("Init falhou: " + e.message, "err"); }
@@ -745,7 +766,6 @@ SHARED_JS = r"""
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else {
-    // Defer slightly to ensure script runs after any other inline scripts
     setTimeout(boot, 0);
   }
 })();
