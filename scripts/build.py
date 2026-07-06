@@ -694,6 +694,37 @@ SHARED_JS = r"""
   }
 
   function updateTotals() {
+    // Per-quest badges: text and class are recomputed from current
+    // checkbox state (which already reflects localStorage). This means
+    // the build-time label ("✅ 6/6" from MDs with `- [x]`) gets
+    // overwritten on every page load, after every checkbox change, and
+    // after reset — so the badges are always in sync with reality.
+    document.querySelectorAll("[data-quest-count-for]").forEach((el) => {
+      const prefix = el.getAttribute("data-quest-count-for");
+      let done = 0, total = 0;
+      document.querySelectorAll("input[type=checkbox][data-track-id]").forEach((cb) => {
+        if ((cb.getAttribute("data-track-id") || "").startsWith(prefix)) {
+          total += 1;
+          if (cb.checked) done += 1;
+        }
+      });
+      if (total === 0) {
+        el.textContent = "Sem objetivos";
+        el.className = "badge";
+      } else if (done === 0) {
+        el.textContent = "0/" + total;
+        el.className = "badge pending";
+      } else if (done === total) {
+        el.textContent = "✓ " + done + "/" + total;
+        el.className = "badge ok";
+      } else {
+        const pct = Math.round(100 * done / total);
+        el.textContent = done + "/" + total + " (" + pct + "%)";
+        el.className = "badge warn";
+      }
+    });
+
+    // Stage-level summary (e.g. "12/39 sub-objetivos")
     document.querySelectorAll("[data-total-for]").forEach((el) => {
       const prefix = el.getAttribute("data-total-for");
       let done = 0, total = 0;
@@ -703,7 +734,7 @@ SHARED_JS = r"""
           if (cb.checked) done += 1;
         }
       });
-      el.textContent = total === 0 ? "—" : (done === total ? "✅ " : "") + done + "/" + total;
+      el.textContent = total === 0 ? "—" : done + "/" + total;
     });
   }
 
@@ -799,14 +830,24 @@ def nav_crumbs(inner_html: str) -> str:
     return f'<nav class="crumbs"><a href="index.html">Início</a> › {inner_html}</nav>\n'
 
 
-def status_badge(status: str) -> str:
+def status_badge(status: str, prefix: str = "") -> str:
+    """Render a quest status badge.
+
+    If `prefix` is given (e.g. "s1-main-01"), the badge receives a
+    `data-quest-count-for` attribute so the inline JS can overwrite the
+    label AND class with live counts from localStorage on every page
+    load and every checkbox change. Without `prefix`, the badge is
+    fully static (used for places like the per-quest page header where
+    the page only shows one quest and a static label is fine).
+    """
     if "✅" in status:
         cls, label = "ok", status
     elif "⬜" in status:
         cls, label = "pending", status
     else:
         cls, label = "warn", status
-    return f'<span class="badge {cls}">{html.escape(label)}</span>'
+    data_attr = f' data-quest-count-for="{html.escape(prefix)}"' if prefix else ""
+    return f'<span class="badge {cls}"{data_attr}>{html.escape(label)}</span>'
 
 
 # ---------------------------------------------------------------------------
@@ -881,7 +922,7 @@ def render_stage(stage_n: int, quests: list[Quest]) -> str:
         slug = slugify(loc)
         badges = []
         for q in by_loc[loc]:
-            badges.append(f'<code>{q.quest_num}</code> {status_badge(q.status)}')
+            badges.append(f'<code>{q.quest_num}</code> {status_badge(q.status, q.track_prefix)}')
         body.append(f'  <li><a href="#{slug}">{emoji} {html.escape(loc)} <span class="toc-count">{" ".join(badges)}</span></a></li>')
     body.append('</ul>')
     body.append('</nav>')
@@ -922,7 +963,7 @@ def render_stage(stage_n: int, quests: list[Quest]) -> str:
 def render_quest_block(quest: Quest) -> str:
     """Render a quest as a collapsible-ish section in the cheat sheet."""
     parts: list[str] = []
-    parts.append(f'<h3>{html.escape(quest.title)} {status_badge(quest.status)}</h3>')
+    parts.append(f'<h3>{html.escape(quest.title)} {status_badge(quest.status, quest.track_prefix)}</h3>')
 
     parts.append(f'<p><small>Quest ID: <code>{quest.track_prefix}</code> · '
                  f'<a href="{quest.url}">Ver detalhes completos →</a></small></p>')
@@ -944,7 +985,7 @@ def render_quest_detail(quest: Quest) -> str:
     parts: list[str] = []
     parts.append('<header class="page">')
     parts.append(f'<h1>{html.escape(quest.title)}</h1>')
-    parts.append(f'<div class="subtitle">Quest <code>{quest.track_prefix}</code> · {html.escape(quest.location)} {status_badge(quest.status)}</div>')
+    parts.append(f'<div class="subtitle">Quest <code>{quest.track_prefix}</code> · {html.escape(quest.location)} {status_badge(quest.status, quest.track_prefix)}</div>')
     parts.append('</header>')
 
     if quest.summary:
