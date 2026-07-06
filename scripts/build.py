@@ -615,43 +615,65 @@ SHARED_JS = r"""
 (function () {
   "use strict";
   const STORAGE_KEY = "dd2-tracker-v1";
+  const DEBUG = true;  // set to false to silence the diagnostic banner
 
+  // ----- storage helpers (with explicit error reporting) -----
   function loadState() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
-    catch (e) { return {}; }
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return (parsed && typeof parsed === "object") ? parsed : {};
+    } catch (e) {
+      showDiag("Erro lendo localStorage: " + e.message, "err");
+      return {};
+    }
   }
+
   function saveState(state) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch (e) {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      showDiag("Salvo ✓", "ok", 1500);
+      return true;
+    } catch (e) {
+      showDiag("Erro salvando localStorage: " + e.message, "err");
+      return false;
+    }
   }
 
-  function init() {
-    const state = loadState();
-    const items = document.querySelectorAll("input[type=checkbox][data-track-id]");
-    items.forEach((cb) => {
-      const id = cb.getAttribute("data-track-id");
-      const li = cb.closest("li");
-      if (state[id]) {
-        cb.checked = true;
-        if (li) li.classList.add("is-checked");
-      }
-      cb.addEventListener("change", () => {
-        state[id] = cb.checked;
-        saveState(state);
-        if (li) li.classList.toggle("is-checked", cb.checked);
-        updateTotals();
-      });
-    });
-    updateTotals();
+  // ----- diagnostic banner (visible feedback) -----
+  let diagTimer = null;
+  function showDiag(msg, level, autoHideMs) {
+    if (!DEBUG) return;
+    let el = document.getElementById("dd2-diag");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "dd2-diag";
+      el.style.cssText = "position:fixed;bottom:1rem;right:1rem;padding:0.5rem 0.9rem;border-radius:6px;font:13px ui-monospace,monospace;z-index:9999;box-shadow:0 2px 6px rgba(0,0,0,0.15);transition:opacity 0.3s;";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity = "1";
+    if (level === "ok") el.style.background = "#2e7d32";
+    else if (level === "err") el.style.background = "#c62828";
+    else el.style.background = "#37474f";
+    el.style.color = "#fff";
+    if (diagTimer) clearTimeout(diagTimer);
+    if (autoHideMs) {
+      diagTimer = setTimeout(() => { el.style.opacity = "0"; }, autoHideMs);
+    }
+  }
 
-    const reset = document.getElementById("reset-tracker");
-    if (reset) {
-      reset.addEventListener("click", () => {
-        if (confirm("Reset ALL progress? This clears localStorage for this site.")) {
-          localStorage.removeItem(STORAGE_KEY);
-          location.reload();
-        }
-      });
+  // ----- apply state to a single checkbox -----
+  function applyTo(cb, state) {
+    const id = cb.getAttribute("data-track-id");
+    if (!id) return;
+    if (state[id]) {
+      cb.checked = true;
+      cb.closest("li")?.classList.add("is-checked");
+    } else {
+      cb.checked = false;
+      cb.closest("li")?.classList.remove("is-checked");
     }
   }
 
@@ -660,7 +682,7 @@ SHARED_JS = r"""
       const prefix = el.getAttribute("data-total-for");
       let done = 0, total = 0;
       document.querySelectorAll("input[type=checkbox][data-track-id]").forEach((cb) => {
-        if (cb.getAttribute("data-track-id").startsWith(prefix)) {
+        if ((cb.getAttribute("data-track-id") || "").startsWith(prefix)) {
           total += 1;
           if (cb.checked) done += 1;
         }
@@ -669,9 +691,63 @@ SHARED_JS = r"""
     });
   }
 
+  // ----- main -----
+  function init() {
+    if (DEBUG) showDiag("Tracker inicializando…", "info");
+
+    // Verify localStorage is usable
+    try {
+      localStorage.setItem("__dd2_probe", "1");
+      localStorage.removeItem("__dd2_probe");
+    } catch (e) {
+      showDiag("localStorage BLOQUEADO neste browser/contexto. Progresso não vai persistir.", "err");
+    }
+
+    const state = loadState();
+    const items = document.querySelectorAll("input[type=checkbox][data-track-id]");
+    items.forEach((cb) => applyTo(cb, state));
+    updateTotals();
+    if (DEBUG) showDiag("Tracker ativo: " + items.length + " checkboxes", "ok", 1500);
+
+    // Event delegation — one listener on document catches all checkbox toggles
+    document.addEventListener("change", (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLInputElement)) return;
+      if (t.type !== "checkbox") return;
+      const id = t.getAttribute("data-track-id");
+      if (!id) return;
+      const s = loadState();
+      s[id] = t.checked;
+      t.closest("li")?.classList.toggle("is-checked", t.checked);
+      const ok = saveState(s);
+      if (ok) updateTotals();
+    });
+
+    // Reset button
+    const reset = document.getElementById("reset-tracker");
+    if (reset) {
+      reset.addEventListener("click", () => {
+        if (confirm("Reset ALL progress? This clears localStorage for this site.")) {
+          try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+          showDiag("Progresso resetado ✓", "ok");
+          setTimeout(() => location.reload(), 300);
+        }
+      });
+    }
+  }
+
+  // Robust initialization: try multiple paths
+  function boot() {
+    try { init(); }
+    catch (e) { showDiag("Init falhou: " + e.message, "err"); }
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else { init(); }
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    // Defer slightly to ensure script runs after any other inline scripts
+    setTimeout(boot, 0);
+  }
 })();
 """
 
