@@ -837,26 +837,57 @@ th { background: var(--code-bg); font-weight: 600; }
 .i18n[data-lang="en"][hidden] { display: none !important; }
 
 /* Language switcher */
-.lang-switcher {
-  display: inline-flex;
-  gap: 0.25rem;
-  align-items: center;
-  font-size: 0.85rem;
+.lang-pill {
+  position: relative;
+  display: inline-block;
   margin-left: auto;
+  font-size: 0.85rem;
 }
-.lang-switcher button {
+.lang-pill-btn {
   background: transparent;
   border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  font: inherit;
+  color: var(--fg);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.lang-pill-btn:hover { background: var(--code-bg); }
+.lang-pill-label { line-height: 1; }
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  min-width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+  z-index: 100;
+}
+.lang-menu li { margin: 0; padding: 0; }
+.lang-menu button {
+  background: transparent;
+  border: none;
   border-radius: 4px;
-  padding: 0.25rem 0.6rem;
+  padding: 0.4rem 0.7rem;
+  width: 100%;
+  text-align: left;
   cursor: pointer;
   font: inherit;
   color: var(--fg);
 }
-.lang-switcher button.active {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
+.lang-menu button:hover { background: var(--code-bg); }
+.lang-menu button.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
 }
 .page-bar {
   display: flex;
@@ -973,9 +1004,13 @@ SHARED_JS = r"""
       el.hidden = (el.dataset.lang !== lang);
     });
 
-    document.querySelectorAll(".lang-switcher button").forEach((b) => {
+    // Update the dropdown pill label and the active item highlight
+    const cur = document.getElementById("dd2-lang-current");
+    if (cur) cur.textContent = lang === "pt" ? "PT" : "EN";
+    document.querySelectorAll(".lang-menu [data-set-lang]").forEach((b) => {
       b.classList.toggle("active", b.dataset.setLang === lang);
     });
+
     // Show/hide the matching reset button (we render two, one per lang)
     const ren = document.getElementById("reset-tracker");
     const rpt = document.getElementById("reset-tracker-pt");
@@ -983,15 +1018,47 @@ SHARED_JS = r"""
     if (rpt) rpt.style.display = (lang === "pt") ? "" : "none";
   }
 
+  function closeLangMenu() {
+    const menu = document.querySelector(".lang-menu");
+    const btn  = document.querySelector(".lang-pill-btn");
+    if (!menu || !btn) return;
+    menu.hidden = true;
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  function openLangMenu() {
+    const menu = document.querySelector(".lang-menu");
+    const btn  = document.querySelector(".lang-pill-btn");
+    if (!menu || !btn) return;
+    menu.hidden = false;
+    btn.setAttribute("aria-expanded", "true");
+  }
+
   function initLang() {
     const lang = getLang();
     applyLang(lang);
-    document.querySelectorAll(".lang-switcher button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const wanted = btn.dataset.setLang;
-        try { localStorage.setItem(LANG_KEY, wanted); } catch (e) {}
-        applyLang(wanted);
+    const pill = document.querySelector(".lang-pill-btn");
+    if (pill) {
+      pill.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const menu = document.querySelector(".lang-menu");
+        if (menu && menu.hidden) openLangMenu(); else closeLangMenu();
       });
+    }
+    document.querySelectorAll(".lang-menu [data-set-lang]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const wanted = btn.dataset.setLang;
+        if (!wanted) return;
+        try { localStorage.setItem(LANG_KEY, wanted); } catch (err) {}
+        applyLang(wanted);
+        closeLangMenu();
+      });
+    });
+    // Close on outside click / Escape
+    document.addEventListener("click", () => closeLangMenu());
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeLangMenu();
     });
   }
 
@@ -1249,15 +1316,21 @@ SHARED_JS = r"""
 
 
 def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: str = "") -> str:
-    # The visible page title — EN by default, JS swaps body class to flip
+    # Dropdown lang switcher: single pill button (current lang) + a
+    # hidden menu listing both options. JS in SHARED_JS handles toggling,
+    # selection, and click-outside-to-close.
     lang_switcher = (
-        '<div class="lang-switcher">'
-        f'<button class="btn-en active" type="button" data-set-lang="en">{html.escape(L("en", "lang_btn_en"))}</button>'
-        f'<button class="btn-pt"        type="button" data-set-lang="pt">{html.escape(L("pt", "lang_btn_pt"))}</button>'
+        '<div class="lang-pill">'
+          '<button class="lang-pill-btn" type="button" aria-haspopup="true" aria-expanded="false">'
+            '<span class="lang-pill-label">🌐 <span id="dd2-lang-current">EN</span> ▾</span>'
+          '</button>'
+          '<ul class="lang-menu" role="menu" hidden>'
+            f'<li role="none"><button type="button" role="menuitem" data-set-lang="en">🌐 English</button></li>'
+            f'<li role="none"><button type="button" role="menuitem" data-set-lang="pt">🌐 Português</button></li>'
+          '</ul>'
         '</div>'
     )
     page_bar = f'<div class="page-bar">{nav_crumbs(crumbs_html)}{lang_switcher}</div>\n' if crumbs_html else lang_switcher
-    title_bilingual = render_bilingual(title, title)
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1279,14 +1352,27 @@ def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: 
 
 
 def nav_crumbs(inner_html: str) -> str:
+    """Render a bilingual breadcrumb.
+
+    EN and PT both show the full chain `Home › {inner_html}`. The page
+    name (e.g., "Stage 1") comes from `inner_html` — typically the
+    current page's section label.
+
+    Each text segment is wrapped in `<span class="i18n"
+    data-lang="…">` so JS (or CSS) can swap visibility per language.
+    The Home link itself is bilingual so the entire breadcrumb feels
+    coherent in either language.
+    """
     if not inner_html:
         return ""
-    # Crumbs themselves stay bilingual via the title of the Home link.
     return (
         '<nav class="crumbs">'
-        f'<a href="index.html">{L("en", "page_title_home")}</a>'
-        '<span class="i18n" data-lang="pt" hidden> &rsaquo; '
-        f'{html.escape(inner_html)}</span>'
+        # Home link, bilingual
+        f'<a href="index.html" class="i18n" data-lang="en">{html.escape(L("en", "page_title_home"))}</a>'
+        f'<a href="index.html" class="i18n" data-lang="pt" hidden>{html.escape(L("pt", "page_title_home"))}</a>'
+        # › <inner_html> suffix, bilingual
+        f'<span class="i18n" data-lang="en"> &rsaquo; {html.escape(inner_html)}</span>'
+        f'<span class="i18n" data-lang="pt" hidden> &rsaquo; {html.escape(inner_html)}</span>'
         '</nav>\n'
     )
 
