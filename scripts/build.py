@@ -576,6 +576,75 @@ ul.dd2-checklist li.is-checked .obj-text {
 .callout-info { border-left-color: #1976d2; background: #e3f2fd; }
 .callout-info .callout-title { color: #1976d2; }
 
+/* Quest cards — main (azul) vs side (amarelo) */
+.quest-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 1.2rem 0;
+  background: var(--bg-card);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.quest-card > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: background 0.1s;
+}
+.quest-card > summary:hover { background: rgba(0,0,0,0.03); }
+.quest-card > summary::-webkit-details-marker { display: none; }
+.quest-card > summary::marker { display: none; }
+.quest-card[open] > summary { border-bottom: 1px solid var(--border); }
+.quest-card-caret {
+  display: inline-block;
+  width: 0.9em;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 0.85em;
+  transition: transform 0.18s ease-out;
+}
+.quest-card[open] > summary .quest-card-caret { transform: rotate(90deg); }
+.quest-card > summary h1, .quest-card > summary h3 {
+  margin: 0;
+  flex: 1;
+  font-size: 1.15rem;
+}
+.quest-card > summary h1 { font-size: 1.4rem; }
+.quest-card-body { padding: 0.8rem 1rem 0.4rem; }
+.quest-type-label {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.quest-master {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.quest-card.main { border-top: 4px solid #1976d2; }
+.quest-card.main .quest-type-label {
+  background: rgba(25, 118, 210, 0.13);
+  color: #1976d2;
+}
+.quest-card.side { border-top: 4px solid #c08400; }
+.quest-card.side .quest-type-label {
+  background: rgba(192, 132, 0, 0.18);
+  color: #c08400;
+}
+
 code { background: var(--code-bg); padding: 0.05rem 0.35rem; border-radius: 4px; font-size: 0.92em; }
 pre { background: var(--code-bg); padding: 0.8rem 1rem; border-radius: var(--radius); overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.95rem; }
@@ -640,6 +709,9 @@ th { background: var(--code-bg); font-weight: 600; }
   .callout-info { background: #1e2a3a; }
   .callout-warning { background: #3a2a18; }
   .callout-tip { background: #1e3a22; }
+  .quest-card.main .quest-type-label { background: rgba(25, 118, 210, 0.28); color: #64b5f6; }
+  .quest-card.side .quest-type-label { background: rgba(192, 132, 0, 0.28); color: #ffb74d; }
+  .quest-card > summary:hover { background: rgba(255,255,255,0.04); }
 }
 """
 
@@ -718,7 +790,33 @@ SHARED_JS = r"""
     cb.closest("li")?.classList.toggle("is-checked", want);
   }
 
+  // ----- per-card master checkbox sync -----
+  // Computes the master's checked/indeterminate state from the
+  // visible children inside its card and writes it back to the DOM
+  // without firing a change event (so we don't loop).
+  function syncMaster(card) {
+    if (!card) return;
+    const master = card.querySelector(":scope > summary > input.quest-master");
+    if (!master) return;
+    const children = card.querySelectorAll("input[type=checkbox][data-track-id]");
+    if (children.length === 0) {
+      master.checked = false;
+      master.indeterminate = false;
+      return;
+    }
+    let done = 0;
+    children.forEach((c) => { if (c.checked) done += 1; });
+    master.checked = done === children.length;
+    master.indeterminate = done > 0 && done < children.length;
+  }
+  function syncAllMasters() {
+    document.querySelectorAll("details.quest-card").forEach(syncMaster);
+  }
+
   function updateTotals() {
+    // Re-sync master checkboxes in case totals moved
+    syncAllMasters();
+
     // Per-quest badges: text and class are recomputed from current
     // checkbox state (which already reflects localStorage). This means
     // the build-time label ("✅ 6/6" from MDs with `- [x]`) gets
@@ -789,6 +887,34 @@ SHARED_JS = r"""
       const t = e.target;
       if (!(t instanceof HTMLInputElement)) return;
       if (t.type !== "checkbox") return;
+
+      // Master checkbox: toggle every child inside the same card.
+      // We handle propagation in the inline onclick on the master
+      // so the summary click doesn't ALSO collapse/expand the card.
+      if (t.classList.contains("quest-master")) {
+        const card = t.closest("details.quest-card");
+        if (!card) return;
+        const want = t.checked;
+        const children = card.querySelectorAll("input[type=checkbox][data-track-id]");
+        const s = loadState();
+        let dirty = false;
+        children.forEach((cb) => {
+          if (cb.checked === want) return;
+          cb.checked = want;
+          cb.closest("li")?.classList.toggle("is-checked", want);
+          const cid = cb.getAttribute("data-track-id");
+          if (cid) {
+            if (want) s[cid] = true;
+            else delete s[cid];
+            dirty = true;
+          }
+        });
+        if (dirty) { saveState(s); updateTotals(); }
+        else { syncMaster(card); }
+        return;
+      }
+
+      // Regular tracked objective
       const id = t.getAttribute("data-track-id");
       if (!id) return;
       const s = loadState();
@@ -986,15 +1112,30 @@ def render_stage(stage_n: int, quests: list[Quest]) -> str:
 
 
 def render_quest_block(quest: Quest) -> str:
-    """Render a quest as a collapsible-ish section in the cheat sheet."""
+    """Render a quest as a colored, collapsible card in the cheat sheet."""
+    type_label = "Main Quest" if quest.quest_type == "main" else "Side Quest"
+    type_emoji = "⚔️" if quest.quest_type == "main" else "🗡️"
     parts: list[str] = []
-    parts.append(f'<h3>{html.escape(quest.title)} {status_badge(quest.status, quest.track_prefix)}</h3>')
+    parts.append(f'<details class="quest-card {quest.quest_type}" open>')
+    parts.append('<summary>')
+    parts.append('<span class="quest-card-caret" aria-hidden="true">▶</span>')
+    if quest.objectives:
+        # The inline onclick stops the click from bubbling to <summary>
+        # so the master toggle doesn't also collapse/expand the card.
+        parts.append('<input type="checkbox" class="quest-master" '
+                     f'aria-label="Marcar todos os objetivos de {html.escape(quest.title)}" '
+                     'onclick="event.stopPropagation()">')
+    parts.append(f'<span class="quest-type-label">{type_emoji} {type_label}</span>')
+    parts.append(f'<h3>{html.escape(quest.title)}</h3>')
+    parts.append(status_badge(quest.status, quest.track_prefix))
+    parts.append('</summary>')
+    parts.append('<div class="quest-card-body">')
 
     parts.append(f'<p><small>Quest ID: <code>{quest.track_prefix}</code> · '
                  f'<a href="{quest.url}">Ver detalhes completos →</a></small></p>')
 
     if quest.summary:
-        parts.append(f'<p>{render_inline(quest.summary)}</p>')
+        parts.append(render_md_block(quest.summary))
 
     if quest.objectives:
         obj_html, _ = render_quest_objectives_html(quest)
@@ -1002,16 +1143,33 @@ def render_quest_block(quest: Quest) -> str:
     else:
         parts.append('<p><em>Sem objetivos listados.</em></p>')
 
+    parts.append('</div>')  # /quest-card-body
+    parts.append('</details>')
     return "\n".join(parts)
 
 
 def render_quest_detail(quest: Quest) -> str:
     """Generate a per-quest detail page (e.g., quests/stage-1/main-quests/01---gaoled-awakening.html)."""
+    type_label = "Main Quest" if quest.quest_type == "main" else "Side Quest"
+    type_emoji = "⚔️" if quest.quest_type == "main" else "🗡️"
     parts: list[str] = []
-    parts.append('<header class="page">')
+
+    # <details>/<summary> makes the whole card collapsible. The H1 and
+    # status live inside <summary> so they stay visible when collapsed.
+    parts.append(f'<details class="quest-card {quest.quest_type}" open>')
+    parts.append('<summary>')
+    parts.append('<span class="quest-card-caret" aria-hidden="true">▶</span>')
+    if quest.objectives:
+        parts.append('<input type="checkbox" class="quest-master" '
+                     f'aria-label="Marcar todos os objetivos de {html.escape(quest.title)}" '
+                     'onclick="event.stopPropagation()">')
+    parts.append(f'<span class="quest-type-label">{type_emoji} {type_label}</span>')
     parts.append(f'<h1>{html.escape(quest.title)}</h1>')
-    parts.append(f'<div class="subtitle">Quest <code>{quest.track_prefix}</code> · {html.escape(quest.location)} {status_badge(quest.status, quest.track_prefix)}</div>')
-    parts.append('</header>')
+    parts.append(status_badge(quest.status, quest.track_prefix))
+    parts.append('</summary>')
+    parts.append('<div class="quest-card-body">')
+
+    parts.append(f'<p style="margin-top:0"><small>Quest <code>{quest.track_prefix}</code> · {html.escape(quest.location)}</small></p>')
 
     if quest.summary:
         parts.append('<h2>Resumo</h2>')
@@ -1033,6 +1191,9 @@ def render_quest_detail(quest: Quest) -> str:
     if quest.notes:
         parts.append('<h2>Notas Importantes</h2>')
         parts.append(render_md_block("\n".join(quest.notes)))
+
+    parts.append('</div>')  # /quest-card-body
+    parts.append('</details>')  # /quest-card
 
     sub = "main-quests" if quest.quest_type == "main" else "side-quests"
     return page_shell(
