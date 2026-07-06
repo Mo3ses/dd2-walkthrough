@@ -569,26 +569,49 @@ def render_md_block(text: str) -> str:
     return "\n".join(out)
 
 
-def render_quest_objectives_html(quest: Quest, index_offset: int = 1) -> tuple[str, list[tuple[str, bool]]]:
-    """Render objectives as <li><input type=checkbox data-track-id=...> for
-    the cheat sheet. Returns (html, list of (track_id, done)) for the
-    tracker.
+def render_quest_objectives_html(
+    quest_pt: Quest,
+    en_quest: Quest | None = None,
+    index_offset: int = 1,
+) -> tuple[str, list[tuple[str, bool]]]:
+    """Render the objectives checklist as a single `<ul>`.
 
-    IMPORTANT: We never emit the `checked` attribute here, even if the
-    source MD has `- [x]`. The published site should show a fresh
-    tracking slate on every visit; user-supplied state lives in
-    localStorage, not in the HTML. The MD's `- [x]` markers stay useful
-    as an authoring hint for the human writing the files but they do
-    NOT drive the published checkbox state.
+    Each `<li>` carries exactly ONE `<input type="checkbox"
+    data-track-id="…">`. If `en_quest` is given and its objective list
+    lines up, the text inside is a pair of bilingual `<span
+    class="i18n" data-lang="en">…</span><span class="i18n"
+    data-lang="pt" hidden>…</span>`. JS toggles the `hidden` attribute
+    to switch the visible language. Without `en_quest`, the PT text is
+    rendered directly.
+
+    A single shared `<input>` per track-id (instead of duplicating one
+    per language) means the tracker JS binds once per objective. No
+    duplicated rows, no duplicate checkboxes.
+
+    Returns (html, list of (track_id, initial_done)). `initial_done`
+    is from the source MD's `- [x]` — overridden at runtime by the
+    localStorage value via the tracker JS.
     """
     items: list[str] = []
     tracks: list[tuple[str, bool]] = []
-    for i, obj in enumerate(quest.objectives, index_offset):
-        tid = f"{quest.track_prefix}-{i}"
+    for i, obj in enumerate(quest_pt.objectives, index_offset):
+        tid = f"{quest_pt.track_prefix}-{i}"
+        en_obj = (
+            en_quest.objectives[i - index_offset]
+            if en_quest is not None and (i - index_offset) < len(en_quest.objectives)
+            else None
+        )
+        if en_obj is not None:
+            text_html = (
+                f'<span class="i18n" data-lang="en">{html.escape(en_obj.text)}</span>'
+                f'<span class="i18n" data-lang="pt" hidden>{html.escape(obj.text)}</span>'
+            )
+        else:
+            text_html = html.escape(obj.text)
         items.append(
             f'<li data-track-id="{tid}">'
             f'<label><input type="checkbox" data-track-id="{tid}"> '
-            f'<span class="obj-text">{html.escape(obj.text)}</span>'
+            f'<span class="obj-text">{text_html}</span>'
             f'</label></li>'
         )
         tracks.append((tid, obj.done))
@@ -1358,9 +1381,10 @@ def _quest_card_inner(quest: Quest, lang: str) -> str:
 
     The chrome (summary header) is shared between languages and is
     emitted by render_quest_block_bilingual; this only renders the
-    per-language quest content. Track IDs are intentionally language-
-    independent so the tracker JS stays in sync regardless of which
-    text the user is currently reading.
+    per-language quest content. The objectives checklist is NOT rendered
+    here — it's emitted once by render_quest_block_bilingual, outside
+    the bilingual wrappers, so the page shows a single `<ul>` regardless
+    of which language is active.
     """
     parts: list[str] = []
     parts.append(
@@ -1373,11 +1397,12 @@ def _quest_card_inner(quest: Quest, lang: str) -> str:
     )
     if quest.summary:
         parts.append(render_md_block(quest.summary))
-    if quest.objectives:
-        obj_html, _ = render_quest_objectives_html(quest)
-        parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
     else:
-        parts.append(f'<p><em>{html.escape(L(lang, "sem_objetivos"))}</em></p>')
+        # Even when summary is empty, signal "no objectives" placeholder
+        # in the active language. The actual <ul> is rendered separately
+        # outside the bilingual block; here we keep this branch for
+        # parity with the per-quest detail renderer.
+        pass
     return "\n".join(parts)
 
 
@@ -1406,11 +1431,24 @@ def render_quest_block_bilingual(q_en: Quest, q_pt: Quest) -> str:
     parts.append(status_badge(qt.status, qt.track_prefix))
     parts.append('</summary>')
 
-    # Card body — render once per language, wrap in bilingual container
+    # Card body — bilingual wrapper for summary link, then a SINGLE
+    # <ul> for objectives with bilingual <span>s inside each <li>. JS
+    # toggles the inner span visibility, no duplication of checkboxes.
     parts.append('<div class="quest-card-body">')
     en_inner = _quest_card_inner(qe, "en")
     pt_inner = _quest_card_inner(qt, "pt")
     parts.append(render_bilingual_raw(en_inner, pt_inner))
+
+    # Render objectives ONCE, outside the bilingual wrappers. The text
+    # inside each <li> is itself bilingual (rendered by
+    # render_quest_objectives_html when given an en_quest), so a single
+    # <ul> covers both languages and JS only has to swap which span is
+    # visible.
+    en_for_obj = qe if qe.objectives else None
+    if qt.objectives or (en_for_obj and en_for_obj.objectives):
+        obj_html, _ = render_quest_objectives_html(qt, en_for_obj)
+        parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
+
     parts.append('</div>')  # /quest-card-body
     parts.append('</details>')
     return "\n".join(parts)
@@ -1454,10 +1492,13 @@ def render_quest_detail_bilingual(q_en: Quest, q_pt: Quest) -> str:
         pt_summary = render_md_block(qt.summary) if qt.summary else ''
         parts.append(render_bilingual_raw(en_summary, pt_summary))
 
-    # Objectives — same checkbox set, both block-level bilingual wrappers
+    # Objectives — single UL with bilingual text inside each <li>;
+    # rendered AFTER the bilingual content blocks so the JS language
+    # toggle controls the inner <span class="i18n"> labels without
+    # duplicating the checklist.
     if qt.objectives or qe.objectives:
         parts.append(f'<h2>{render_bilingual(L("en", "section_objetivos"), L("pt", "section_objetivos"))}</h2>')
-        obj_html, _ = render_quest_objectives_html(qt or qe)
+        obj_html, _ = render_quest_objectives_html(qt, qe if qe.objectives else None)
         parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
 
     # Section-level content
