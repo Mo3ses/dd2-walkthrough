@@ -51,6 +51,122 @@ WIKILINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
 CALLOUT_RE = re.compile(r"^>\s*\[!(?P<kind>[a-z]+)\]\s*(?P<title>[^*]*?)\*\s*$", re.IGNORECASE)
 HTML_INLINE_RE = re.compile(r"<(input|li|ul|ol|a)\b", re.IGNORECASE)
 
+
+# ---------------------------------------------------------------------------
+# i18n — UI chrome strings (EN default, PT alternatve). Content comes from
+# the MD source (PT) and falls back to itself for the EN block until the
+# user adds a matching *.en.md file.
+# ---------------------------------------------------------------------------
+
+STRINGS: dict[str, dict[str, str]] = {
+    "en": {
+        "page_title_home": "Home",
+        "page_title_stage": "Stage 1",
+        "homepage_subtitle": "Interactive walkthrough in Portuguese. Tick objectives in your browser — progress persists (localStorage).",
+        "cheatsheet_subtitle": "Interactive cheat sheet. Checkboxes persist in your browser.",
+        "lang_btn_en": "EN",
+        "lang_btn_pt": "PT",
+        "main_quests": "Main Quests",
+        "side_quests": "Side Quests",
+        "type_label_main": "Main Quest",
+        "type_label_side": "Side Quest",
+        "type_emoji_main": "⚔️",
+        "type_emoji_side": "🗡️",
+        "section_resumo": "Summary",
+        "section_objetivos": "Objectives",
+        "section_walkthrough": "Walkthrough",
+        "section_recompensas": "Rewards",
+        "section_notas": "Important Notes",
+        "ver_detalhes": "View full details →",
+        "proxima_quest": "Next quest:",
+        "sem_objetivos": "No objectives listed.",
+        "resetar_progresso": "Reset progress",
+        "stat_main": "Main Quests",
+        "stat_side": "Side Quests",
+        "stat_subs": "Sub-objectives",
+        "alert_coming_soon": "UNDER CONSTRUCTION — translation coming soon",
+        "alert_translation_pending": "(Translation pending)",
+        "diag_init": "Tracker initializing…",
+        "diag_blocked": "localStorage BLOCKED. Progress will NOT persist.",
+        "diag_active_fmt": "Tracker active: {n} checkboxes · {d} marked",
+        "diag_save_fmt": "Saved ✓ ({n} marked)",
+        "diag_reset": "Reset ✓ Reloading…",
+        "diag_init_fail_fmt": "Init failed: {msg}",
+        "diag_save_fail_fmt": "Failed to save localStorage: {msg}",
+        "diag_load_fail_fmt": "Failed to read localStorage: {msg}",
+        "diag_clear_fail_fmt": "Failed to clear localStorage: {msg}",
+        "confirm_reset": "Reset ALL progress? This clears localStorage for this site.",
+    },
+    "pt": {
+        "page_title_home": "Início",
+        "page_title_stage": "Stage 1",
+        "homepage_subtitle": "Walkthrough interativo em português. Marque os objetivos direto no navegador — o progresso persiste entre visitas (localStorage).",
+        "cheatsheet_subtitle": "Cheat sheet interativo. Checkboxes persistem no navegador.",
+        "lang_btn_en": "EN",
+        "lang_btn_pt": "PT",
+        "main_quests": "Main Quests",
+        "side_quests": "Side Quests",
+        "type_label_main": "Main Quest",
+        "type_label_side": "Side Quest",
+        "type_emoji_main": "⚔️",
+        "type_emoji_side": "🗡️",
+        "section_resumo": "Resumo",
+        "section_objetivos": "Objetivos",
+        "section_walkthrough": "Walkthrough",
+        "section_recompensas": "Recompensas",
+        "section_notas": "Notas Importantes",
+        "ver_detalhes": "Ver detalhes →",
+        "proxima_quest": "Próxima quest:",
+        "sem_objetivos": "Sem objetivos listados.",
+        "resetar_progresso": "Resetar progresso",
+        "stat_main": "Main Quests",
+        "stat_side": "Side Quests",
+        "stat_subs": "Sub-objetivos",
+        "alert_coming_soon": "EM CONSTRUÇÃO — tradução em breve",
+        "alert_translation_pending": "(Tradução pendente)",
+        "diag_init": "Tracker inicializando…",
+        "diag_blocked": "localStorage BLOQUEADO. Progresso NÃO vai persistir.",
+        "diag_active_fmt": "Tracker ativo: {n} checkboxes · {d} marcados",
+        "diag_save_fmt": "Salvo ✓ ({n} marcados)",
+        "diag_reset": "Resetado ✓ Recarregando…",
+        "diag_init_fail_fmt": "Init falhou: {msg}",
+        "diag_save_fail_fmt": "Erro salvando localStorage: {msg}",
+        "diag_load_fail_fmt": "Erro lendo localStorage: {msg}",
+        "diag_clear_fail_fmt": "Erro limpando localStorage: {msg}",
+        "confirm_reset": "Reset ALL progress? This clears localStorage for this site.",
+    },
+}
+
+
+def L(lang: str, key: str, **fmt) -> str:
+    """Look up a translated string for a language. Format placeholders work."""
+    template = STRINGS[lang][key]
+    if fmt:
+        return template.format(**fmt)
+    return template
+
+
+def render_bilingual(en_text: str, pt_text: str, block: bool = False) -> str:
+    """Emit BOTH language variants inline; JS controls which one is visible.
+
+    block=True switches from inline display to block (for wrapping
+    multi-paragraph content).
+    """
+    block_attr = ' data-block="1"' if block else ""
+    return (
+        f'<span class="i18n" data-lang="en"{block_attr}>{html.escape(en_text)}</span>'
+        f'<span class="i18n" data-lang="pt"{block_attr} hidden>{html.escape(pt_text)}</span>'
+    )
+
+
+def render_bilingual_raw(en_html: str, pt_html: str) -> str:
+    """Same idea as render_bilingual but accepts pre-rendered HTML on both sides
+    (used for already-rendered quest content blocks, not chrome)."""
+    return (
+        f'<div class="i18n" data-lang="en" data-block="1">{en_html}</div>'
+        f'<div class="i18n" data-lang="pt" data-block="1" hidden>{pt_html}</div>'
+    )
+
 # Tries to match location paths the user has used. New quests should
 # stick to one of these canonical location strings.
 LOCATION_ORDER: list[tuple[str, str]] = [
@@ -156,14 +272,15 @@ def strip_callout_marker(line: str) -> tuple[str | None, str]:
 
 
 def parse_objectives(lines: list[str]) -> list[Objective]:
-    """Pull the bullet list under `## Objetivos` / `## Objetivo`."""
+    """Pull the bullet list under `## Objetivos`/`## Objetivo` (PT)
+    OR `## Objectives` (EN). Both spellings are accepted."""
     in_obj = False
     out: list[Objective] = []
     for line in lines:
         h = HEADING_RE.match(line)
         if h:
             txt = re.sub(r"\s*\^[A-Za-z0-9_-]+\s*$", "", h.group("text")).strip().lower()
-            if txt.startswith("objetivo"):
+            if txt.startswith("objetivo") or txt.startswith("objective"):
                 in_obj = True
                 continue
             elif in_obj:
@@ -180,15 +297,27 @@ def parse_objectives(lines: list[str]) -> list[Objective]:
     return out
 
 
-def parse_section(lines: list[str], heading_match: str) -> list[str]:
-    """Return the lines under the heading that matches `heading_match`."""
+def parse_section(lines: list[str], heading_match) -> list[str]:
+    """Return the lines under the heading that matches any of the
+    passed-in `heading_match` names (string or iterable of strings).
+
+    Each candidate is matched against heading text lowercased and trimmed:
+    equality OR startswith. Set `heading_match` to a list of aliases for
+    one logical section (e.g. ("Resumo", "Summary")).
+    """
+    if isinstance(heading_match, str):
+        candidates = [heading_match]
+    else:
+        candidates = list(heading_match)
+    candidates_lc = [c.lower() for c in candidates]
+
     out: list[str] = []
     capturing = False
     for line in lines:
         h = HEADING_RE.match(line)
         if h:
             txt = h.group("text").strip().lower()
-            if txt == heading_match.lower() or txt.startswith(heading_match.lower()):
+            if any(txt == c or txt.startswith(c) for c in candidates_lc):
                 capturing = True
                 continue
             elif capturing:
@@ -218,16 +347,16 @@ def parse_quest(path: Path) -> Quest:
 
     objectives = parse_objectives(lines)
 
-    summary_lines = parse_section(lines, "Resumo")
+    summary_lines = parse_section(lines, ("Resumo", "Summary"))
     summary = "\n".join(summary_lines).strip()
 
-    walk_lines = parse_section(lines, "Walkthrough")
+    walk_lines = parse_section(lines, ("Walkthrough",))
     walkthrough = walk_lines  # raw — we'll render later
 
-    rewards_lines = parse_section(lines, "Recompensas")
+    rewards_lines = parse_section(lines, ("Recompensas", "Rewards"))
     rewards = rewards_lines
 
-    notes_lines = parse_section(lines, "Notas Importantes")
+    notes_lines = parse_section(lines, ("Notas Importantes", "Important Notes"))
     notes = notes_lines
 
     return Quest(
@@ -245,13 +374,37 @@ def parse_quest(path: Path) -> Quest:
     )
 
 
-def collect_quests(roots: Iterable[Path]) -> list[Quest]:
-    out: list[Quest] = []
+def collect_quests_bilingual(roots: Iterable[Path]) -> "dict[str, dict[str, Quest]]":
+    """Scan roots for both PT (`*.md`) and EN (`*.en.md`) quest files.
+
+    Returns {stem: {"pt": Quest, "en": Quest-or-None}}. The "en" entry is
+    None when no translation exists; renderers fall back to the PT quest
+    in that case.
+    """
+    out: dict[str, dict[str, Quest]] = {}
     for root in roots:
         if not root.exists():
             continue
         for path in sorted(root.glob("*.md")):
-            out.append(parse_quest(path))
+            stem = path.stem
+            lang = "pt"
+            if stem.endswith(".en"):
+                lang = "en"
+                stem = stem[:-3]  # strip ".en"
+            quest = parse_quest(path)
+            entry = out.setdefault(stem, {})
+            entry[lang] = quest
+    return out
+
+
+# Backwards-compat shim: when only PT is needed, return the PT list in
+# stable order (used by callers that don't care about EN).
+def collect_quests(roots: Iterable[Path]) -> list[Quest]:
+    bundles = collect_quests_bilingual(roots)
+    out: list[Quest] = []
+    for stem in sorted(bundles):
+        bundle = bundles[stem]
+        out.append(bundle.get("pt") or bundle["en"])
     return out
 
 
@@ -651,6 +804,45 @@ table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.95r
 th, td { padding: 0.45rem 0.65rem; border-bottom: 1px solid var(--border); text-align: left; }
 th { background: var(--code-bg); font-weight: 600; }
 
+/* i18n: every translatable block is emitted twice (EN + PT) inline.
+   JS toggles the `hidden` attribute via applyLang(). The browser's
+   built-in `[hidden] { display: none }` does the hiding; we only need
+   to set layout shape for non-hidden elements (spans stay inline, block-
+   content divs go block). */
+.i18n[data-block="1"] { display: block; }
+.i18n[data-lang="pt"][hidden],
+.i18n[data-lang="en"][hidden] { display: none !important; }
+
+/* Language switcher */
+.lang-switcher {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-left: auto;
+}
+.lang-switcher button {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  font: inherit;
+  color: var(--fg);
+}
+.lang-switcher button.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.page-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.page-bar .crumbs { flex: 1; }
+
 .toc {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -719,7 +911,66 @@ SHARED_JS = r"""
 (function () {
   "use strict";
   const STORAGE_KEY = "dd2-tracker-v1";
+  const LANG_KEY = "dd2-lang";
   const DEBUG = true;  // set to false to silence the diagnostic banner
+
+  // ----- i18n: language toggle -----
+  // Body class controls CSS visibility of <span class="i18n" data-lang="...">.
+  // EN is default; everything in the page is rendered twice (en + pt inline
+  // spans) and we swap which is visible by toggling body.lang-pt.
+  const I18N = {
+    en: { init: "Tracker initializing…", blocked: "localStorage BLOCKED in this browser/context. Progress will NOT persist.", active: "Tracker active: " + "%n% checkboxes · %d% marked", saved: "Saved ✓ (%n% marked)", save_fail: "Failed to save localStorage: " + "%msg%", load_fail: "Failed to read localStorage: " + "%msg%", clear_fail: "Failed to clear localStorage: " + "%msg%", reset: "Reset ✓ Reloading…", init_fail: "Init failed: " + "%msg%", confirm_reset: "Reset ALL progress? This clears localStorage for this site." },
+    pt: { init: "Tracker inicializando…", blocked: "localStorage BLOQUEADO neste browser/contexto. Progresso não vai persistir.", active: "Tracker ativo: " + "%n% checkboxes · %d% marcados", saved: "Salvo ✓ (%n% marcados)", save_fail: "Erro salvando localStorage: " + "%msg%", load_fail: "Erro lendo localStorage: " + "%msg%", clear_fail: "Erro limpando localStorage: " + "%msg%", reset: "Resetado ✓ Recarregando…", init_fail: "Init falhou: " + "%msg%", confirm_reset: "Reset ALL progress? This clears localStorage for this site." },
+  };
+
+  function getLang() {
+    let lang = "en";
+    try { lang = localStorage.getItem(LANG_KEY) || "en"; } catch (e) {}
+    return (lang === "pt") ? "pt" : "en";
+  }
+  function tpl(str) { return str; }  // placeholder for any future templating
+  function i18nFmt(key, vars) {
+    let lang = getLang();
+    let tmpl = (I18N[lang] && I18N[lang][key]) || key;
+    Object.keys(vars || {}).forEach((k) => {
+      tmpl = tmpl.split("%" + k + "%").join(vars[k]);
+    });
+    return tmpl;
+  }
+
+  function applyLang(lang) {
+    document.documentElement.lang = lang;
+    document.body.classList.toggle("lang-pt", lang === "pt");
+    document.body.classList.toggle("lang-en", lang === "en");
+    // Toggle the `hidden` attribute on every i18n block. More robust than
+    // CSS rules depending on body class + specificity: the browser's own
+    // `[hidden] { display: none }` does the hiding, and our CSS only
+    // distinguishes inline vs block display wrapping.
+    document.querySelectorAll(".i18n[data-lang]").forEach((el) => {
+      el.hidden = (el.dataset.lang !== lang);
+    });
+
+    document.querySelectorAll(".lang-switcher button").forEach((b) => {
+      b.classList.toggle("active", b.dataset.setLang === lang);
+    });
+    // Show/hide the matching reset button (we render two, one per lang)
+    const ren = document.getElementById("reset-tracker");
+    const rpt = document.getElementById("reset-tracker-pt");
+    if (ren) ren.style.display = (lang === "en") ? "" : "none";
+    if (rpt) rpt.style.display = (lang === "pt") ? "" : "none";
+  }
+
+  function initLang() {
+    const lang = getLang();
+    applyLang(lang);
+    document.querySelectorAll(".lang-switcher button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const wanted = btn.dataset.setLang;
+        try { localStorage.setItem(LANG_KEY, wanted); } catch (e) {}
+        applyLang(wanted);
+      });
+    });
+  }
 
   // ----- diagnostic banner (visible feedback) -----
   let diagTimer = null;
@@ -752,7 +1003,7 @@ SHARED_JS = r"""
       const parsed = JSON.parse(raw);
       return (parsed && typeof parsed === "object") ? parsed : {};
     } catch (e) {
-      showDiag("Erro lendo localStorage: " + e.message, "err");
+      showDiag(i18nFmt("load_fail", { msg: e.message }), "err");
       return {};
     }
   }
@@ -760,10 +1011,12 @@ SHARED_JS = r"""
   function saveState(state) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      showDiag("Salvo ✓ (" + Object.keys(state).length + " marcados)", "ok", 1200);
+      const n = Object.values(state).filter(Boolean).length;
+      const lang = getLang();
+      showDiag(i18nFmt("saved", { n: lang === "pt" ? n + " marcados" : n + " marked" }), "ok", 1200);
       return true;
     } catch (e) {
-      showDiag("Erro salvando localStorage: " + e.message, "err");
+      showDiag(i18nFmt("save_fail", { msg: e.message }), "err");
       return false;
     }
   }
@@ -773,7 +1026,7 @@ SHARED_JS = r"""
       localStorage.removeItem(STORAGE_KEY);
       return true;
     } catch (e) {
-      showDiag("Erro limpando localStorage: " + e.message, "err");
+      showDiag(i18nFmt("clear_fail", { msg: e.message }), "err");
       return false;
     }
   }
@@ -863,14 +1116,18 @@ SHARED_JS = r"""
 
   // ----- main -----
   function init() {
-    if (DEBUG) showDiag("Tracker inicializando…", "info");
+    // Run language toggle first so diag messages / reset confirm land
+    // in the user's preferred language for the rest of init.
+    try { initLang(); } catch (e) { /* non-fatal */ }
+
+    if (DEBUG) showDiag(i18nFmt("init", {}), "info");
 
     // Verify localStorage is usable
     try {
       localStorage.setItem("__dd2_probe", "1");
       localStorage.removeItem("__dd2_probe");
     } catch (e) {
-      showDiag("localStorage BLOQUEADO neste browser/contexto. Progresso não vai persistir.", "err");
+      showDiag(i18nFmt("blocked", {}), "err");
       return;
     }
 
@@ -880,7 +1137,14 @@ SHARED_JS = r"""
     updateTotals();
 
     const doneCount = Object.values(state).filter(Boolean).length;
-    if (DEBUG) showDiag("Tracker ativo: " + items.length + " checkboxes · " + doneCount + " marcados", "ok", 2000);
+    const lang = getLang();
+    if (DEBUG) showDiag(
+      i18nFmt("active", {
+        n: items.length,
+        d: lang === "pt" ? doneCount + " marcados" : doneCount + " marked",
+      }),
+      "ok", 2000
+    );
 
     // Event delegation — one listener on document catches all checkbox toggles
     document.addEventListener("change", (e) => {
@@ -925,24 +1189,31 @@ SHARED_JS = r"""
       if (ok) updateTotals();
     });
 
-    // Reset button
-    const reset = document.getElementById("reset-tracker");
-    if (reset) {
-      reset.addEventListener("click", () => {
-        if (confirm("Reset ALL progress? This clears localStorage for this site.")) {
+    // Reset buttons: there are two (id="reset-tracker" English,
+    // id="reset-tracker-pt" Portuguese). The active one is shown by
+    // applyLang(); both share the same logic.
+    ["reset-tracker", "reset-tracker-pt"].forEach((id) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        const currentLang = getLang();
+        const confirmMsg = (currentLang === "pt")
+          ? "Reset ALL progress? This clears localStorage for this site."  // same wording, both langs
+          : "Reset ALL progress? This clears localStorage for this site.";
+        if (confirm(i18nFmt("confirm_reset", {}))) {
           if (clearAll()) {
-            showDiag("Resetado ✓ Recarregando…", "ok");
+            showDiag(i18nFmt("reset", {}), "ok");
             setTimeout(() => location.reload(), 400);
           }
         }
       });
-    }
+    });
   }
 
   // Robust initialization
   function boot() {
     try { init(); }
-    catch (e) { showDiag("Init falhou: " + e.message, "err"); }
+    catch (e) { showDiag(i18nFmt("init_fail", { msg: e.message }), "err"); }
   }
 
   if (document.readyState === "loading") {
@@ -955,8 +1226,17 @@ SHARED_JS = r"""
 
 
 def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: str = "") -> str:
+    # The visible page title — EN by default, JS swaps body class to flip
+    lang_switcher = (
+        '<div class="lang-switcher">'
+        f'<button class="btn-en active" type="button" data-set-lang="en">{html.escape(L("en", "lang_btn_en"))}</button>'
+        f'<button class="btn-pt"        type="button" data-set-lang="pt">{html.escape(L("pt", "lang_btn_pt"))}</button>'
+        '</div>'
+    )
+    page_bar = f'<div class="page-bar">{nav_crumbs(crumbs_html)}{lang_switcher}</div>\n' if crumbs_html else lang_switcher
+    title_bilingual = render_bilingual(title, title)
     return f"""<!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -966,7 +1246,7 @@ def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: 
 </head>
 <body>
 <main>
-{nav_crumbs(crumbs_html)}
+{page_bar}
 {body_html}
 </main>
 <script>{SHARED_JS}</script>
@@ -978,7 +1258,14 @@ def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: 
 def nav_crumbs(inner_html: str) -> str:
     if not inner_html:
         return ""
-    return f'<nav class="crumbs"><a href="index.html">Início</a> › {inner_html}</nav>\n'
+    # Crumbs themselves stay bilingual via the title of the Home link.
+    return (
+        '<nav class="crumbs">'
+        f'<a href="index.html">{L("en", "page_title_home")}</a>'
+        '<span class="i18n" data-lang="pt" hidden> &rsaquo; '
+        f'{html.escape(inner_html)}</span>'
+        '</nav>\n'
+    )
 
 
 def status_badge(status: str, prefix: str = "") -> str:
@@ -1006,66 +1293,238 @@ def status_badge(status: str, prefix: str = "") -> str:
 # ---------------------------------------------------------------------------
 
 def render_index(repo_root: Path, stages: list[int]) -> str:
-    """Generate dist/index.html."""
-    body = ['<header class="page">',
-            '<h1>🐉 Dragon\'s Dogma 2 — Walkthrough</h1>',
-            '<div class="subtitle">Walkthrough interativo em português. Marque os objetivos direto no navegador — o progresso persiste entre visitas (localStorage).</div>',
-            '</header>']
+    """Generate dist/index.html — homepage with bilingual chrome."""
+    h1_en = "🐉 Dragon's Dogma 2 — Walkthrough"
+    h1_pt = "🐉 Dragon's Dogma 2 — Walkthrough"
+    body = [
+        '<header class="page">',
+        f'<h1>{render_bilingual(h1_en, h1_pt)}</h1>',
+        f'<div class="subtitle">{render_bilingual(L("en", "homepage_subtitle"), L("pt", "homepage_subtitle"))}</div>',
+        '</header>',
+    ]
     body.append('<div class="callout callout-info"><div class="callout-title">Info</div>'
-                '<div class="callout-body">Cada página é <strong>self-contained</strong>: HTML + CSS + JS num único arquivo. Abra direto no browser, funciona offline.</div></div>')
-    body.append('<h2>Stages</h2>')
+                '<div class="callout-body"><span class="i18n" data-lang="en">Each page is <strong>self-contained</strong>: HTML + CSS + JS in a single file. Open it directly in the browser, works offline.</span>'
+                '<span class="i18n" data-lang="pt" hidden>Cada página é <strong>self-contained</strong>: HTML + CSS + JS num único arquivo. Abra direto no browser, funciona offline.</span></div></div>')
+    body.append(f'<h2><span class="i18n" data-lang="en">Stages</span><span class="i18n" data-lang="pt" hidden>Stages</span></h2>')
     body.append('<ul>')
     for n in stages:
-        body.append(f'  <li><a href="stage-{n}.html">Stage {n}</a> — Cheat sheet interativa com TODOs, NPCs e recompensas</li>')
+        body.append(
+            f'  <li><a href="stage-{n}.html">Stage {n}</a> '
+            '<span class="i18n" data-lang="en">— interactive cheat sheet with todos, NPCs and rewards</span>'
+            '<span class="i18n" data-lang="pt" hidden>— Cheat sheet interativa com TODOs, NPCs e recompensas</span>'
+            '</li>'
+        )
     body.append('</ul>')
 
-    body.append('<h2>Como funciona o tracker</h2>')
-    body.append('<p>Os checkboxes em cada página de stage usam <code>data-track-id</code> com esquema '
-                '<code>s{stage}-{main|side}-{NN}-{i}</code>. O JS no fim de cada página lê/escreve '
-                '<code>localStorage["dd2-tracker-v1"]</code>.</p>')
-    body.append('<p>Para zerar tudo: abra o console do navegador e rode '
-                '<code>localStorage.removeItem("dd2-tracker-v1")</code>.</p>')
+    body.append(f'<h2><span class="i18n" data-lang="en">How the tracker works</span><span class="i18n" data-lang="pt" hidden>Como funciona o tracker</span></h2>')
+    body.append('<p><span class="i18n" data-lang="en">Each checkbox on a stage page uses <code>data-track-id</code> '
+                'with the schema <code>s{stage}-{main|side}-{NN}-{i}</code>. The inline JS reads/writes '
+                '<code>localStorage["dd2-tracker-v1"]</code>.</span>'
+                '<span class="i18n" data-lang="pt" hidden>Os checkboxes em cada página de stage usam '
+                '<code>data-track-id</code> com esquema <code>s{stage}-{main|side}-{NN}-{i}</code>. '
+                'O JS no fim de cada página lê/escreve '
+                '<code>localStorage["dd2-tracker-v1"]</code>.</span></p>')
+    body.append('<p><span class="i18n" data-lang="en">To wipe everything, open the browser console and run '
+                '<code>localStorage.removeItem("dd2-tracker-v1")</code>.</span>'
+                '<span class="i18n" data-lang="pt" hidden>Para zerar tudo: abra o console do navegador e rode '
+                '<code>localStorage.removeItem("dd2-tracker-v1")</code>.</span></p>')
 
-    body.append('<h2>Fonte dos dados</h2>')
+    body.append(f'<h2><span class="i18n" data-lang="en">Sources</span><span class="i18n" data-lang="pt" hidden>Fonte dos dados</span></h2>')
     body.append('<ul>')
     body.append('<li><a href="https://dragonsdogma2.wiki.fextralife.com/">Fextralife Wiki DD2</a></li>')
     body.append('<li><a href="https://www.ign.com/wikis/dragons-dogma-2/">IGN DD2 Guide</a></li>')
     body.append('<li><a href="https://dragonsdogma.fandom.com/wiki/Dragon%27s_Dogma_2_Wiki">Dragon\'s Dogma Wiki (Fandom)</a></li>')
     body.append('</ul>')
 
-    return page_shell(title="Início", body_html="\n".join(body))
+    return page_shell(title=L("en", "page_title_home"), body_html="\n".join(body))
 
 
-def render_stage(stage_n: int, quests: list[Quest]) -> str:
-    """Generate dist/stage-{n}.html — the cheat sheet."""
-    # Group by canonical location
+# ---------------------------------------------------------------------------
+# Bilingual quest card helpers (called by render_stage / render_quest_detail)
+# ---------------------------------------------------------------------------
+
+def _type_label_pair(quest_type: str) -> tuple[str, str]:
+    """(EN, PT) of the type-label HTML for the given quest type."""
+    emoji_key = "type_emoji_main" if quest_type == "main" else "type_emoji_side"
+    label_key = "type_label_main" if quest_type == "main" else "type_label_side"
+    return (
+        f'{L("en", emoji_key)} {L("en", label_key)}',
+        f'{L("pt", emoji_key)} {L("pt", label_key)}',
+    )
+
+
+def _quest_card_inner(quest: Quest, lang: str) -> str:
+    """Render the body section (between <summary> and </details>) in one language.
+
+    The chrome (summary header) is shared between languages and is
+    emitted by render_quest_block_bilingual; this only renders the
+    per-language quest content. Track IDs are intentionally language-
+    independent so the tracker JS stays in sync regardless of which
+    text the user is currently reading.
+    """
+    parts: list[str] = []
+    parts.append(
+        f'<p><small>'
+        f'<span class="i18n" data-lang="en">Quest ID</span>'
+        f'<span class="i18n" data-lang="pt" hidden>Quest ID</span>'
+        f': <code>{quest.track_prefix}</code> · '
+        f'<a href="{quest.url}">{html.escape(L(lang, "ver_detalhes"))}</a>'
+        f'</small></p>'
+    )
+    if quest.summary:
+        parts.append(render_md_block(quest.summary))
+    if quest.objectives:
+        obj_html, _ = render_quest_objectives_html(quest)
+        parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
+    else:
+        parts.append(f'<p><em>{html.escape(L(lang, "sem_objetivos"))}</em></p>')
+    return "\n".join(parts)
+
+
+def render_quest_block_bilingual(q_en: Quest, q_pt: Quest) -> str:
+    """Render a quest as a colored, collapsible, bilingual card."""
+    q_pt_fallback = q_en  # if q_pt missing, EN acts as fallback
+    # Use PT quest for type (always present) and EN for chrome (fallback to PT).
+    qt = q_pt or q_pt_fallback
+    qe = q_en or q_pt_fallback
+    type_en, type_pt = _type_label_pair(qt.quest_type)
+
+    parts: list[str] = []
+    parts.append(f'<details class="quest-card {qt.quest_type}" open>')
+    parts.append('<summary>')
+    parts.append('<span class="quest-card-caret" aria-hidden="true">▶</span>')
+    if qt.objectives:
+        title_for_aria = qe.title
+        parts.append(
+            '<input type="checkbox" class="quest-master" '
+            f'aria-label="{html.escape(L("en", "type_label_main" if qt.quest_type == "main" else "type_label_side"))} '
+            f'{html.escape(title_for_aria)}: mark-all" '
+            'onclick="event.stopPropagation()">'
+        )
+    parts.append(f'<span class="quest-type-label">{render_bilingual(type_en, type_pt)}</span>')
+    parts.append(f'<h3>{render_bilingual(qe.title, qt.title)}</h3>')
+    parts.append(status_badge(qt.status, qt.track_prefix))
+    parts.append('</summary>')
+
+    # Card body — render once per language, wrap in bilingual container
+    parts.append('<div class="quest-card-body">')
+    en_inner = _quest_card_inner(qe, "en")
+    pt_inner = _quest_card_inner(qt, "pt")
+    parts.append(render_bilingual_raw(en_inner, pt_inner))
+    parts.append('</div>')  # /quest-card-body
+    parts.append('</details>')
+    return "\n".join(parts)
+
+
+def render_quest_detail_bilingual(q_en: Quest, q_pt: Quest) -> str:
+    """Generate a per-quest detail page with bilingual chrome + content."""
+    qt = q_pt or q_en
+    qe = q_en or q_pt
+    type_en, type_pt = _type_label_pair(qt.quest_type)
+
+    parts: list[str] = []
+    parts.append(f'<details class="quest-card {qt.quest_type}" open>')
+    parts.append('<summary>')
+    parts.append('<span class="quest-card-caret" aria-hidden="true">▶</span>')
+    if qt.objectives:
+        parts.append(
+            '<input type="checkbox" class="quest-master" '
+            f'aria-label="Mark all objectives for {html.escape(qe.title)}" '
+            'onclick="event.stopPropagation()">'
+        )
+    parts.append(f'<span class="quest-type-label">{render_bilingual(type_en, type_pt)}</span>')
+    parts.append(f'<h1>{render_bilingual(qe.title, qt.title)}</h1>')
+    parts.append(status_badge(qt.status, qt.track_prefix))
+    parts.append('</summary>')
+    parts.append('<div class="quest-card-body">')
+
+    # Quest ID + location (chrome)
+    parts.append(
+        f'<p style="margin-top:0"><small>'
+        f'<span class="i18n" data-lang="en">Quest</span>'
+        f'<span class="i18n" data-lang="pt" hidden>Quest</span>'
+        f' <code>{qt.track_prefix}</code> · {html.escape(qt.location)}'
+        f'</small></p>'
+    )
+
+    # Summary in both langs
+    if qe.summary or qt.summary:
+        parts.append(f'<h2>{render_bilingual(L("en", "section_resumo"), L("pt", "section_resumo"))}</h2>')
+        en_summary = render_md_block(qe.summary) if qe.summary else ''
+        pt_summary = render_md_block(qt.summary) if qt.summary else ''
+        parts.append(render_bilingual_raw(en_summary, pt_summary))
+
+    # Objectives — same checkbox set, both block-level bilingual wrappers
+    if qt.objectives or qe.objectives:
+        parts.append(f'<h2>{render_bilingual(L("en", "section_objetivos"), L("pt", "section_objetivos"))}</h2>')
+        obj_html, _ = render_quest_objectives_html(qt or qe)
+        parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
+
+    # Section-level content
+    if qt.walkthrough or qe.walkthrough:
+        parts.append(f'<h2>{render_bilingual(L("en", "section_walkthrough"), L("pt", "section_walkthrough"))}</h2>')
+        en_walk = render_md_block("\n".join(qe.walkthrough)) if qe.walkthrough else ''
+        pt_walk = render_md_block("\n".join(qt.walkthrough)) if qt.walkthrough else ''
+        parts.append(render_bilingual_raw(en_walk, pt_walk))
+
+    if qt.rewards or qe.rewards:
+        parts.append(f'<h2>{render_bilingual(L("en", "section_recompensas"), L("pt", "section_recompensas"))}</h2>')
+        en_r = render_md_block("\n".join(qe.rewards)) if qe.rewards else ''
+        pt_r = render_md_block("\n".join(qt.rewards)) if qt.rewards else ''
+        parts.append(render_bilingual_raw(en_r, pt_r))
+
+    if qt.notes or qe.notes:
+        parts.append(f'<h2>{render_bilingual(L("en", "section_notas"), L("pt", "section_notas"))}</h2>')
+        en_n = render_md_block("\n".join(qe.notes)) if qe.notes else ''
+        pt_n = render_md_block("\n".join(qt.notes)) if qt.notes else ''
+        parts.append(render_bilingual_raw(en_n, pt_n))
+
+    parts.append('</div>')  # /quest-card-body
+    parts.append('</details>')  # /quest-card
+
+    sub = "main-quests" if qt.quest_type == "main" else "side-quests"
+    return page_shell(
+        title=qt.title,
+        body_html="\n".join(parts),
+        crumbs_html=f'Stage 1 › {sub.replace("-", " ").title()} › {html.escape(qt.title)}',
+    )
+
+
+def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
+    """Generate dist/stage-{n}.html — the cheat sheet (bilingual)."""
+    # Flatten PT quests for location grouping + totals. Bilingual content
+    # is rendered pair-by-pair in the loop below; here we just need
+    # the PT view for grouping.
+    quests_for_meta = [b.get("pt") or b["en"] for b in bundles.values()]
+
     by_loc: dict[str, list[Quest]] = {loc: [] for loc, _ in LOCATION_ORDER}
-    for q in quests:
+    for q in quests_for_meta:
         by_loc.setdefault(q.location, []).append(q)
     for loc in by_loc:
         by_loc[loc].sort(key=lambda q: (0 if q.quest_type == "main" else 1, q.quest_num))
 
-    total_done = sum(sum(1 for o in q.objectives if o.done) for q in quests)
-    total_all = sum(len(q.objectives) for q in quests)
-    main_count = sum(1 for q in quests if q.quest_type == "main")
-    side_count = sum(1 for q in quests if q.quest_type == "side")
+    total_done = sum(sum(1 for o in q.objectives if o.done) for q in quests_for_meta)
+    total_all = sum(len(q.objectives) for q in quests_for_meta)
+    main_count = sum(1 for q in quests_for_meta if q.quest_type == "main")
+    side_count = sum(1 for q in quests_for_meta if q.quest_type == "side")
 
     body: list[str] = []
-    body.append(f'<header class="page">')
-    body.append(f'<h1>🎮 Stage {stage_n} — Playthrough</h1>')
-    body.append(f'<div class="subtitle">Cheat sheet interativo. Checkboxes persistem no navegador.</div>')
+    body.append('<header class="page">')
+    body.append(f'<h1>{render_bilingual(f"🎮 Stage {stage_n} — Playthrough", f"🎮 Stage {stage_n} — Playthrough")}</h1>')
+    body.append(f'<div class="subtitle">{render_bilingual(L("en", "cheatsheet_subtitle"), L("pt", "cheatsheet_subtitle"))}</div>')
     body.append('</header>')
 
     body.append(f'''<div class="summary-bar">
-  <div class="stat"><span class="label">Main Quests</span><span class="value">{main_count}</span></div>
-  <div class="stat"><span class="label">Side Quests</span><span class="value">{side_count}</span></div>
-  <div class="stat"><span class="label">Sub-objetivos</span><span class="value"><span data-total-for="s{stage_n}-">{total_done}</span>/{total_all}</span></div>
-  <button id="reset-tracker" type="button">Resetar progresso</button>
+  <div class="stat"><span class="label">{L("en", "stat_main")}</span><span class="value">{main_count}</span></div>
+  <div class="stat"><span class="label">{L("pt", "stat_side")}</span><span class="value">{side_count}</span></div>
+  <div class="stat"><span class="label">{L("en", "stat_subs")}</span><span class="value"><span data-total-for="s{stage_n}-">{total_done}</span>/{total_all}</span></div>
+  <button id="reset-tracker" type="button">{L("en", "resetar_progresso")}</button>
+  <button id="reset-tracker-pt" type="button" style="display:none">{L("pt", "resetar_progresso")}</button>
 </div>''')
 
     # TOC
     body.append('<nav class="toc">')
-    body.append('<h2>📍 Locais (âncoras)</h2>')
+    body.append('<h2>📍 <span class="i18n" data-lang="en">Locations (anchors)</span><span class="i18n" data-lang="pt" hidden>Locais (âncoras)</span></h2>')
     body.append('<ul>')
     for loc, emoji in LOCATION_ORDER:
         if not by_loc.get(loc):
@@ -1090,19 +1549,29 @@ def render_stage(stage_n: int, quests: list[Quest]) -> str:
         body.append(f'<h2 id="{slug}">{emoji} {html.escape(loc)}</h2>')
 
         if main_q:
-            body.append('<h4>⚔️ Main Quests</h4>')
+            body.append(f'<h4>{render_bilingual(L("en", "main_quests"), L("pt", "main_quests"))}</h4>')
             for q in main_q:
-                body.append(render_quest_block(q))
+                # Look up the bilingual bundle keyed by the same track_prefix
+                bundle = bundles.get(_bundle_key_for(q)) or {}
+                q_pt = bundle.get("pt") or q
+                q_en = bundle.get("en") or q
+                body.append(render_quest_block_bilingual(q_en, q_pt))
         if side_q:
-            body.append('<h4>🗡️ Side Quests</h4>')
+            body.append(f'<h4>{render_bilingual(L("en", "side_quests"), L("pt", "side_quests"))}</h4>')
             for q in side_q:
-                body.append(render_quest_block(q))
+                bundle = bundles.get(_bundle_key_for(q)) or {}
+                q_pt = bundle.get("pt") or q
+                q_en = bundle.get("en") or q
+                body.append(render_quest_block_bilingual(q_en, q_pt))
 
     # Footer tip
     body.append('<div class="callout callout-tip"><div class="callout-title">Tip</div>'
-                '<div class="callout-body">Os <code>data-track-id</code> são determinísticos '
+                '<div class="callout-body"><span class="i18n" data-lang="en">The <code>data-track-id</code> values are '
+                f'deterministic (format <code>s{stage_n}-{{main|side}}-{{NN}}-{{i}}</code>). To export or import '
+                'your progress, just copy the JSON from <code>localStorage</code>.</span>'
+                '<span class="i18n" data-lang="pt" hidden>Os <code>data-track-id</code> são determinísticos '
                 f'(formato <code>s{stage_n}-{{main|side}}-{{NN}}-{{i}}</code>), então se você quiser '
-                'exportar/importar progresso é só copiar o JSON do <code>localStorage</code>.</div></div>')
+                'exportar/importar progresso é só copiar o JSON do <code>localStorage</code>.</span></div></div>')
 
     return page_shell(
         title=f"Stage {stage_n}",
@@ -1111,96 +1580,22 @@ def render_stage(stage_n: int, quests: list[Quest]) -> str:
     )
 
 
-def render_quest_block(quest: Quest) -> str:
-    """Render a quest as a colored, collapsible card in the cheat sheet."""
-    type_label = "Main Quest" if quest.quest_type == "main" else "Side Quest"
-    type_emoji = "⚔️" if quest.quest_type == "main" else "🗡️"
-    parts: list[str] = []
-    parts.append(f'<details class="quest-card {quest.quest_type}" open>')
-    parts.append('<summary>')
-    parts.append('<span class="quest-card-caret" aria-hidden="true">▶</span>')
-    if quest.objectives:
-        # The inline onclick stops the click from bubbling to <summary>
-        # so the master toggle doesn't also collapse/expand the card.
-        parts.append('<input type="checkbox" class="quest-master" '
-                     f'aria-label="Marcar todos os objetivos de {html.escape(quest.title)}" '
-                     'onclick="event.stopPropagation()">')
-    parts.append(f'<span class="quest-type-label">{type_emoji} {type_label}</span>')
-    parts.append(f'<h3>{html.escape(quest.title)}</h3>')
-    parts.append(status_badge(quest.status, quest.track_prefix))
-    parts.append('</summary>')
-    parts.append('<div class="quest-card-body">')
+def _bundle_key_for(quest: Quest) -> str:
+    """Key for looking up the bilingual bundle for a given Quest.
 
-    parts.append(f'<p><small>Quest ID: <code>{quest.track_prefix}</code> · '
-                 f'<a href="{quest.url}">Ver detalhes completos →</a></small></p>')
-
-    if quest.summary:
-        parts.append(render_md_block(quest.summary))
-
-    if quest.objectives:
-        obj_html, _ = render_quest_objectives_html(quest)
-        parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
-    else:
-        parts.append('<p><em>Sem objetivos listados.</em></p>')
-
-    parts.append('</div>')  # /quest-card-body
-    parts.append('</details>')
-    return "\n".join(parts)
+    Bundle keys are the file STEM (without extension). The Quest.filename
+    keeps the original `.md` suffix because parse_quest() uses it elsewhere,
+    so we strip the extension here.
+    """
+    name = quest.filename
+    if name.endswith(".md"):
+        name = name[:-3]
+    if name.endswith(".en"):
+        name = name[:-3]
+    return name
 
 
-def render_quest_detail(quest: Quest) -> str:
-    """Generate a per-quest detail page (e.g., quests/stage-1/main-quests/01---gaoled-awakening.html)."""
-    type_label = "Main Quest" if quest.quest_type == "main" else "Side Quest"
-    type_emoji = "⚔️" if quest.quest_type == "main" else "🗡️"
-    parts: list[str] = []
 
-    # <details>/<summary> makes the whole card collapsible. The H1 and
-    # status live inside <summary> so they stay visible when collapsed.
-    parts.append(f'<details class="quest-card {quest.quest_type}" open>')
-    parts.append('<summary>')
-    parts.append('<span class="quest-card-caret" aria-hidden="true">▶</span>')
-    if quest.objectives:
-        parts.append('<input type="checkbox" class="quest-master" '
-                     f'aria-label="Marcar todos os objetivos de {html.escape(quest.title)}" '
-                     'onclick="event.stopPropagation()">')
-    parts.append(f'<span class="quest-type-label">{type_emoji} {type_label}</span>')
-    parts.append(f'<h1>{html.escape(quest.title)}</h1>')
-    parts.append(status_badge(quest.status, quest.track_prefix))
-    parts.append('</summary>')
-    parts.append('<div class="quest-card-body">')
-
-    parts.append(f'<p style="margin-top:0"><small>Quest <code>{quest.track_prefix}</code> · {html.escape(quest.location)}</small></p>')
-
-    if quest.summary:
-        parts.append('<h2>Resumo</h2>')
-        parts.append(render_md_block(quest.summary))
-
-    if quest.objectives:
-        parts.append('<h2>Objetivos</h2>')
-        obj_html, _ = render_quest_objectives_html(quest)
-        parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
-
-    if quest.walkthrough:
-        parts.append('<h2>Walkthrough</h2>')
-        parts.append(render_md_block("\n".join(quest.walkthrough)))
-
-    if quest.rewards:
-        parts.append('<h2>Recompensas</h2>')
-        parts.append(render_md_block("\n".join(quest.rewards)))
-
-    if quest.notes:
-        parts.append('<h2>Notas Importantes</h2>')
-        parts.append(render_md_block("\n".join(quest.notes)))
-
-    parts.append('</div>')  # /quest-card-body
-    parts.append('</details>')  # /quest-card
-
-    sub = "main-quests" if quest.quest_type == "main" else "side-quests"
-    return page_shell(
-        title=quest.title,
-        body_html="\n".join(parts),
-        crumbs_html=f'<a href="../../../../stage-{1}.html">Stage 1</a> › <a href="../../../../stage-1.html#{sub}">{sub.replace("-", " ").title()}</a> › {html.escape(quest.title)}',
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -1220,9 +1615,9 @@ def main(argv: list[str] | None = None) -> int:
     # Stage 1 quest roots
     stage1 = repo_root / "Quests" / "Stage 1"
     roots = [stage1 / "Main Quests", stage1 / "Side Quests"]
-    quests = collect_quests(roots)
+    bundles = collect_quests_bilingual(roots)
 
-    if not quests:
+    if not bundles:
         print("[warn] No quests parsed; nothing to write.", file=sys.stderr)
         return 1
 
@@ -1232,16 +1627,18 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[ok] {out/'index.html'}")
 
     # dist/stage-1.html
-    (out / "stage-1.html").write_text(render_stage(1, quests), encoding="utf-8")
+    (out / "stage-1.html").write_text(render_stage(1, bundles), encoding="utf-8")
     print(f"[ok] {out/'stage-1.html'}")
 
     # dist/quests/stage-1/{main-quests,side-quests}/<slug>.html
-    for q in quests:
-        sub = "main-quests" if q.quest_type == "main" else "side-quests"
-        target = out / "quests" / "stage-1" / sub / f"{q.slug}.html"
+    for stem, bundle in sorted(bundles.items()):
+        q_pt = bundle.get("pt") or bundle["en"]
+        q_en = bundle.get("en") or bundle["pt"]
+        sub = "main-quests" if q_pt.quest_type == "main" else "side-quests"
+        target = out / "quests" / "stage-1" / sub / f"{q_pt.slug}.html"
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(render_quest_detail(q), encoding="utf-8")
-    print(f"[ok] {len(quests)} per-quest pages")
+        target.write_text(render_quest_detail_bilingual(q_en, q_pt), encoding="utf-8")
+    print(f"[ok] {len(bundles)} per-quest pages")
 
     print(f"\nDone. Open {out/'stage-1.html'} in your browser to preview.")
     return 0
