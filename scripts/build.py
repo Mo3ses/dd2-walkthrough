@@ -187,11 +187,18 @@ LOCATION_ORDER: list[tuple[str, str]] = [
     ("Borderwatch Outpost", "🛡️"),
     ("Melve", "🏘️"),
     ("Melve → Vernworth", "🛤️"),
+    ("Vernworth", "🏰"),
+    ("Harve Village", "🏖️"),
+    ("Moonglow Garden", "🌸"),
+    ("Eini's House", "🏠"),
+    ("Sacred Arbor", "🌳"),
+    ("Checkpoint Rest Town", "🛏️"),
 ]
 
 # Hard-coded overrides so the road-quest (09) groups under "Melve → Vernworth"
 # even though its frontmatter says Melve.
 QUEST_OVERRIDES: dict[str, tuple[str, str, str]] = {
+    # Stage 1
     "01 - Gaoled Awakening.md":         ("Excavation Site",       "main", "01"),
     "02 - Tale's Beginning.md":         ("Ultramarine Waterfall", "main", "02"),
     "08 - In Dragon's Wake.md":         ("Borderwatch Outpost",   "main", "08"),
@@ -201,7 +208,74 @@ QUEST_OVERRIDES: dict[str, tuple[str, str, str]] = {
     "06 - Brother's Brave and Timid.md": ("Melve",                "side", "06"),
     "07 - Nesting Troubles.md":         ("Melve",                 "side", "07"),
     "09 - One-Eyed Interloper.md":      ("Melve → Vernworth",     "side", "09"),
+    # Stage 2
+    "10 - A Place to Call Home.md":     ("Vernworth",             "side", "10"),
+    "11 - The Ornate Box.md":           ("Vernworth",             "side", "11"),
+    "12 - Oxcart Courier.md":           ("Vernworth",             "side", "12"),
+    "13 - The Heel of History.md":      ("Vernworth",             "side", "13"),
+    "14 - The Gift of Giving.md":       ("Vernworth",             "side", "14"),
+    "15 - Seat of the Sovran.md":       ("Vernworth",             "main", "15"),
+    "16 - Masked Correspondence.md":    ("Vernworth",             "side", "16"),
+    "17 - Monster Culling.md":          ("Vernworth",             "main", "17"),
+    "18 - Scaly Invaders.md":           ("Harve Village",         "side", "18"),
+    "19 - Vocation Frustration.md":     ("Vernworth",             "side", "19"),
+    "20 - Disa's Plot.md":              ("Vernworth",             "side", "20"),
+    "21 - The Caged Magistrate.md":     ("Vernworth",             "main", "21"),
+    "22 - A Magesterial Amenity.md":    ("Vernworth",             "side", "22"),
+    "23 - The Stolen Throne.md":        ("Vernworth",             "main", "23"),
+    "24 - An Unsettling Encounter.md":  ("Vernworth",             "main", "24"),
+    "25 - Every Rose Has Its Thorn.md": ("Vernworth",             "side", "25"),
+    "26 - The Nameless Village.md":     ("Vernworth",             "main", "26"),
+    "27 - The Arisen's Shadow.md":      ("Vernworth",             "side", "27"),
+    "28 - Till Death Do Us Part.md":     ("Vernworth",             "side", "28"),
+    "29 - A Beggar's Tale.md":          ("Vernworth",             "side", "29"),
+    "30 - Saint of the Slums.md":       ("Vernworth",             "side", "30"),
+    "31 - House of the Blue Sunbright.md": ("Vernworth",          "side", "31"),
+    "32 - Readvent of Calamity.md":     ("Melve",                 "side", "32"),
+    "33 - Home Is Where the Hearth Is.md": ("Melve",              "side", "33"),
+    "34 - Claw Them Into Shape.md":     ("Moonglow Garden",       "side", "34"),
+    "35 - Beren's Final Lesson.md":     ("Moonglow Garden",       "side", "35"),
+    "36 - Spellbound.md":               ("Eini's House",          "side", "36"),
+    "37 - Trouble on the Cape.md":      ("Harve Village",         "side", "37"),
+    "38 - Gift of the Bow.md":          ("Vernworth",             "side", "38"),
+    "39 - A Trial of Archery.md":       ("Vernworth",             "side", "39"),
+    "40 - The Ailing Arborheart.md":    ("Sacred Arbor",          "side", "40"),
+    "41 - Prey for the Pack.md":        ("Checkpoint Rest Town",  "side", "41"),
+    "42 - Hunt for the Jadeite Orb.md": ("Checkpoint Rest Town",  "side", "42"),
+    "43 - The Sorcerer's Appraisal.md": ("Checkpoint Rest Town",  "side", "43"),
+    "44 - Feast of Deception.md":       ("Vernworth",             "main", "44"),
 }
+
+
+# ---------------------------------------------------------------------------
+# File → stage index (populated by main() before any rendering).
+# Lets resolve_wikilink() route cross-stage links correctly without
+# threading the stage through every call site.
+# ---------------------------------------------------------------------------
+
+_FILE_STAGE: dict[str, int] = {}  # filename (e.g. "08 - In Dragon's Wake.md") → stage number
+
+
+def _build_file_stage_index(quests_root: Path) -> None:
+    """Populate _FILE_STAGE by scanning Quests/Stage */ for *.md files.
+
+    Called once at startup from main(). Idempotent — re-calling overwrites.
+    """
+    _FILE_STAGE.clear()
+    for stage_dir in sorted(quests_root.glob("Stage *")):
+        if not stage_dir.is_dir():
+            continue
+        # Stage dir name is "Stage N" — extract N
+        parts = stage_dir.name.split()
+        if len(parts) != 2 or not parts[1].isdigit():
+            continue
+        stage_n = int(parts[1])
+        for sub in ("Main Quests", "Side Quests"):
+            sub_dir = stage_dir / sub
+            if not sub_dir.exists():
+                continue
+            for path in sub_dir.glob("*.md"):
+                _FILE_STAGE[path.name] = stage_n
 
 
 # ---------------------------------------------------------------------------
@@ -221,6 +295,7 @@ class Quest:
     location: str
     quest_type: str   # "main" | "side"
     quest_num: str
+    stage: int = 1    # which Stage dir this quest lives in (1-based)
     objectives: list[Objective] = field(default_factory=list)
     summary: str = ""
     walkthrough: list[str] = field(default_factory=list)
@@ -230,7 +305,7 @@ class Quest:
 
     @property
     def track_prefix(self) -> str:
-        return f"s1-{self.quest_type}-{self.quest_num}"
+        return f"s{self.stage}-{self.quest_type}-{self.quest_num}"
 
     @property
     def slug(self) -> str:
@@ -251,7 +326,7 @@ class Quest:
     @property
     def url(self) -> str:
         sub = "main-quests" if self.quest_type == "main" else "side-quests"
-        return f"quests/stage-1/{sub}/{self.slug}.html"
+        return f"quests/stage-{self.stage}/{sub}/{self.slug}.html"
 
     @property
     def status(self) -> str:
@@ -416,6 +491,15 @@ def parse_quest(path: Path) -> Quest:
     title = fm.get("quest") or path.stem
     filename = path.name
 
+    # Detect stage from path (e.g. "Quests/Stage 2/Main Quests/15 - Foo.md" → 2).
+    # Defaults to 1 if no Stage dir is in the path.
+    stage_n = 1
+    for part in path.parts:
+        m = re.match(r"^Stage\s+(\d+)$", part)
+        if m:
+            stage_n = int(m.group(1))
+            break
+
     if filename in QUEST_OVERRIDES:
         location, qtype, qnum = QUEST_OVERRIDES[filename]
     else:
@@ -446,6 +530,7 @@ def parse_quest(path: Path) -> Quest:
         location=location,
         quest_type=qtype,
         quest_num=qnum,
+        stage=stage_n,
         objectives=objectives,
         summary=summary,
         walkthrough=walkthrough,
@@ -537,18 +622,41 @@ def resolve_wikilink(target: str) -> str:
     # Map by filename
     fname = parts[-1]
     slug = re.sub(r"[^a-z0-9]+", "-", fname.lower()).strip("-")
-    # If "Stage 1.md" → "stage-1.html"
+    # Look up the target's stage from the prebuilt index. Cross-stage
+    # links (e.g. Stage 2 page linking to a Stage 1 quest) resolve to
+    # the correct stage path. Falls back to stage 1 if the target isn't
+    # in the index (e.g. external-style link).
+    def _target_stage() -> int:
+        # Reattach the .md suffix to match the index key.
+        candidate = fname + ".md"
+        return _FILE_STAGE.get(candidate, 1)
+    # "Stage 1.md" / "Stage 2.md" — special-case for MOC links
     if target.lower() in {"stage 1", "stage-1"}:
         return "stage-1.html"
+    if target.lower() in {"stage 2", "stage-2"}:
+        return "stage-2.html"
     if target.startswith("Main Quests/"):
-        return f"quests/stage-1/main-quests/{slug}.html"
+        return f"quests/stage-{_target_stage()}/main-quests/{slug}.html"
     if target.startswith("Side Quests/"):
-        return f"quests/stage-1/side-quests/{slug}.html"
+        return f"quests/stage-{_target_stage()}/side-quests/{slug}.html"
     if target.startswith("Locations/"):
-        return f"quests/stage-1/locations/{slug}.html"
+        # Locations are not stage-scoped — they live at the top of the
+        # vault. resolve_wikilink does not know if a Locations/ page has
+        # been emitted; the build may 404 if not, but the path stays
+        # stable across stages.
+        return f"locations/{slug}.html"
     if target.lower().startswith("quest"):
         return f"stage-1.html#{slugify(target)}"
-    # Fallback: same directory, slugified
+    # Fallback: if the bare target is a known quest file, route to its
+    # actual stage (handles cross-stage links written without prefix).
+    target_stage = _FILE_STAGE.get(fname + ".md", 1)
+    if target_stage:
+        # Determine sub by looking up the file in overrides.
+        for ov_name, (_, qtype, _) in QUEST_OVERRIDES.items():
+            if ov_name == fname + ".md":
+                sub = "main-quests" if qtype == "main" else "side-quests"
+                return f"quests/stage-{target_stage}/{sub}/{slug}.html"
+        return f"{slug}.html"
     return f"{slug}.html"
 
 
@@ -2060,6 +2168,9 @@ def main(argv: list[str] | None = None) -> int:
     out = (args.out or repo_root / "dist").resolve()
     out.mkdir(parents=True, exist_ok=True)
 
+    # Build filename → stage index so resolve_wikilink can route cross-stage links.
+    _build_file_stage_index(repo_root / "Quests")
+
     # Auto-discover stages: any `Quests/Stage N/` directory. The same glob
     # also matches `Stage N.md` MOC files; the `is_dir()` filter excludes them.
     quests_root = repo_root / "Quests"
@@ -2072,34 +2183,37 @@ def main(argv: list[str] | None = None) -> int:
         print("[warn] No stage directories found under Quests/.", file=sys.stderr)
         return 1
 
-    # Stage 1 quest roots (hardcoded for now — extend to N stages later)
-    stage1 = quests_root / "Stage 1"
-    roots = [stage1 / "Main Quests", stage1 / "Side Quests"]
-    bundles = collect_quests_bilingual(roots)
-
-    if not bundles:
-        print("[warn] No quests parsed; nothing to write.", file=sys.stderr)
-        return 1
-
     # dist/index.html — auto-discovers all stages for the card grid
     (out / "index.html").write_text(render_index(repo_root, stages), encoding="utf-8")
     print(f"[ok] {out/'index.html'}")
 
-    # dist/stage-1.html
-    (out / "stage-1.html").write_text(render_stage(1, bundles), encoding="utf-8")
-    print(f"[ok] {out/'stage-1.html'}")
+    total_quests = 0
+    for n in stages:
+        stage_dir = quests_root / f"Stage {n}"
+        roots = [stage_dir / "Main Quests", stage_dir / "Side Quests"]
+        bundles = collect_quests_bilingual(roots)
+        if not bundles:
+            print(f"[warn] No quests parsed for Stage {n}; skipping.", file=sys.stderr)
+            continue
 
-    # dist/quests/stage-1/{main-quests,side-quests}/<slug>.html
-    for stem, bundle in sorted(bundles.items()):
-        q_pt = bundle.get("pt") or bundle["en"]
-        q_en = bundle.get("en") or bundle["pt"]
-        sub = "main-quests" if q_pt.quest_type == "main" else "side-quests"
-        target = out / "quests" / "stage-1" / sub / f"{q_pt.slug}.html"
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(render_quest_detail_bilingual(q_en, q_pt), encoding="utf-8")
-    print(f"[ok] {len(bundles)} per-quest pages")
+        # dist/stage-{n}.html
+        (out / f"stage-{n}.html").write_text(render_stage(n, bundles), encoding="utf-8")
+        print(f"[ok] {out/f'stage-{n}.html'}")
 
-    print(f"\nDone. Open {out/'stage-1.html'} in your browser to preview.")
+        # dist/quests/stage-{n}/{main-quests,side-quests}/<slug>.html
+        for stem, bundle in sorted(bundles.items()):
+            q_pt = bundle.get("pt") or bundle["en"]
+            q_en = bundle.get("en") or bundle["pt"]
+            sub = "main-quests" if q_pt.quest_type == "main" else "side-quests"
+            target = out / "quests" / f"stage-{n}" / sub / f"{q_pt.slug}.html"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(render_quest_detail_bilingual(q_en, q_pt), encoding="utf-8")
+        total_quests += len(bundles)
+        print(f"[ok] {len(bundles)} per-quest pages for Stage {n}")
+
+    print(f"\nDone. {total_quests} per-quest pages across {len(stages)} stage(s).")
+    if stages:
+        print(f"Open {out/f'stage-{stages[0]}.html'} in your browser to preview.")
     return 0
 
 
