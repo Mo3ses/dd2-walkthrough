@@ -3,7 +3,7 @@ quest: The Sorcerer's Appraisal
 type: Side Quest
 stage: 2
 location: "[[Locations/Checkpoint Rest Town]]"
-quest_giver: Mage NPC
+quest_giver: Myrddin
 prerequisites: []
 related:
   - "[[Locations/Checkpoint Rest Town]]"

@@ -3,7 +3,7 @@ quest: Prey for the Pack
 type: Side Quest
 stage: 2
 location: "[[Locations/Checkpoint Rest Town]]"
-quest_giver: NPC desconhecido
+quest_giver: Morris
 prerequisites:
   - "[[40 - The Ailing Arborheart]]"
 related:

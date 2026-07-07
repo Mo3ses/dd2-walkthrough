@@ -3,7 +3,7 @@ quest: Vocation Frustration
 type: Side Quest
 stage: 2
 location: "[[Locations/Vernworth]]"
-quest_giver: NPC desconhecido
+quest_giver: Klaus
 prerequisites:
   - "[[10 - A Place to Call Home]]"
 related:
