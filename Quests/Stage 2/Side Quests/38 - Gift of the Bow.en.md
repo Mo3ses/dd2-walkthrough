@@ -3,7 +3,7 @@ quest: Gift of the Bow
 type: Side Quest
 stage: 2
 location: "[[Locations/Vernworth]]"
-quest_giver: NPC desconhecido
+quest_giver: Glyndwr
 prerequisites:
   - "[[37 - Trouble on the Cape]]"
 related:

@@ -126,11 +126,14 @@ def load_html_facts(path: Path) -> Fact:
         return Fact()
 
     giver = None
-    # IGN: "Quest Giver: Brant" / Fandom: "Quest Giver" then name on next line.
+    # Fandom's structured template is `Quest Giver <Name> Quest Location <Loc>
+    # Prerequisite <Pre> Reward <Reward>` — grab only the first Name token,
+    # stopping at the next capitalized label or punctuation.
     giver_match = re.search(
-        r"(?:Quest\s+Giver|Started\s+by|Given\s+by|Start\s+Location|Giver)[^a-zA-Z]+"
-        r"([A-Z][a-zA-Z'\- ]{2,30})",
-        text, re.IGNORECASE,
+        r"(?:Quest\s+Giver|Started\s+by|Given\s+by|Giver)\s+"
+        r"([A-Z][a-zA-Z'\-]+)"
+        r"(?=\s+(?:Quest|Started|Prerequisite|Next|Reward|Type|is\s+a)|[,.;]|\Z)",
+        text,
     )
     if giver_match:
         giver = giver_match.group(1).strip()
@@ -141,7 +144,21 @@ def load_html_facts(path: Path) -> Fact:
         xp = _parse_int(xp_match.group(1))
 
     gold = None
-    g_match = re.search(r"([\d.,]+)\s*(?:Gold|G\b)", text)
+    # Only count G from quest-completion reward text. IGN walkthroughs list
+    # multiple sub-rewards ("another 3000 gold from the soldiers"); we want
+    # the *main* completion reward, which appears as either:
+    #   - Fandom structured label: "Reward <N> Gold/XP"
+    #   - IGN completion line: "reward, <N> gold, <N> xp" near "completing"
+    # Vendor prices ("buy the book for 5,000 G") and sub-rewards are skipped.
+    g_match = re.search(
+        r"\bReward\s+(\d[\d.,]+)\s*(?:Gold|G\b)",
+        text, re.IGNORECASE,
+    )
+    if not g_match:
+        g_match = re.search(
+            r"reward,\s*(\d[\d.,]+)\s*(?:Gold|G\b)[^.]{0,80}?(?:completing|quest)",
+            text, re.IGNORECASE,
+        )
     if g_match:
         gold = _parse_int(g_match.group(1))
 

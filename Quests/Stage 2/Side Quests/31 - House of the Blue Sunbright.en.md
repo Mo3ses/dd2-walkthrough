@@ -3,7 +3,7 @@ quest: House of the Blue Sunbright
 type: Side Quest
 stage: 2
 location: "[[Locations/Vernworth]]"
-quest_giver: NPC desconhecido
+quest_giver: Diana
 prerequisites:
   - "[[15 - Seat of the Sovran]]"
 related:
