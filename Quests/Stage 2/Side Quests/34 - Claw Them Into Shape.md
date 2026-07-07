@@ -15,8 +15,10 @@ tags:
   - stage-2
   - side-quest
 sources_verified:
+  - fandom
   - fextralife
-needs_verification: true
+  - ign
+needs_verification: false
 ---
 
 # Claw Them Into Shape
@@ -37,7 +39,7 @@ Concluir [[15 - Seat of the Sovran]] e viajar a [[Locations/Moonglow Garden]].
 ## Pré-requisitos
 
 - [[15 - Seat of the Sovran]] *(concluída)*
-- **Cross-Stage:** 3 espadas compradas de [[Kassandra]] em [[Locations/Borderwatch Outpost]] (Stage 1)
+- **Cross-Stage:** 3 espadas compradas de Kassandra em [[Locations/Borderwatch Outpost]] (Stage 1)
 
 ## Walkthrough
 
@@ -71,7 +73,7 @@ Concluir [[15 - Seat of the Sovran]] e viajar a [[Locations/Moonglow Garden]].
 ## Notas Importantes
 
 > [!warning] **Cross-Stage Prep Crítico**
-> As 3 espadas **devem ser compradas em Stage 1** de [[Kassandra]] em [[Locations/Borderwatch Outpost]]. Se você pulou, esta quest **NÃO pode ser completada**. Voltar a Borderwatch não é possível.
+> As 3 espadas **devem ser compradas em Stage 1** de Kassandra em [[Locations/Borderwatch Outpost]]. Se você pulou, esta quest **NÃO pode ser completada**. Voltar a Borderwatch não é possível.
 
 > [!info] Tipo confirmado
 > Classificada como **Side Quest** pelo Fextralife (breadcrumb `Quests > Side Quests`).

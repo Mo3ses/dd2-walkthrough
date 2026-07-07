@@ -2,7 +2,7 @@
 quest: One-Eyed Interloper
 type: Side Quest
 stage: 1
-location: "[[Locations/Melve]]"
+location: "[[Locations/Melve → Vernworth]]"
 quest_giver: Trigger automático
 prerequisites:
   - "[[08 - In Dragon's Wake]]"

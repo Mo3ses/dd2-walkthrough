@@ -37,7 +37,7 @@ Complete [[15 - Seat of the Sovran]] and travel to [[Locations/Moonglow Garden]]
 ## Prerequisites
 
 - [[15 - Seat of the Sovran]] *(completed)*
-- **Cross-Stage:** 3 swords bought from [[Kassandra]] at [[Locations/Borderwatch Outpost]] (Stage 1)
+- **Cross-Stage:** 3 swords bought from Kassandra at [[Locations/Borderwatch Outpost]] (Stage 1)
 
 ## Walkthrough
 

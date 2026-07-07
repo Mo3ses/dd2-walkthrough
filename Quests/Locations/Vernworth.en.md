@@ -23,7 +23,7 @@ tags: [location, capital, vermund, city]
 ## Characteristics
 
 - **Ruler**: **Sovran Disa** (regent queen, mother of the false Arisen)
-- **Castle**: [[Locations/Vernworth Castle]] — royal residence, throne room
+- **Castle**: **Vernworth Castle** — royal residence, throne room
 - **Districts**:
     - **Merchant Quarter** — smithy (Sven), item shop
     - **Slums** — poor area, focus of several side quests

@@ -8,7 +8,7 @@ tags: [location, sacred, waterfall, vermund, ruins]
 
 # Ultramarine Waterfall (Cachoeira Ultramarine)
 
-> Cachoeira escondida nas montanhas, santuário místico onde o **Arisen recebe um Main Pawn** e tem a primeira visão do Brine. Local da quest [[Tale's Beginning]].
+> Cachoeira escondida nas montanhas, santuário místico onde o **Arisen recebe um Main Pawn** e tem a primeira visão do Brine. Local da quest [[Main Quests/02 - Tale's Beginning]].
 
 ## Características
 
@@ -24,7 +24,7 @@ tags: [location, sacred, waterfall, vermund, ruins]
 
 ## Quests de Stage 1
 
-- [[Tale's Beginning]] — main quest, primeira viagem do Arisen + criação do Main Pawn
+- [[Main Quests/02 - Tale's Beginning]] — main quest, primeira viagem do Arisen + criação do Main Pawn
 
 ## Notas Importantes
 

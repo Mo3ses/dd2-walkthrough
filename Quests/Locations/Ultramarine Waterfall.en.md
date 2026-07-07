@@ -8,7 +8,7 @@ tags: [location, sacred, waterfall, vermund, ruins]
 
 # Ultramarine Waterfall
 
-> A hidden waterfall in the mountains, mystical sanctuary where the **Arisen receives a Main Pawn** and has the first vision of the Brine. Setting of [[Tale's Beginning]].
+> A hidden waterfall in the mountains, mystical sanctuary where the **Arisen receives a Main Pawn** and has the first vision of the Brine. Setting of [[Main Quests/02 - Tale's Beginning]].
 
 ## Features
 
@@ -24,7 +24,7 @@ tags: [location, sacred, waterfall, vermund, ruins]
 
 ## Stage 1 Quests Here
 
-- [[Tale's Beginning]] — main quest, the Arisen's first journey + Main Pawn creation
+- [[Main Quests/02 - Tale's Beginning]] — main quest, the Arisen's first journey + Main Pawn creation
 
 ## Important Notes
 

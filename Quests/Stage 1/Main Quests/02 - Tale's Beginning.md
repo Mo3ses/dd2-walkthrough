@@ -65,7 +65,7 @@ Conclua [[Main Quests/01 - Gaoled Awakening]].
 
 ## Notas Importantes
 
-- Faça as side quests de Borderwatch ([[03]], [[04]]) antes de partir para Melve
+- Faça as side quests de Borderwatch ([[Side Quests/03 - Ordeal's of a New Recruit]], [[Side Quests/04 - The Provisioner's Plight]]) antes de partir para Melve
 - Vocação do Pawn pode ser trocada a qualquer momento depois
 
 ## Related

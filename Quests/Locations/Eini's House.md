@@ -2,7 +2,7 @@
 location: Eini's House
 region: Vermund (郊外)
 type: Private Residence
-coordinates: Sul de Vernworth — casa de [[Eini]] e sua filha [[Trysha]]
+coordinates: Sul de Vernworth — casa de Eini e sua filha Trysha
 tags: [location, residence, vermund, maison]
 ---
 

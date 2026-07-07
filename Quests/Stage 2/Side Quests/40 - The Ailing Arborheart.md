@@ -14,6 +14,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
+  - ign
 needs_verification: true
 ---
 
@@ -70,7 +71,7 @@ Concluir [[39 - A Trial of Archery]] e viajar para [[Locations/Sacred Arbor]].
 > Não é critical-path mas atrasar pode perder recompensas. Verificar wiki para janela exata.
 
 > [!tip] Conexão Stage 4
-> Arom retorna em [[Stage 4]] com `Wandering Roots`.
+> Arom retorna em Stage 4 (Bakbattahl) com `Wandering Roots`.
 
 ## Related
 

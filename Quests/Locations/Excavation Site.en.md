@@ -8,7 +8,7 @@ tags: [location, excavation, mine, vermund]
 
 # Excavation Site (Abandoned Mines)
 
-> An abandoned mine where the **Arisen wakes up imprisoned** at the start of the game. The setting of [[Gaoled Awakening]] and the game's tutorial/intro.
+> An abandoned mine where the **Arisen wakes up imprisoned** at the start of the game. The setting of [[Main Quests/01 - Gaoled Awakening]] and the game's tutorial/intro.
 
 ## Features
 
@@ -23,7 +23,7 @@ tags: [location, excavation, mine, vermund]
 
 ## Stage 1 Quests Here
 
-- [[Gaoled Awakening]] — main quest, opening the game (escape from the mine)
+- [[Main Quests/01 - Gaoled Awakening]] — main quest, opening the game (escape from the mine)
 
 ## Important Notes
 
