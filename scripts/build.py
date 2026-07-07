@@ -86,6 +86,12 @@ STRINGS: dict[str, dict[str, str]] = {
         "stat_subs": "Sub-objectives",
         "alert_coming_soon": "UNDER CONSTRUCTION — translation coming soon",
         "alert_translation_pending": "(Translation pending)",
+        "stage_card_open": "Open stage →",
+        "stage_card_main_fmt": "⚔ {n} main quests · 🗡 {s} side quests",
+        "quick_links_label": "Quick links:",
+        "quick_link_stage1": "Stage 1",
+        "quick_link_locations": "Browse locations",
+        "quick_link_reset": "Reset tracker",
         "diag_init": "Tracker initializing…",
         "diag_blocked": "localStorage BLOCKED. Progress will NOT persist.",
         "diag_active_fmt": "Tracker active: {n} checkboxes · {d} marked",
@@ -124,6 +130,12 @@ STRINGS: dict[str, dict[str, str]] = {
         "stat_subs": "Sub-objetivos",
         "alert_coming_soon": "EM CONSTRUÇÃO — tradução em breve",
         "alert_translation_pending": "(Tradução pendente)",
+        "stage_card_open": "Abrir stage →",
+        "stage_card_main_fmt": "⚔ {n} quests principais · 🗡 {s} quests secundárias",
+        "quick_links_label": "Links rápidos:",
+        "quick_link_stage1": "Stage 1",
+        "quick_link_locations": "Ver locais",
+        "quick_link_reset": "Zerar tracker",
         "diag_init": "Tracker inicializando…",
         "diag_blocked": "localStorage BLOQUEADO. Progresso NÃO vai persistir.",
         "diag_active_fmt": "Tracker ativo: {n} checkboxes · {d} marcados",
@@ -252,6 +264,66 @@ class Quest:
         if done == 0:
             return f"⬜ 0/{total}"
         return f"⏳ {done}/{total}"
+
+
+# ---------------------------------------------------------------------------
+# Stage metadata (for the homepage card grid)
+# ---------------------------------------------------------------------------
+
+@dataclass
+class StageInfo:
+    """Metadata for one stage, used by the homepage card."""
+    number: int
+    name: str           # raw frontmatter `name:` (single source-of-truth fallback)
+    name_en: str        # frontmatter `name_en` (or `name` if absent)
+    name_pt: str        # frontmatter `name_pt` (or `name` if absent)
+    region: str         # from frontmatter `region:`
+    objective: str      # from frontmatter `objective:`
+    main_count: int     # *.md files in Stage N/Main Quests/
+    side_count: int     # *.md files in Stage N/Side Quests/
+
+
+def load_stage_info(stage_n: int, repo_root: Path) -> StageInfo:
+    """Read the Stage MOC frontmatter + count quest files.
+
+    Looks for the MOC in two places (first match wins):
+      1. `Quests/Stage N/Stage N.md`         — inside the stage dir
+      2. `Quests/Stage N.md`                 — alongside the stage dir
+                                               (current convention in this vault)
+    """
+    quests_root = repo_root / "Quests"
+    fm: dict[str, str] = {}
+    candidates = [
+        quests_root / f"Stage {stage_n}" / f"Stage {stage_n}.md",
+        quests_root / f"Stage {stage_n}.md",
+    ]
+    for moc in candidates:
+        if moc.exists():
+            fm_text, _ = parse_frontmatter(moc.read_text(encoding="utf-8"))
+            fm = fm_text
+            break
+    stage_dir = quests_root / f"Stage {stage_n}"
+    main_dir = stage_dir / "Main Quests"
+    side_dir = stage_dir / "Side Quests"
+    # Filter out *.en.md so each bilingual pair is counted once.
+    def _count_quests(d: Path) -> int:
+        if not d.exists(): return 0
+        return sum(1 for p in d.glob("*.md") if not p.stem.endswith(".en"))
+    main_n = _count_quests(main_dir)
+    side_n = _count_quests(side_dir)
+    # Stage title: prefer `name_pt` for PT, `name_en` for EN, fallback to `name`.
+    # Frontmatter authors can opt into bilingual stage titles by adding
+    # both fields; otherwise the same string renders in both languages.
+    return StageInfo(
+        number=stage_n,
+        name=fm.get("name", f"Stage {stage_n}"),
+        name_en=fm.get("name_en", "") or fm.get("name", f"Stage {stage_n}"),
+        name_pt=fm.get("name_pt", "") or fm.get("name", f"Stage {stage_n}"),
+        region=fm.get("region", ""),
+        objective=fm.get("objective", ""),
+        main_count=main_n,
+        side_count=side_n,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -950,6 +1022,156 @@ th { background: var(--code-bg); font-weight: 600; }
 }
 .summary-bar button:hover { background: var(--code-bg); }
 
+/* ===== Homepage: hero, progress, stage card grid, quick links ===== */
+.hero {
+  text-align: center;
+  padding: 2.5rem 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.hero h1 {
+  margin: 0 0 0.4rem;
+  font-size: 2.2rem;
+  letter-spacing: -0.02em;
+}
+.hero-tagline {
+  font-size: 1.05rem;
+  color: var(--fg-muted);
+  margin: 0 auto 1.5rem;
+  max-width: 32em;
+}
+.progress { max-width: 28em; margin: 0 auto; }
+.progress-track {
+  background: var(--border);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+.progress-fill {
+  background: var(--accent);
+  height: 100%;
+  width: 0%;
+  transition: width 0.25s ease-out;
+  border-radius: 999px;
+}
+.progress-text {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  margin-top: 0.4rem;
+  font-family: ui-monospace, monospace;
+  text-align: center;
+}
+
+.stage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.stage-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  color: var(--fg);
+  transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+}
+.stage-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  text-decoration: none;
+}
+.stage-card header {
+  margin-bottom: 0.4rem;
+}
+.stage-num {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.22rem 0.55rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 999px;
+}
+.stage-card h2 {
+  margin: 0.4rem 0 0.2rem;
+  padding: 0;
+  border: none;
+  font-size: 1.15rem;
+}
+.stage-region {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  margin: 0 0 0.4rem;
+}
+.stage-objective {
+  font-size: 0.95rem;
+  margin: 0.4rem 0 0.8rem;
+  flex: 1;
+  line-height: 1.45;
+}
+.stage-card footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+.stage-counts {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+.stage-cta {
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.quick-links {
+  margin: 2rem 0 1rem;
+  padding: 0.8rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.quick-links strong { margin-right: 0.3rem; }
+.quick-links .dot { color: var(--fg-muted); }
+.reset-link {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.22rem 0.7rem;
+  cursor: pointer;
+  font: inherit;
+  color: var(--fg);
+  margin-left: 0.2rem;
+}
+.reset-link:hover { background: var(--code-bg); }
+
+.page-footer {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  text-align: center;
+}
+.page-footer a { color: var(--fg-muted); text-decoration: underline; }
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1a1a1c;
@@ -967,6 +1189,7 @@ th { background: var(--code-bg); font-weight: 600; }
   .quest-card.main .quest-type-label { background: rgba(25, 118, 210, 0.28); color: #64b5f6; }
   .quest-card.side .quest-type-label { background: rgba(192, 132, 0, 0.28); color: #ffb74d; }
   .quest-card > summary:hover { background: rgba(255,255,255,0.04); }
+  .stage-card:hover { box-shadow: 0 4px 12px rgba(255,255,255,0.06); }
 }
 """
 
@@ -1025,6 +1248,9 @@ SHARED_JS = r"""
     const rpt = document.getElementById("reset-tracker-pt");
     if (ren) ren.style.display = (lang === "en") ? "" : "none";
     if (rpt) rpt.style.display = (lang === "pt") ? "" : "none";
+
+    // Re-render homepage progress text in the new language ("X / N sub-objectives" / "sub-objetivos").
+    if (typeof updateGlobalProgress === "function") updateGlobalProgress();
   }
 
   function closeLangMenu() {
@@ -1213,6 +1439,35 @@ SHARED_JS = r"""
     });
   }
 
+  // ----- global progress (homepage only) -----
+  // Reads the build-time `data-total` attribute and live-counts checked
+  // track-ids from localStorage. Falls back gracefully if either piece
+  // is missing (e.g. on stage pages, no-op).
+  function updateGlobalProgress() {
+    const text = document.querySelector("[data-progress-text=\"global\"]");
+    const fill = document.querySelector("[data-progress-fill=\"global\"]");
+    if (!text && !fill) return;
+    const total = parseInt((text && text.getAttribute("data-total")) || "0", 10) || 0;
+    let done = 0;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          done = Object.values(parsed).filter(Boolean).length;
+        }
+      }
+    } catch (e) { /* ignore */ }
+    const pct = total > 0 ? Math.round((100 * done) / total) : 0;
+    if (fill) fill.style.width = pct + "%";
+    if (text) {
+      const lang = getLang();
+      text.textContent = (lang === "pt")
+        ? `${done} / ${total} sub-objetivos`
+        : `${done} / ${total} sub-objectives`;
+    }
+  }
+
   // ----- main -----
   function init() {
     // Run language toggle first so diag messages / reset confirm land
@@ -1234,6 +1489,7 @@ SHARED_JS = r"""
     const items = document.querySelectorAll("input[type=checkbox][data-track-id]");
     items.forEach((cb) => applyTo(cb, state));
     updateTotals();
+    updateGlobalProgress();
 
     const doneCount = Object.values(state).filter(Boolean).length;
     const lang = getLang();
@@ -1290,8 +1546,9 @@ SHARED_JS = r"""
 
     // Reset buttons: there are two (id="reset-tracker" English,
     // id="reset-tracker-pt" Portuguese). The active one is shown by
-    // applyLang(); both share the same logic.
-    ["reset-tracker", "reset-tracker-pt"].forEach((id) => {
+    // applyLang(); both share the same logic. The homepage renders
+    // reset-tracker-home as a single pill in the quick-links section.
+    ["reset-tracker", "reset-tracker-pt", "reset-tracker-home"].forEach((id) => {
       const btn = document.getElementById(id);
       if (!btn) return;
       btn.addEventListener("click", () => {
@@ -1411,50 +1668,105 @@ def status_badge(status: str, prefix: str = "") -> str:
 # ---------------------------------------------------------------------------
 
 def render_index(repo_root: Path, stages: list[int]) -> str:
-    """Generate dist/index.html — homepage with bilingual chrome."""
-    h1_en = "🐉 Dragon's Dogma 2 — Walkthrough"
-    h1_pt = "🐉 Dragon's Dogma 2 — Walkthrough"
-    body = [
-        '<header class="page">',
-        f'<h1>{render_bilingual(h1_en, h1_pt)}</h1>',
-        f'<div class="subtitle">{render_bilingual(L("en", "homepage_subtitle"), L("pt", "homepage_subtitle"))}</div>',
-        '</header>',
-    ]
-    body.append('<div class="callout callout-info"><div class="callout-title">Info</div>'
-                '<div class="callout-body"><span class="i18n" data-lang="en">Each page is <strong>self-contained</strong>: HTML + CSS + JS in a single file. Open it directly in the browser, works offline.</span>'
-                '<span class="i18n" data-lang="pt" hidden>Cada página é <strong>self-contained</strong>: HTML + CSS + JS num único arquivo. Abra direto no browser, funciona offline.</span></div></div>')
-    body.append(f'<h2><span class="i18n" data-lang="en">Stages</span><span class="i18n" data-lang="pt" hidden>Stages</span></h2>')
-    body.append('<ul>')
+    """Generate dist/index.html — homepage with hero, stage card grid, quick links."""
+    body: list[str] = []
+
+    # === HERO ============================================================
+    body.append('<section class="hero">')
+    body.append('<h1>🐉 '
+                '<span class="i18n" data-lang="en">Dragon\'s Dogma 2 Walkthrough</span>'
+                '<span class="i18n" data-lang="pt" hidden>Dragon\'s Dogma 2 Walkthrough</span>'
+                '</h1>')
+    hero_tagline_en = "Interactive EN/PT walkthrough with progress tracker."
+    hero_tagline_pt = "Walkthrough interativo EN/PT com tracker de progresso."
+    body.append(f'<p class="hero-tagline">{render_bilingual(hero_tagline_en, hero_tagline_pt)}</p>')
+    # Global progress bar — JS in SHARED_JS reads `data-total` for the
+    # denominator and live-counts `localStorage[dd2-tracker-v1]` for the
+    # numerator. The page has no checkboxes of its own, so this is the
+    # only place global progress shows.
+    total_objectives = _count_total_objectives(repo_root, stages)
+    body.append('<div class="progress">')
+    body.append('  <div class="progress-track">')
+    body.append('    <div class="progress-fill" data-progress-fill="global"></div>')
+    body.append('  </div>')
+    body.append('  <div class="progress-text">')
+    body.append(f'    <span data-progress-text="global" data-total="{total_objectives}"></span>')
+    body.append('  </div>')
+    body.append('</div>')
+    body.append('</section>')
+
+    # === STAGE CARD GRID =================================================
+    body.append('<section class="stage-grid">')
     for n in stages:
-        body.append(
-            f'  <li><a href="stage-{n}.html">Stage {n}</a> '
-            '<span class="i18n" data-lang="en">— interactive cheat sheet with todos, NPCs and rewards</span>'
-            '<span class="i18n" data-lang="pt" hidden>— Cheat sheet interativa com TODOs, NPCs e recompensas</span>'
-            '</li>'
-        )
-    body.append('</ul>')
+        si = load_stage_info(n, repo_root)
+        if si is None:
+            continue
+        body.append(f'<a class="stage-card" href="stage-{n}.html" data-stage="{n}">')
+        body.append(f'  <header><span class="stage-num">Stage {si.number}</span></header>')
+        # Bilingual title — uses `name_en`/`name_pt` from the MOC frontmatter
+        # (falling back to the single `name` field if those are absent).
+        body.append(f'  <h2><span class="i18n" data-lang="en">{html.escape(si.name_en)}</span>'
+                    f'<span class="i18n" data-lang="pt" hidden>{html.escape(si.name_pt)}</span></h2>')
+        if si.region:
+            body.append(f'  <p class="stage-region">{html.escape(si.region)}</p>')
+        if si.objective:
+            obj = si.objective
+            if len(obj) > 140:
+                obj = obj[:137] + "…"
+            body.append(f'  <p class="stage-objective">{html.escape(obj)}</p>')
+        # Footer: counts (left) + CTA (right)
+        body.append('  <footer>')
+        counts_en = L("en", "stage_card_main_fmt").format(n=si.main_count, s=si.side_count)
+        counts_pt = L("pt", "stage_card_main_fmt").format(n=si.main_count, s=si.side_count)
+        body.append(f'    <span class="stage-counts">{render_bilingual(counts_en, counts_pt)}</span>')
+        body.append(f'    <span class="stage-cta">{render_bilingual(L("en", "stage_card_open"), L("pt", "stage_card_open"))}</span>')
+        body.append('  </footer>')
+        body.append('</a>')
+    body.append('</section>')
 
-    body.append(f'<h2><span class="i18n" data-lang="en">How the tracker works</span><span class="i18n" data-lang="pt" hidden>Como funciona o tracker</span></h2>')
-    body.append('<p><span class="i18n" data-lang="en">Each checkbox on a stage page uses <code>data-track-id</code> '
-                'with the schema <code>s{stage}-{main|side}-{NN}-{i}</code>. The inline JS reads/writes '
-                '<code>localStorage["dd2-tracker-v1"]</code>.</span>'
-                '<span class="i18n" data-lang="pt" hidden>Os checkboxes em cada página de stage usam '
-                '<code>data-track-id</code> com esquema <code>s{stage}-{main|side}-{NN}-{i}</code>. '
-                'O JS no fim de cada página lê/escreve '
-                '<code>localStorage["dd2-tracker-v1"]</code>.</span></p>')
-    body.append('<p><span class="i18n" data-lang="en">To wipe everything, open the browser console and run '
-                '<code>localStorage.removeItem("dd2-tracker-v1")</code>.</span>'
-                '<span class="i18n" data-lang="pt" hidden>Para zerar tudo: abra o console do navegador e rode '
-                '<code>localStorage.removeItem("dd2-tracker-v1")</code>.</span></p>')
+    # === QUICK LINKS =====================================================
+    body.append('<section class="quick-links">')
+    body.append(f'  <strong>{render_bilingual(L("en", "quick_links_label"), L("pt", "quick_links_label"))}</strong>')
+    body.append(f'  <a href="stage-1.html">{render_bilingual(L("en", "quick_link_stage1"), L("pt", "quick_link_stage1"))}</a>')
+    body.append('  <span class="dot">·</span>')
+    # Browse locations: anchor to stage-1.html's locations TOC until a
+    # dedicated page exists. The TOC is at #locations-list (rendered by
+    # render_stage when it has locations; fall back to # for safety).
+    body.append(f'  <a href="stage-1.html#locations">{render_bilingual(L("en", "quick_link_locations"), L("pt", "quick_link_locations"))}</a>')
+    body.append('  <span class="dot">·</span>')
+    body.append(f'  <button type="button" id="reset-tracker-home" class="reset-link">'
+                f'{render_bilingual(L("en", "quick_link_reset"), L("pt", "quick_link_reset"))}</button>')
+    body.append('</section>')
 
-    body.append(f'<h2><span class="i18n" data-lang="en">Sources</span><span class="i18n" data-lang="pt" hidden>Fonte dos dados</span></h2>')
-    body.append('<ul>')
-    body.append('<li><a href="https://dragonsdogma2.wiki.fextralife.com/">Fextralife Wiki DD2</a></li>')
-    body.append('<li><a href="https://www.ign.com/wikis/dragons-dogma-2/">IGN DD2 Guide</a></li>')
-    body.append('<li><a href="https://dragonsdogma.fandom.com/wiki/Dragon%27s_Dogma_2_Wiki">Dragon\'s Dogma Wiki (Fandom)</a></li>')
-    body.append('</ul>')
+    # === FOOTER (discreet sources) =======================================
+    body.append('<footer class="page-footer">')
+    body.append('  <p>')
+    body.append('    <span class="i18n" data-lang="en">Sources: </span>')
+    body.append('    <span class="i18n" data-lang="pt" hidden>Fontes: </span>')
+    body.append('    <a href="https://dragonsdogma2.wiki.fextralife.com/">Fextralife</a> · '
+                '<a href="https://www.ign.com/wikis/dragons-dogma-2/">IGN</a> · '
+                '<a href="https://dragonsdogma.fandom.com/wiki/Dragon%27s_Dogma_2_Wiki">Fandom</a>')
+    body.append('  </p>')
+    body.append('</footer>')
 
     return page_shell(title=L("en", "page_title_home"), body_html="\n".join(body))
+
+
+def _count_total_objectives(repo_root: Path, stages: list[int]) -> int:
+    """Sum objective counts across all stages for the global progress bar."""
+    total = 0
+    for n in stages:
+        stage_dir = repo_root / "Quests" / f"Stage {n}"
+        for sub in ("Main Quests", "Side Quests"):
+            sub_dir = stage_dir / sub
+            if not sub_dir.exists():
+                continue
+            for path in sub_dir.glob("*.md"):
+                if path.stem.endswith(".en"):  # only count one of the pair
+                    continue
+                body_text = parse_frontmatter(path.read_text(encoding="utf-8"))[1]
+                total += len(parse_objectives(body_text.splitlines()))
+    return total
 
 
 # ---------------------------------------------------------------------------
@@ -1659,7 +1971,7 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
 </div>''')
 
     # TOC
-    body.append('<nav class="toc">')
+    body.append('<nav class="toc" id="locations">')
     body.append('<h2>📍 <span class="i18n" data-lang="en">Locations (anchors)</span><span class="i18n" data-lang="pt" hidden>Locais (âncoras)</span></h2>')
     body.append('<ul>')
     for loc, emoji in LOCATION_ORDER:
@@ -1748,8 +2060,20 @@ def main(argv: list[str] | None = None) -> int:
     out = (args.out or repo_root / "dist").resolve()
     out.mkdir(parents=True, exist_ok=True)
 
-    # Stage 1 quest roots
-    stage1 = repo_root / "Quests" / "Stage 1"
+    # Auto-discover stages: any `Quests/Stage N/` directory. The same glob
+    # also matches `Stage N.md` MOC files; the `is_dir()` filter excludes them.
+    quests_root = repo_root / "Quests"
+    stages: list[int] = sorted(
+        int(p.name.split()[-1])
+        for p in quests_root.glob("Stage *")
+        if p.is_dir()
+    )
+    if not stages:
+        print("[warn] No stage directories found under Quests/.", file=sys.stderr)
+        return 1
+
+    # Stage 1 quest roots (hardcoded for now — extend to N stages later)
+    stage1 = quests_root / "Stage 1"
     roots = [stage1 / "Main Quests", stage1 / "Side Quests"]
     bundles = collect_quests_bilingual(roots)
 
@@ -1757,8 +2081,7 @@ def main(argv: list[str] | None = None) -> int:
         print("[warn] No quests parsed; nothing to write.", file=sys.stderr)
         return 1
 
-    # dist/index.html
-    stages = [1]
+    # dist/index.html — auto-discovers all stages for the card grid
     (out / "index.html").write_text(render_index(repo_root, stages), encoding="utf-8")
     print(f"[ok] {out/'index.html'}")
 
