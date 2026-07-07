@@ -12,8 +12,10 @@ tags:
   - stage-2
   - side-quest
 sources_verified:
+  - fandom
   - fextralife
-needs_verification: true
+  - ign
+needs_verification: false
 ---
 
 # The Sorcerer's Appraisal

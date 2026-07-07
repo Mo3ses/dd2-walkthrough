@@ -8,7 +8,7 @@ prerequisites:
   - "[[43 - The Sorcerer's Appraisal]]"
 related:
   - "[[Locations/Vernworth]]"
-  - "[[Stage 3]]"
+  - "Stage 3 (Battahl)"
 tags:
   - quest
   - stage-2
@@ -22,7 +22,7 @@ needs_verification: true
 
 ## Summary
 
-Main quest finale of Stage 2. A banquet in Vernworth hides a larger conspiracy. The Arisen attends, investigates, and confronts the deception. Connects directly to the opening of [[Stage 3]].
+Main quest finale of Stage 2. A banquet in Vernworth hides a larger conspiracy. The Arisen attends, investigates, and confronts the deception. Connects directly to the opening of Stage 3 (Battahl).
 
 ## How to Unlock
 
@@ -69,12 +69,12 @@ Complete [[43 - The Sorcerer's Appraisal]] and return to [[Locations/Vernworth]]
 > Classified as **Main Quest** by Fextralife (breadcrumb `Quests > Main Quests`).
 
 > [!tip] Stage 3
-> This quest ends Stage 2 and opens the initial quests of [[Stage 3]] (`A Noble Exchange`, `Nation of the Lambent Flame`).
+> This quest ends Stage 2 and opens the initial quests of Stage 3 (Battahl) (`A Noble Exchange`, `Nation of the Lambent Flame`).
 
 ## Related
 
 - [[Locations/Vernworth]]
-- [[Stage 3]]
+- Stage 3 (Battahl)
 
 ## Sources
 

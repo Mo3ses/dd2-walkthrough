@@ -2,7 +2,7 @@
 location: Eini's House
 region: Vermund (outskirts)
 type: Private Residence
-coordinates: South of Vernworth — home of [[Eini]] and her daughter [[Trysha]]
+coordinates: South of Vernworth — home of Eini and her daughter Trysha
 tags: [location, residence, vermund, house]
 ---
 

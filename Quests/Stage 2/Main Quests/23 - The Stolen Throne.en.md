@@ -43,7 +43,7 @@ Complete [[21 - The Caged Magistrate]] and report to Brant.
 1. After completing [[21 - The Caged Magistrate]], find Brant at The Stardrop Inn — he tells you the throne was stolen during the events of the previous quest.
 2. Brant designates a guard to accompany you on the investigation; accept the escort.
 3. Go to the **Royal Quarter / Vernworth castle** with the guard and investigate the throne room — collect clues (footprints, overturned furniture, marks of forced entry).
-4. Cross Vernworth interrogating witnesses (Sven in the Merchant Quarter usually saw something; consult Kendrick and other nobles listed in `[[Quests/Stage 2.md#🎯 NPCs notáveis]]`).
+4. Cross Vernworth interrogating witnesses (Sven in the Merchant Quarter usually saw something; consult Kendrick and other nobles listed in `[[Stage 2]]` (NPCs notáveis)).
 5. Follow the clues until you identify the thief. The exact unfolding varies based on outcomes of [[20 - Disa's Plot]] and [[12 - Oxcart Courier]] (see the branch documented in those quests).
 6. Confront / recover the throne and report to Brant — this quest closes the intermediate political triad before [[24 - An Unsettling Encounter]].
 

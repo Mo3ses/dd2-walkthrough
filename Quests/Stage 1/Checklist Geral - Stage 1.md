@@ -14,22 +14,19 @@ tags: [master-checklist, stage-1, mocs]
 >
 > | Plugin | Função | Comando |
 > |---|---|---|
-> | **Checklist plugin** (delashment) | Cascade check/uncheck (parent ↔ children) | Marcar pai marca todos os filhos; marcar todos os filhos marca o pai |
-> | **Obsidian Tasks** | Tasks com sintaxe `#task` + queries | Permite queries por quest específica |
-> | **Dataview** | Queries dinâmicas de checkbox state | Mostra status sem alterar origem |
->
+> > > >
 > Sem plugin, este master é uma visão consolidada — você pode marcar aqui E nos quests individuais manualmente.
 
 > [!example] Layout usado
 > ```markdown
 > ### Quest Name
-> - [ ] [[Main Quests/X - Quest Name]]      ← checkbox principal (cascateia para baixo)
+> - [ ] <Main Quests link>      ← checkbox principal (cascateia para baixo)
 >   - [ ] Objetivo 1                       ← sub-checkbox
 >   - [ ] Objetivo 2
 > ```
 
 > [!info] Progresso automático
-> A tabela em **[[_progress|Progresso Stage 1]]** é gerada automaticamente a cada deploy pelo script `scripts/generate_progress.py`. Ela lê os checkboxes da seção `## Objetivos` de cada quest e mostra contagens + status. Não precisa atualizar manualmente.
+> A tabela em **Progresso Stage 1** (abaixo) é gerada automaticamente a cada deploy pelo script `scripts/generate_progress.py`. Ela lê os checkboxes da seção `## Objetivos` de cada quest e mostra contagens + status. Não precisa atualizar manualmente.
 
 ---
 
@@ -118,7 +115,7 @@ tags: [master-checklist, stage-1, mocs]
 ## 📊 Progresso Total
 
 > [!summary] Contadores rápidos
-> Veja a tabela atualizada em **[[_progress|Progresso Stage 1]]** (gerada automaticamente pelo build).
+> Veja a tabela atualizada em **Progresso Stage 1** (abaixo) (gerada automaticamente pelo build).
 >
 > As contagens desta página (3 main + 6 side quests, 38 sub-objetivos totais) são estáticas — para valores ao vivo, use a página de progresso.
 

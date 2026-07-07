@@ -176,10 +176,10 @@ tags: [moc, stage-2, vermund, index]
 
 ```mermaid
 flowchart TD
-    Start([Stage 2 começa na chegada em Vernworth]) --> M1[[Main 15 - Seat of the Sovran]]
+    Start([Stage 2 começa na chegada em Vernworth]) --> M1[[Main Quests/15 - Seat of the Sovran]]
     M1 --> S10[Side 10 - A Place to Call Home]
     S10 --> S11[Side 11 - The Ornate Box]
-    S11 --> M2[[Main 17 - Monster Culling]]
+    S11 --> M2[[Main Quests/17 - Monster Culling]]
     M2 --> S14[Side 14 - The Gift of Giving]
     S14 --> S19[Side 19 - Vocation Frustration]
     S19 --> S12[Side 12 - Oxcart Courier]
@@ -190,10 +190,10 @@ flowchart TD
 
     S18 --> Vern2[Volta a Vernworth - Block 2]
     Vern2 --> S20[Side 20 - Disa's Plot]
-    S20 --> M3a[[Main 21 - Caged Magistrate]]
-    M3a --> M3b[[Main 23 - The Stolen Throne]]
-    M3b --> M3c[[Main 24 - An Unsettling Encounter]]
-    M3c --> M3d[[Main 26 - The Nameless Village]]
+    S20 --> M3a[[Main Quests/21 - The Caged Magistrate]]
+    M3a --> M3b[[Main Quests/23 - The Stolen Throne]]
+    M3b --> M3c[[Main Quests/24 - An Unsettling Encounter]]
+    M3c --> M3d[[Main Quests/26 - The Nameless Village]]
     M3d --> S22[Side 22 - Magesterial Amenity]
     S22 --> SidesBlock2[Sides 25-31]
     SidesBlock2 --> MelveRet[Side 32-33 - Melve return]
@@ -220,7 +220,7 @@ flowchart TD
     S42 --> S43[Side 43 - Sorcerer's Appraisal]
 
     S43 --> Vern4[Volta a Vernworth - Block 4]
-    Vern4 --> M5[[Main 44 - Feast of Deception]]
+    Vern4 --> M5[[Main Quests/44 - Feast of Deception]]
     M5 --> Stage3([Início do Stage 3 em Battahl])
 ```
 
@@ -282,7 +282,7 @@ flowchart TD
 ## ⚠️ Avisos Críticos
 
 > [!warning] **Missable / Cross-Stage**
-> 1. **Claw Them Into Shape (34)** — exige **3 espadas compradas em Stage 1** de [[Kassandra]] em [[Locations/Borderwatch Outpost]]. Sem elas, a quest **não pode ser completada**.
+> 1. **Claw Them Into Shape (34)** — exige **3 espadas compradas em Stage 1** de Kassandra em [[Locations/Borderwatch Outpost]]. Sem elas, a quest **não pode ser completada**.
 > 2. **Monster Culling (17)** é Main Quest — não pule; certas recompensas são únicas.
 > 3. **One-Eyed Interloper (09)** — continua em Stage 1, mas dispara DURANTE a chegada em Vernworth. Cross-link em [[Main Quests/15 - Seat of the Sovran]].
 > 4. **Várias side quests Vernworth** podem ficar indisponíveis após `Feast of Deception` (Stage 2 finale) — confirme na wiki.

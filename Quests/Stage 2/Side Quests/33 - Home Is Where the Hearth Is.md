@@ -15,6 +15,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
+  - ign
 needs_verification: true
 ---
 

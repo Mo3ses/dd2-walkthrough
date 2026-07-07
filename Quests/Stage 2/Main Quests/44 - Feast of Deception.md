@@ -8,21 +8,23 @@ prerequisites:
   - "[[43 - The Sorcerer's Appraisal]]"
 related:
   - "[[Locations/Vernworth]]"
-  - "[[Stage 3]]"
+  - "Stage 3 (Battahl)"
 tags:
   - quest
   - stage-2
   - main-quest
 sources_verified:
+  - fandom
   - fextralife
-needs_verification: true
+  - ign
+needs_verification: false
 ---
 
 # Feast of Deception
 
 ## Resumo
 
-Main quest de finale do Stage 2. Um banquete em Vernworth esconde uma conspiração maior. O Arisen participa, investiga e confronta a deception. Conecta diretamente com a abertura do [[Stage 3]].
+Main quest de finale do Stage 2. Um banquete em Vernworth esconde uma conspiração maior. O Arisen participa, investiga e confronta a deception. Conecta diretamente com a abertura do Stage 3 (Battahl).
 
 ## Como Desbloquear
 
@@ -69,12 +71,12 @@ Concluir [[43 - The Sorcerer's Appraisal]] e voltar a [[Locations/Vernworth]].
 > Classificada como **Main Quest** pelo Fextralife (breadcrumb `Quests > Main Quests`).
 
 > [!tip] Estágio 3
-> Esta quest termina Stage 2 e abre as quests iniciais de [[Stage 3]] (`A Noble Exchange`, `Nation of the Lambent Flame`).
+> Esta quest termina Stage 2 e abre as quests iniciais de Stage 3 (Battahl) (`A Noble Exchange`, `Nation of the Lambent Flame`).
 
 ## Related
 
 - [[Locations/Vernworth]]
-- [[Stage 3]]
+- Stage 3 (Battahl)
 
 ---
 

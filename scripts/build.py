@@ -195,58 +195,6 @@ LOCATION_ORDER: list[tuple[str, str]] = [
     ("Checkpoint Rest Town", "🛏️"),
 ]
 
-# Hard-coded overrides so the road-quest (09) groups under "Melve → Vernworth"
-# even though its frontmatter says Melve.
-QUEST_OVERRIDES: dict[str, tuple[str, str, str]] = {
-    # Stage 1
-    "01 - Gaoled Awakening.md":         ("Excavation Site",       "main", "01"),
-    "02 - Tale's Beginning.md":         ("Ultramarine Waterfall", "main", "02"),
-    "08 - In Dragon's Wake.md":         ("Borderwatch Outpost",   "main", "08"),
-    "03 - Ordeal's of a New Recruit.md": ("Borderwatch Outpost",  "side", "03"),
-    "04 - The Provisioner's Plight.md": ("Borderwatch Outpost",   "side", "04"),
-    "05 - Medicament Predicament.md":   ("Melve",                 "side", "05"),
-    "06 - Brother's Brave and Timid.md": ("Melve",                "side", "06"),
-    "07 - Nesting Troubles.md":         ("Melve",                 "side", "07"),
-    "09 - One-Eyed Interloper.md":      ("Melve → Vernworth",     "side", "09"),
-    # Stage 2
-    "10 - A Place to Call Home.md":     ("Vernworth",             "side", "10"),
-    "11 - The Ornate Box.md":           ("Vernworth",             "side", "11"),
-    "12 - Oxcart Courier.md":           ("Vernworth",             "side", "12"),
-    "13 - The Heel of History.md":      ("Vernworth",             "side", "13"),
-    "14 - The Gift of Giving.md":       ("Vernworth",             "side", "14"),
-    "15 - Seat of the Sovran.md":       ("Vernworth",             "main", "15"),
-    "16 - Masked Correspondence.md":    ("Vernworth",             "side", "16"),
-    "17 - Monster Culling.md":          ("Vernworth",             "main", "17"),
-    "18 - Scaly Invaders.md":           ("Harve Village",         "side", "18"),
-    "19 - Vocation Frustration.md":     ("Vernworth",             "side", "19"),
-    "20 - Disa's Plot.md":              ("Vernworth",             "side", "20"),
-    "21 - The Caged Magistrate.md":     ("Vernworth",             "main", "21"),
-    "22 - A Magesterial Amenity.md":    ("Vernworth",             "side", "22"),
-    "23 - The Stolen Throne.md":        ("Vernworth",             "main", "23"),
-    "24 - An Unsettling Encounter.md":  ("Vernworth",             "main", "24"),
-    "25 - Every Rose Has Its Thorn.md": ("Vernworth",             "side", "25"),
-    "26 - The Nameless Village.md":     ("Vernworth",             "main", "26"),
-    "27 - The Arisen's Shadow.md":      ("Vernworth",             "side", "27"),
-    "28 - Till Death Do Us Part.md":     ("Vernworth",             "side", "28"),
-    "29 - A Beggar's Tale.md":          ("Vernworth",             "side", "29"),
-    "30 - Saint of the Slums.md":       ("Vernworth",             "side", "30"),
-    "31 - House of the Blue Sunbright.md": ("Vernworth",          "side", "31"),
-    "32 - Readvent of Calamity.md":     ("Melve",                 "side", "32"),
-    "33 - Home Is Where the Hearth Is.md": ("Melve",              "side", "33"),
-    "34 - Claw Them Into Shape.md":     ("Moonglow Garden",       "side", "34"),
-    "35 - Beren's Final Lesson.md":     ("Moonglow Garden",       "side", "35"),
-    "36 - Spellbound.md":               ("Eini's House",          "side", "36"),
-    "37 - Trouble on the Cape.md":      ("Harve Village",         "side", "37"),
-    "38 - Gift of the Bow.md":          ("Vernworth",             "side", "38"),
-    "39 - A Trial of Archery.md":       ("Vernworth",             "side", "39"),
-    "40 - The Ailing Arborheart.md":    ("Sacred Arbor",          "side", "40"),
-    "41 - Prey for the Pack.md":        ("Checkpoint Rest Town",  "side", "41"),
-    "42 - Hunt for the Jadeite Orb.md": ("Checkpoint Rest Town",  "side", "42"),
-    "43 - The Sorcerer's Appraisal.md": ("Checkpoint Rest Town",  "side", "43"),
-    "44 - Feast of Deception.md":       ("Vernworth",             "main", "44"),
-}
-
-
 # ---------------------------------------------------------------------------
 # File → stage index (populated by main() before any rendering).
 # Lets resolve_wikilink() route cross-stage links correctly without
@@ -500,15 +448,15 @@ def parse_quest(path: Path) -> Quest:
             stage_n = int(m.group(1))
             break
 
-    if filename in QUEST_OVERRIDES:
-        location, qtype, qnum = QUEST_OVERRIDES[filename]
-    else:
-        loc_raw = fm.get("location", "")
-        m = WIKILINK_RE.search(loc_raw)
-        location = (m.group(1).split("|", 1)[-1].rsplit("/", 1)[-1] if m else loc_raw.rsplit("/", 1)[-1] or "—")
-        num_match = re.match(r"^(\d+)", filename)
-        qnum = num_match.group(1) if num_match else "x"
-        qtype = "side" if "Side Quests" in str(path) else "main"
+    # Frontmatter is the source of truth for location + type.
+    # Quest number is derived from the leading digits of the filename
+    # (every quest file is named "NN - Title.md").
+    loc_raw = fm.get("location", "")
+    m = WIKILINK_RE.search(loc_raw)
+    location = (m.group(1).split("|", 1)[-1].rsplit("/", 1)[-1] if m else loc_raw.rsplit("/", 1)[-1] or "—")
+    num_match = re.match(r"^(\d+)", filename)
+    qnum = num_match.group(1) if num_match else "x"
+    qtype = "side" if "Side Quests" in str(path) else "main"
 
     objectives = parse_objectives(lines)
 
@@ -651,10 +599,13 @@ def resolve_wikilink(target: str) -> str:
     # actual stage (handles cross-stage links written without prefix).
     target_stage = _FILE_STAGE.get(fname + ".md", 1)
     if target_stage:
-        # Determine sub by looking up the file in overrides.
-        for ov_name, (_, qtype, _) in QUEST_OVERRIDES.items():
-            if ov_name == fname + ".md":
-                sub = "main-quests" if qtype == "main" else "side-quests"
+        # Determine sub (main-quests vs side-quests) by checking the on-disk
+        # path. Faster than re-reading the file's frontmatter type: column
+        # and survives renames. Falls back to flat slug if not found.
+        repo_root = Path(__file__).resolve().parent.parent
+        for sub_try in ("Main Quests", "Side Quests"):
+            if (repo_root / "Quests" / f"Stage {target_stage}" / sub_try / (fname + ".md")).exists():
+                sub = "main-quests" if sub_try == "Main Quests" else "side-quests"
                 return f"quests/stage-{target_stage}/{sub}/{slug}.html"
         return f"{slug}.html"
     return f"{slug}.html"

@@ -2,7 +2,7 @@
 location: Moonglow Garden
 region: Vermund (sul —郊外)
 type: Training Garden
-coordinates: Sul de Vermund,郊外 — jardim pertencente a [[Beren]]
+coordinates: Sul de Vermund,郊外 — jardim pertencente a Beren
 tags: [location, garden, vermund, training]
 ---
 
@@ -21,7 +21,7 @@ tags: [location, garden, vermund, training]
 - **Instalações**: alvos de treino, áreas de luta, jardim botânico
 - **Atmosfera**: pacífica, isolada — ideal para archer training
 - **Preparação para `Claw Them Into Shape`**:
-    - ⚠️ **Compre 3 espadas** de [[Kassandra]] em [[Locations/Borderwatch Outpost]] durante Stage 1
+    - ⚠️ **Compre 3 espadas** de Kassandra em [[Locations/Borderwatch Outpost]] durante Stage 1
 
 ## Quests de Stage 2 aqui
 

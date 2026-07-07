@@ -8,7 +8,7 @@ tags: [location, excavation, mine, vermund]
 
 # Excavation Site (Minas Abandonadas)
 
-> Mina abandonada onde o **Arisen acorda preso** no início do jogo. É o local da quest [[Gaoled Awakening]] e funciona como tutorial/intro.
+> Mina abandonada onde o **Arisen acorda preso** no início do jogo. É o local da quest [[Main Quests/01 - Gaoled Awakening]] e funciona como tutorial/intro.
 
 ## Características
 
@@ -23,7 +23,7 @@ tags: [location, excavation, mine, vermund]
 
 ## Quests de Stage 1
 
-- [[Gaoled Awakening]] — main quest, abertura do jogo (escape da mina)
+- [[Main Quests/01 - Gaoled Awakening]] — main quest, abertura do jogo (escape da mina)
 
 ## Notas Importantes
 

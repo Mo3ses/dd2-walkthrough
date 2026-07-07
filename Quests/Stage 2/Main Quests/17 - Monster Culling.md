@@ -13,8 +13,10 @@ tags:
   - stage-2
   - main-quest
 sources_verified:
+  - fandom
   - fextralife
-needs_verification: true
+  - ign
+needs_verification: false
 ---
 
 # Monster Culling

@@ -33,7 +33,7 @@ Progressão interna em Vernworth (Stage 2):
 ## Características
 
 - **Governante**: **Sovran Disa** (rainha regente, mãe do falso Arisen)
-- **Castelo**: [[Locations/Vernworth Castle]] — residência real, sala do trono
+- **Castelo**: **Vernworth Castle** — residência real, sala do trono
 - **Distritos**:
     - **Merchant Quarter** — ferreiro (Sven), loja de itens
     - **Slums** — área pobre, foco de várias side quests (Saint of the Slums, Beggar's Tale)
@@ -102,6 +102,6 @@ Progressão interna em Vernworth (Stage 2):
 
 ## Próximo Destino (Stage 3)
 
-> Vernworth retorna como hub no [[Stage 3]] com quests como `A Noble Exchange`, `Nation of the Lambent Flame`, e o climax `Crossing in Shadow`.
+> Vernworth retorna como hub no Stage 3 (Battahl) com quests como `A Noble Exchange`, `Nation of the Lambent Flame`, e o climax `Crossing in Shadow`.
 
 #dragon's dogma #local #vermund #capital #stage-2

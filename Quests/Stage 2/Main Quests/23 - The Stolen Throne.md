@@ -16,6 +16,7 @@ tags:
   - main-quest
 sources_verified:
   - fextralife
+  - ign
 needs_verification: true
 ---
 
@@ -43,7 +44,7 @@ Concluir [[21 - The Caged Magistrate]] e reportar a Brant.
 1. Após concluir [[21 - The Caged Magistrate]], encontre Brant no The Stardrop Inn — ele informa que o trono foi roubado durante os eventos da quest anterior.
 2. Brant designa um guarda para acompanhar você na investigação; aceite a escolta.
 3. Vá ao **Royal Quarter / castelo de Vernworth** com o guarda e investigue a sala do trono — colete pistas (pegadas, mobília revirada, marca de entrada forçada).
-4. Cruze Vernworth interrogando testemunhas (Sven no Merchant Quarter costuma ter visto algo; consulte Kendrick e outros nobres listados em `[[Quests/Stage 2.md#🎯 NPCs notáveis]]`).
+4. Cruze Vernworth interrogando testemunhas (Sven no Merchant Quarter costuma ter visto algo; consulte Kendrick e outros nobres listados em `[[Stage 2]]` (NPCs notáveis)).
 5. Rastreie as pistas até identificar o ladrão. O desenrolar exato varia conforme outcomes de [[20 - Disa's Plot]] e [[12 - Oxcart Courier]] (consulte o branch documentado nessas quests).
 6. Confronte / recupere o trono e reporte a Brant — esta quest fecha a tríade política intermediária antes de [[24 - An Unsettling Encounter]].
 

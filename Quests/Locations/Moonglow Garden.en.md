@@ -2,7 +2,7 @@
 location: Moonglow Garden
 region: Vermund (south — outskirts)
 type: Training Garden
-coordinates: South Vermund outskirts — garden owned by [[Beren]]
+coordinates: South Vermund outskirts — garden owned by Beren
 tags: [location, garden, vermund, training]
 ---
 
@@ -21,7 +21,7 @@ tags: [location, garden, vermund, training]
 - **Facilities**: training targets, combat areas, botanical garden
 - **Atmosphere**: peaceful, isolated — ideal for archer training
 - **Preparation for `Claw Them Into Shape`**:
-    - ⚠️ **Buy 3 swords** from [[Kassandra]] at [[Locations/Borderwatch Outpost]] during Stage 1
+    - ⚠️ **Buy 3 swords** from Kassandra at [[Locations/Borderwatch Outpost]] during Stage 1
 
 ## Stage 2 Quests Here
 

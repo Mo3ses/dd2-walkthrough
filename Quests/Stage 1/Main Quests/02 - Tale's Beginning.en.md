@@ -65,7 +65,7 @@ Complete [[Main Quests/01 - Gaoled Awakening]].
 
 ## Important Notes
 
-- Do the Borderwatch side quests ([[03]], [[04]]) before leaving for Melve
+- Do the Borderwatch side quests ([[Side Quests/03 - Ordeal's of a New Recruit]], [[Side Quests/04 - The Provisioner's Plight]]) before leaving for Melve
 - Your Pawn's vocation can be changed at any time afterwards
 
 ## Related

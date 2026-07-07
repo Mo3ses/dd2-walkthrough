@@ -13,6 +13,7 @@ tags:
   - stage-2
   - main-quest
 sources_verified:
+  - fandom
   - fextralife
   - ign
   - user
