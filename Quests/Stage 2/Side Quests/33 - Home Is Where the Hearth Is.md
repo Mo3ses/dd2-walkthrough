@@ -15,7 +15,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # Home Is Where the Hearth Is
@@ -39,7 +39,16 @@ Concluir [[15 - Seat of the Sovran]] e viajar de volta a [[Locations/Melve]].
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Fale com **Lennart** dentro da Ulrika's House em Melve — ele pede que você providencie **4 espadas**.
+2. Obtenha 4 espadas — ou **compre antes** (de qualquer ferreiro) OU **recupere armas confiscadas** do prédio a oeste do portão da vila.
+3. Devolva as 4 espadas a Lennart.
+4. **Saia da Ulrika's House** — isso dispara uma **luta contra soldados** (pawns unavailable; aldeões assistem).
+5. Após a luta, os aldeões de Melve **realocam para Harve Village sob Ulrika**.
+6. Espere alguns dias (viaje para outras quests ou descanse).
+7. Vá a Harve Village e fale com Ulrika **no cais à noite** — use a inn ou bench para passar o tempo se necessário.
+
+> [!tip] Setup
+> Coloque um **Portcrystal em Melve** antes de começar — facilita o retorno rápido se a quest bugar.
 
 ## Objetivos
 
@@ -50,7 +59,14 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 2.200 XP
+- 12.000 G
+- Ring of Assurance
+
+(Outcome alternativo: aldeões lutam por liberdade — XP/Dcp específicos não especificados na source.)
+
+> [!info] Pré-requisitos combinados
+> Requer [[32 - Readvent of Calamity]] e [[37 - Trouble on the Cape]] concluídas, **além** de subornar o guarda no portão de Melve.
 
 ## Notas Importantes
 

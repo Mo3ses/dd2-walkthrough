@@ -16,7 +16,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # Claw Them Into Shape
@@ -41,7 +41,19 @@ Concluir [[15 - Seat of the Sovran]] e viajar a [[Locations/Moonglow Garden]].
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Fale com **Beren** na tenda dele ao sul de **Moonglow Garden** (sudoeste de Borderwatch Outpost).
+2. Compre **3 Swords** dos vendedores de Borderwatch Outpost por **850 G cada**. (Stage 1 — se você pulou, **não dá para recuperar**.)
+3. Volte a Beren e entregue as 3 espadas.
+4. Viaje a Vernworth; **sudeste da Clovis's Barberie** — encontre **Humphrey**. Escolha o diálogo "**Tell him about Beren**".
+5. Volte a Borderwatch Outpost training grounds.
+6. **Lute com Beren no ring** — não importa quem ganhe, mas fique dentro dos bounds.
+7. **Cutscene** dispara, e um soldado chega reportando um **ataque de goblins**.
+8. **Siga Beren** (corre do outpost para um acampamento oeste).
+9. **Fique na trilha** dele até chegar ao acampamento.
+10. Encontre o **soldado ferido** para fechar a quest.
+
+> [!warning] Bug conhecido
+> Esta quest reporta ficar "presa" para vários jogadores; Beren pode aparecer só à noite na tenda. Se a quest não progredir, retorne à tenda de Beren à noite.
 
 ## Objetivos
 
@@ -53,7 +65,8 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 1.200 XP
+- 4.500 G
 
 ## Notas Importantes
 

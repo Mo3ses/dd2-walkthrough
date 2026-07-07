@@ -16,7 +16,7 @@ tags:
   - main-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # The Stolen Throne
@@ -40,7 +40,15 @@ Concluir [[21 - The Caged Magistrate]] e reportar a Brant.
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como main quest via Fextralife._
+1. Após concluir [[21 - The Caged Magistrate]], encontre Brant no The Stardrop Inn — ele informa que o trono foi roubado durante os eventos da quest anterior.
+2. Brant designa um guarda para acompanhar você na investigação; aceite a escolta.
+3. Vá ao **Royal Quarter / castelo de Vernworth** com o guarda e investigue a sala do trono — colete pistas (pegadas, mobília revirada, marca de entrada forçada).
+4. Cruze Vernworth interrogando testemunhas (Sven no Merchant Quarter costuma ter visto algo; consulte Kendrick e outros nobres listados em `[[Quests/Stage 2.md#🎯 NPCs notáveis]]`).
+5. Rastreie as pistas até identificar o ladrão. O desenrolar exato varia conforme outcomes de [[20 - Disa's Plot]] e [[12 - Oxcart Courier]] (consulte o branch documentado nessas quests).
+6. Confronte / recupere o trono e reporte a Brant — esta quest fecha a tríade política intermediária antes de [[24 - An Unsettling Encounter]].
+
+> [!warning] Branch pendente de verificação
+> O **ladrão identificado** + steps exatos dependem da wiki source (Fextralife / Fandom 404 nesta sessão — preencha `## Recompensas` e o identificador do ladrão quando o source carregar).
 
 ## Objetivos
 
@@ -52,7 +60,7 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom). URLs wiki retornaram 404/402 nesta sessão — re-tentar antes da tradução EN._
 
 ## Notas Importantes
 

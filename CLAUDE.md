@@ -38,7 +38,15 @@ Quests/**/*.md  ──►  scripts/build.py  ──►  dist/**/*.html  ──�
  (Obsidian vault)     (Python stdlib)     (self-contained)
 ```
 
-`scripts/build.py` is intentionally one file (~1.8k LOC) doing parsing, rendering, and template emission in a single pass. No plugins, no templating engine.
+`scripts/build.py` is intentionally one file doing parsing, rendering, and template emission in a single pass. No plugins, no templating engine.
+
+### What `dist/` contains
+
+- `dist/index.html` — homepage; auto-discovers stages and renders a stage-card grid with totals.
+- `dist/stage-N.html` — the cheat sheet for stage N (TOC grouped by location, all quest cards inline, tracker JS).
+- `dist/quests/stage-N/main-quests/<slug>.html` and `dist/quests/stage-N/side-quests/<slug>.html` — one self-contained page per quest, the target of the "View full details →" link.
+
+Stage numbers are auto-discovered from any `Quests/Stage N/` directory — no list to update when adding a stage. `Quest.url` encodes the same `quests/stage-{stage}/{main|side}-quests/{slug}.html` layout, and `_build_file_stage_index` lets `resolve_wikilink` route cross-stage `[[wiki-links]]` correctly.
 
 ### Vault layout (source)
 
@@ -112,9 +120,9 @@ This ID is **the key** in the `localStorage` object under `dd2-tracker-v1`. Two 
 
 Per-card master checkboxes (`<input class="quest-master">`) and per-quest badges with `data-quest-count-for` / stage totals with `data-total-for` are all updated live from checkbox state on every change — never from build-time MD `- [x]` markers.
 
-### Stage 1 metadata that the build hard-codes
+### Stage metadata that the build hard-codes
 
-- `LOCATION_ORDER`   → canonical visit order (used for TOC grouping on `stage-1.html`)
+- `LOCATION_ORDER`   → canonical visit order (used for TOC grouping on stage pages)
 - `QUEST_OVERRIDES`  → maps each quest filename to `(location, main|side, num)`; needed because the road-quest (09) groups under "Melve → Vernworth" even though its frontmatter says Melve
 
 When adding a new quest, **prefer fixing the quest's MD frontmatter** over adding an entry to `QUEST_OVERRIDES`. New overrides are a code smell.
@@ -136,10 +144,11 @@ When adding a new quest, **prefer fixing the quest's MD frontmatter** over addin
 ## Conventions from the user's vault
 
 - **PT is the source of truth.** Keep the apostrophe canonical spellings in filenames (e.g. `Ordeal's`, not `Ordeals`).
-- **One file per quest**, frontmatter + sections as in `obsidian-vault-conventions` memory.
+- **One file per quest**, frontmatter + sections as documented above (frontmatter keys in *Quest MD format*; section headings in the same table).
 - **Wiki-link everything** that cross-references another file (`[[01 - Quest Name]]`).
 - **Callouts**: `> [!warning]`, `> [!info]`, `> [!tip]`, `> [!note]`, `> [!todo]`, `> [!summary]` are all rendered in `render_md_block`.
 - **No external images / no CDN** — keep pages truly offline-capable.
+- **Session handoff**: if `docs/NEXT-STEPS.md` is present, read it on session start for "where we left off" state (open EN translations, in-progress work, scope debates); update it before ending a session that materially changes project state.
 
 ## What lives in `dist/` is generated
 
@@ -150,4 +159,4 @@ Anything in `dist/` is overwritten by the build. Edit `Quests/*.md` or `scripts/
 - No PyYAML — frontmatter parsing is a hand-rolled `KEY: value` regex. Multi-line values, anchors, and typed arrays are not supported. Keep frontmatter single-line per key.
 - Tables only support the `| col | col |` + `|---|---|` header syntax.
 - Headings inside sections get re-leveled (`#` → `<h3>`, `##` → `<h4>`, etc.) by `render_md_block` — the cheat sheet sinks a section two levels under the page title.
-- Stage 2/3/4 directories don't exist yet. The build only emits Stage 1 (see `stages = [1]` in `main()`). To enable another stage: create `Quests/Stage N/{Main Quests,Side Quests}/`, add it to `stages`, and update `Quest.url` to match the new folder name.
+- Stages beyond the existing ones need only a `Quests/Stage N/{Main Quests,Side Quests}/` directory; `main()` auto-discovers them. New locations used by quest frontmatter must still be added to `LOCATION_ORDER` (or `QUEST_OVERRIDES` if a quest's true location differs from its frontmatter).

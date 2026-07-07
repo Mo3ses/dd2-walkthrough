@@ -1095,12 +1095,54 @@ th { background: var(--code-bg); font-weight: 600; }
   box-shadow: var(--shadow);
 }
 .toc h2 { margin: 0 0 0.5rem; border: none; padding: 0; font-size: 1.05rem; }
-.toc ul { list-style: none; padding-left: 0; margin: 0; }
-.toc li { padding: 0.18rem 0; }
-.toc li a { display: flex; align-items: baseline; gap: 0.4rem; justify-content: space-between; }
-.toc .toc-count {
+
+/* Locations — minimal card grid. One card per location. Just header
+   (emoji + name + objectives counter), progress bar, and a small
+   meta line with the quest count breakdown. No per-quest badges in the
+   TOC — those live in the per-location sections below, which is where
+   the live localStorage counter actually operates. */
+.loc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.6rem;
+}
+.loc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.7rem 0.95rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.loc-card-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+.loc-card-head:hover .loc-name { color: var(--accent); }
+.loc-emoji { font-size: 1.1rem; line-height: 1; }
+.loc-name { font-weight: 600; flex: 1; transition: color 0.1s; }
+.loc-counter {
   font-family: ui-monospace, monospace;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+.loc-bar {
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.loc-bar-fill {
+  height: 100%;
+  background: var(--ok);
+  transition: width 0.25s;
+}
+.loc-meta {
+  font-size: 0.78rem;
   color: var(--fg-muted);
 }
 
@@ -2078,19 +2120,34 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
   <button id="reset-tracker-pt" type="button" style="display:none">{L("pt", "resetar_progresso")}</button>
 </div>''')
 
-    # TOC
+    # TOC — minimal card grid. Just header + progress bar + meta (quest
+    # count breakdown). No per-quest chips — those live in the per-location
+    # sections below, which is also where the live localStorage counter
+    # operates via data-quest-count-for.
     body.append('<nav class="toc" id="locations">')
     body.append('<h2>📍 <span class="i18n" data-lang="en">Locations (anchors)</span><span class="i18n" data-lang="pt" hidden>Locais (âncoras)</span></h2>')
-    body.append('<ul>')
+    body.append('<div class="loc-grid">')
     for loc, emoji in LOCATION_ORDER:
-        if not by_loc.get(loc):
+        loc_quests = by_loc.get(loc) or []
+        if not loc_quests:
             continue
         slug = slugify(loc)
-        badges = []
-        for q in by_loc[loc]:
-            badges.append(f'<code>{q.quest_num}</code> {status_badge(q.status, q.track_prefix)}')
-        body.append(f'  <li><a href="#{slug}">{emoji} {html.escape(loc)} <span class="toc-count">{" ".join(badges)}</span></a></li>')
-    body.append('</ul>')
+        main_q = [q for q in loc_quests if q.quest_type == "main"]
+        side_q = [q for q in loc_quests if q.quest_type == "side"]
+        total_obj = sum(len(q.objectives) for q in loc_quests)
+        total_done = sum(sum(1 for o in q.objectives if o.done) for q in loc_quests)
+        pct = (100 * total_done / total_obj) if total_obj else 0
+
+        body.append('<div class="loc-card">')
+        body.append(f'  <a href="#{slug}" class="loc-card-head">')
+        body.append(f'    <span class="loc-emoji">{emoji}</span>')
+        body.append(f'    <span class="loc-name">{html.escape(loc)}</span>')
+        body.append(f'    <span class="loc-counter">{total_done}/{total_obj}</span>')
+        body.append('  </a>')
+        body.append(f'  <div class="loc-bar"><div class="loc-bar-fill" style="width: {pct:.0f}%"></div></div>')
+        body.append(f'  <div class="loc-meta">{len(main_q)} main · {len(side_q)} side · {len(loc_quests)} quests</div>')
+        body.append('</div>')
+    body.append('</div>')
     body.append('</nav>')
 
     # Per-location sections

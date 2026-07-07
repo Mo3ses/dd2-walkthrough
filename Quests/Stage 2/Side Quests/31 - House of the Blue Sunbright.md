@@ -14,7 +14,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # House of the Blue Sunbright
@@ -38,7 +38,15 @@ Concluir [[15 - Seat of the Sovran]] e seguir pistas para a mansão Sunbright.
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Visite a **Townshend's Estate** no Noble Quarter de Vernworth — **Diana** (maid) explica que Sebastian não consegue sair sem a mãe notar.
+2. Vá aos **Slums** e encontre **Daphne** perto da tenda fora do **The Gracious Hand**. Convença-a a voltar com você até a mansão.
+3. Escore Daphne até o manor — Sebastian pede à maid para vesti-la como decoy para ele poder sair livremente.
+4. Ajude Sebastian a se preparar: dê **DOIS** itens — um **curativo para veneno E sonolência** (Detoxifying Decoction + Waking Powder, ou All Heal Elixir) + um **item com cheiro de cyclops** (Rugged Bone ou Cyclops Eye).
+5. Espere o ciclo (alguns minutos in-game) e volte à mansão. Sebastian retorna em segurança com um **Blue Sunbright**. Natasha (a mãe) descobre a troca e demite Daphne.
+6. Volte ao **The Gracious Hand** mais tarde — Diana, agora demitida, revela que Daphne é **irmã gêmea de Sebastian**.
+
+> [!tip] Pré-requisito soft
+> Esta quest é desbloqueada após [[14 - The Gift of Giving]] entregar a Diana como parte da chain — verifique a referência cruzada em [[14 - The Gift of Giving]] se a quest não estiver disponível.
 
 ## Objetivos
 
@@ -49,7 +57,11 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 900 XP
+- 2× Fine Harspud Roborant
+- 3.000 G
+
+(Falha em salvar Sebastian = sem recompensas listadas.)
 
 ## Notas Importantes
 

@@ -14,7 +14,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # Spellbound
@@ -38,7 +38,22 @@ Concluir [[35 - Beren's Final Lesson]] e visitar [[Locations/Eini's House]] (sul
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Vá para **Eini's Home** (norte de Melve). Fale com Trysha e Eini — se os avós bloquearem o diálogo, pegue Trysha (R2) e carregue-a para fora.
+2. **Colete pelo menos 3 dos 5 grimoires necessários**:
+   - *Let There Be Light* — Myrddin's Home, upstairs desk (entre pelo balcony externo)
+   - *Fulminous Shield* — compre de **Dudley** em Melve
+   - *Nation's Death Knell* — baú em Ancient Battleground (perto do cenotaph) — só **2 originais** existem; termine `Tolled to Rest` antes de distribuir
+   - *Howling Blizzard* — **Wendy** no Nameless Village (troque por *Fulminous Shield* forjado)
+   - *Towering Earth* — **Waldhar** no The Gracious Hand's Vaults
+3. **Dica:** Use o serviço de **Ibrahim** em Checkpoint Rest Town para **duplicar** tomes — originais vão para Trysha, cópias para Myrddin em [[43 - The Sorcerer's Appraisal]].
+4. **Entregue tomes a Trysha**: dê **3 originais de uma vez** para receber o **Turquoise Ring**. Espere e entregue os restantes (opcional).
+   - **Cheque:** ambos avós **Eini** e **Eino** precisam estar vivos. Se quest stall, verifique o morgue em Vernworth e reviva com Wakestone.
+5. Espere alguns dias no **camping próximo** (limpe os enemies primeiro).
+6. **Lide com o rampage event** — Trysha perde controle de magick. **NÃO ataque ela**; desvie dos spells e pressione RT para **tackle** quando ela pausar para recuperar. Alternativas: cast **Solemnity / High Solemnity**, ou **Sedative Bolt** (Magick Archer).
+7. Volte após alguns dias — acampe de novo até a manhã; fale com Trysha e Eini para fechar.
+
+> [!warning] Pitfalls
+> Pawns podem **auto-kill Trysha** durante o rampage — bloqueia você das melhores rewards. Avós (Eini/Eino) podem morrer randomicamente para monstros locais — reviva em Vernworth com Wakestone.
 
 ## Objetivos
 
@@ -49,7 +64,9 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- **3 originais + ajudou controle**: 2.000 XP + 3.000 G + **Cast Stone** + **Conjurer's Jottings** (Trysha) + **Enchanter's Almanac** (Eini) — esses últimos são **affinity-based**, não automáticos
+- **3 originais de uma vez**: **Turquoise Ring** (extra)
+- **Forged tomes**: 2.000 XP + 3.000 G (sem ring/affinity itens)
 
 ## Notas Importantes
 

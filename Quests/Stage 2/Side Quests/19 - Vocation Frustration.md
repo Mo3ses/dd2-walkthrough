@@ -14,7 +14,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # Vocation Frustration
@@ -38,7 +38,12 @@ Concluir [[10 - A Place to Call Home]] e falar com NPC relacionado a vocations e
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Fale com **Klaus** na **Vocation Guild** em Vernworth (perto da estátua do dragão, no caminho para o Stardrop Inn).
+2. Visite **Roderick**, o armeiro local — fica à esquerda da estátua do dragão, próximo à Shakir's Inn.
+3. Viaje à **Trevo Mine** pelo West Vernworth Oxcart Station ou pelo portão oeste de Vernworth.
+4. Derrote goblins e navegue os caminhos estreitos da mina (Roderick dá dicas de rota).
+5. Pegue o **Archistaff** e a **Greatsword** dos baús dentro da mina.
+6. Retorne ambas as armas ao Klaus na Vocation Guild — escolha como serão entregues (qual arma determina qual **Vocation** é desbloqueada: Warrior ou Sorcerer / Magick Archer variantes).
 
 ## Objetivos
 
@@ -49,7 +54,9 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 1.200 XP
+- 7.500 G
+- Unlock de 2 vocations (a arma entregue define quais)
 
 ## Notas Importantes
 

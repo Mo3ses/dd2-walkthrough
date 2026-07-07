@@ -14,7 +14,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # The Ailing Arborheart
@@ -38,7 +38,15 @@ Concluir [[39 - A Trial of Archery]] e viajar para [[Locations/Sacred Arbor]].
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Viaje para **Sacred Arbor** e fale com **Doireann** no **Arborheart** — ela explica que a great tree está morrendo e só "**gwyfencha**" pode curá-la.
+2. **Descubra o que é gwyfencha** — três caminhos:
+   - **Mais fácil:** tenha um Pawn com **Woodland Wordsmith** specialization (tome do Kough's Inn via Bunches of Flowers, OU contrate um no Arborheart Riftstone)
+   - **Alternativa:** fale com **Glyndwr** em seus training grounds
+   - **Longa rota:** complete "Put a Spring in Thy Step," depois revisite **Gautstafr**
+3. **Tradução revelada:** gwyfencha = **Scalecinder**.
+4. Viaje para **Bakbattahl** e fale com **Sara** na **Brokkr's Smithy** (Brokkr é rabugento / anti-elf).
+   - **Requisito:** Sara só ajuda se **Steeled Resolve, Blazing Forge** estiver completa.
+5. **Sara** concorda em providenciar **Scalecinder**, mas nota o preconceito élfico de Brokkr — sugere o **dish élfico *nutriabh*** para apaziguá-lo. Isso destrava o follow-up **"Out of the Forest, Into the Forge."**
 
 ## Objetivos
 
@@ -50,7 +58,8 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 1.600 XP (quest base)
+- Follow-up "Out of the Forest, Into the Forge": 13.000 G, **Warbler Capelet**, 6× Scalecinder
 
 ## Notas Importantes
 

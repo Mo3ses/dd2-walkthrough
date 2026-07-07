@@ -15,7 +15,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # Beren's Final Lesson
@@ -39,7 +39,15 @@ Concluir [[34 - Claw Them Into Shape]] e falar com Beren.
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Espere **um dia** após [[34 - Claw Them Into Shape]], depois visite Beren em Moonglow Garden.
+2. **Intercepte o Cyclops** — durante a conversa, **Randall** corre morro abaixo sendo caçado. Derrete o Cyclops.
+3. **Fale com Beren** após a luta. (Se necessário, durma no camping próximo e volte **na manhã seguinte**, antes que ele saia — se perder o timing, perde rewards.)
+4. Receba a **Lifetaker greatsword** — Beren menciona que vai para Battahl treinar soldados.
+5. **Siga ele** até **Beren's Childhood Home** (sul de Checkpoint Rest Town em Battahl).
+6. **Beren te dá o Champion's Fable**, fechando a quest.
+
+> [!tip] Fallback
+> Se Beren **não entregar** o tome: (a) esgote o diálogo, então past Checkpoint Rest Town's gate → sul past Zeplin's Inn → ache-o em uma casa à esquerda; OU (b) suba afinidade alta o suficiente (escort quest, presentear flores) até ele corar, então checar Borderwatch Outpost ou childhood home.
 
 ## Objetivos
 
@@ -50,7 +58,12 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 1.600 XP
+- **Lifetaker** (greatsword)
+- 4.500 G
+- **Champion's Fable** (Warrior Maister Skill — ensina **Arc of Might**)
+
+(Failed: Randall morre = sem XP/Gold/items confirmados.)
 
 ## Notas Importantes
 

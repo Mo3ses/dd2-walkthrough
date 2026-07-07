@@ -14,7 +14,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # Trouble on the Cape
@@ -38,7 +38,17 @@ Concluir [[36 - Spellbound]] e viajar para [[Locations/Harve Village]] (2ª visi
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Entre em **Harve Village** (2ª visita) — cutscene mostra **Fyoran** e **Jonas** discutindo sobre um aldeão desaparecido. **Ulrika** intervém e corre para a **Stormwind Cave** (sul) — auto-start.
+2. **Siga Ulrika** para dentro da caverna. Elimine os **Saurians**.
+3. Vire **à esquerda** e vá para **leste** para encontrar o aldeão capturado, **Zoran** — resgate.
+4. **Escorte Zoran** de volta a Harve Village (não use Oxcart — bug conhecido de drop; carregue se ele wander).
+5. Cutscene de retorno — Ulrika oferece sair, mas Fyoran e Jonas pedem para ela se tornar **Village Chief**. Quest completa.
+
+> [!warning] Janela de unlock
+> Ulrika precisa estar **em Harve** para a quest spawnar — se chegar cedo demais, durma ou faça outras quests até ela realocar de Melve (vinha de [[32 - Readvent of Calamity]]).
+
+> [!warning] Prazo
+> **Termine** [[32 - Readvent of Calamity]] **antes** de [[44 - Feast of Deception]], ou Ulrika **não** se torna chefe. Também reporte a Lennart em Melve para continuar essa quest.
 
 ## Objetivos
 
@@ -49,7 +59,10 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 1.800 XP
+- 0 Dcp
+- 6.500 G
+- Ferrystone
 
 ## Notas Importantes
 

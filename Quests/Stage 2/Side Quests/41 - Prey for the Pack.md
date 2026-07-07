@@ -14,7 +14,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # Prey for the Pack
@@ -38,7 +38,14 @@ Concluir [[40 - The Ailing Arborheart]] e seguir estrada norte até Checkpoint R
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Viaje para **Checkpoint Rest Town**.
+2. Fale com **Lutz**, depois colete info dos townsfolk fora da **Sword and Staff**: **Timothy** (blue shirt / round hat), **Alsa** (green dress), **Jacint** (white dress / head cloth).
+3. Aprenda as pistas: **cenotaph leste da cidade**, **Rodge** tende um flowerbed nos arredores, **flores brilhando à noite**.
+4. Siga **Guerco Mountain Road** past a bridge/oxcart, através do rio estreito e túnel (cuidado com **harpies**), até um **campfire acima da entrada da caverna com flores brilhantes**.
+5. **NÃO descanse** no campfire — passagem de tempo pode matar Rodge. Desça past o **Riftstone**; a **ponte de madeira** marca a entrada da **Putrid Cave**.
+6. **Resgate Rodge** dos lobos dentro da caverna.
+7. **Escorte-o de volta a pé** (não use Oxcarts — bug conhecido). **Carregue-o** se ele wander; evite drop.
+8. **Entregue Rodge** ao **Morris** em Checkpoint Rest Town.
 
 ## Objetivos
 
@@ -49,7 +56,12 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 4.000 XP
+- 2× **Miracle Roborant**
+- 11.000 G
+- 5% shop discount na loja do Morris
+
+(Failed: Rodge morre = 4.000 XP + 8.000 G (sem itens). Achou mas perdeu escorte = 4.000 XP + 8.000 G apenas.)
 
 ## Notas Importantes
 

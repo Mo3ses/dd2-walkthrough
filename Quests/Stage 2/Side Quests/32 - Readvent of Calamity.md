@@ -15,7 +15,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # Readvent of Calamity
@@ -39,7 +39,13 @@ Concluir [[15 - Seat of the Sovran]] e viajar de volta a [[Locations/Melve]].
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Volte a **Melve** alguns dias in-game após [[15 - Seat of the Sovran]] e o progresso de [[18 - Scaly Invaders]] — cutscene dispara com o **Dragão** atacando a vila. Ajude Ulrika e os aldeões a repelir.
+2. **Quebre as bolhas vermelhas** no corpo do dragão para stagger/knockdown (dano pesado).
+   - [!] **Warning:** **NÃO derrube o dragão aqui** — pode complicar o Mystic Spearhand maister skill do Sigurd. Derrubar via balista do watchtower dá recompensas alternativas: `Paladins Enigmata` se poupado, `Dead Ringer` (weapon) se morto.
+3. Após o dragão fugir (3rd health bar), **fale com Ulrika** que agradece. **Fale brevemente com Sigurd** (homem de vermelho) para destravar **Mystic Spearhand Vocation**.
+4. Volte a Melve com o tempo — encontre Ulrika em sua casa falando com **Martin**, que a acusa de **traição**. Ela pede para você ficar a noite.
+5. Na manhã seguinte, **Ulrika fugiu para Harve Village** (sudoeste de Melve). **Lennart** pede que você a localize. Falar com Ulrika em Harve completa sua localização.
+6. **Reporte a Lennart** em Melve e informe que Ulrika está segura em Harve Village.
 
 ## Objetivos
 
@@ -50,7 +56,9 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 2.000 XP
+- Ring of Grit
+- 4.500 G
 
 ## Notas Importantes
 

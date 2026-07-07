@@ -15,7 +15,7 @@ tags:
   - side-quest
 sources_verified:
   - fextralife
-needs_verification: false
+needs_verification: true
 ---
 
 # Gift of the Bow
@@ -39,7 +39,15 @@ Concluir [[37 - Trouble on the Cape]] e voltar para Vernworth.
 
 ## Walkthrough
 
-_Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado como side quest via Fextralife._
+1. Aproxime-se de **Glyndwr** (elf) perto da **Roderick's Smithy** em Vernworth.
+2. Entregue a ele um **Human-Made Bow** (bows de raça/elf-made são **rejeitados**).
+3. **Mude a vocation** para **Archer**, **Magick Archer** ou **Warfarer** antes de sair da cidade — ele exige que você esteja wielding um bow.
+4. Viaje **noroeste** para as **training ruins de Glyndwr** past Trevo Mine.
+5. **Demonstre uso do bow** em **banner targets** pendurados na ponte. Glyndwr te imita.
+6. Volte a Vernworth e **fale com Glyndwr** perto da Roderick's Smithy novamente — destrava [[39 - A Trial of Archery]].
+
+> [!tip] Fast travel
+> Pegue o **Oxcart de Vernworth para Checkpoint Rest Town** — os ataques de ambush te colocam perto do local da quest sem ter que atravessar Trevo Mine de novo.
 
 ## Objetivos
 
@@ -50,7 +58,10 @@ _Walkthrough detalhado pendente — fase de research multi-fonte. Confirmado com
 
 ## Recompensas
 
-_A confirmar na fase de research multi-fonte (Fextralife / IGN / Fandom)._
+- 8.500 G
+- Ring of Proximity
+
+(XP/DCP não listados na source.)
 
 ## Notas Importantes
 
