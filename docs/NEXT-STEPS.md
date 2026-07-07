@@ -1,10 +1,15 @@
 # Próximos Passos — Dragon's Dogma 2 Walkthrough
 
-> Estado em 2026-07-07. Continuar deste ponto em qualquer máquina.
+> Estado em 2026-07-07 (após batch #2). Continuar deste ponto em qualquer máquina.
 
 ## Onde paramos
 
-> Uncommitted changes from the 2026-07-07 session — review with `git status` before continuing. Last committed: `41817bf feat: stage 2 vault + multi-stage build support`.
+> **Batch #2 committed**: `8db5337 feat: batch #2 — wikilink validator, QUEST_OVERRIDES refactor, cross-source check` on `feat/stage-2-bilingual`. Pushed to origin. **PR not opened yet** (token 403) — open manually at https://github.com/Mo3ses/dd2-walkthrough/compare/main...feat/stage-2-bilingual.
+
+**What batch #2 did**:
+- Fixed 56 broken `[[wiki-links]]` flagged by `scripts/check_wikilinks.py`.
+- Dropped 35-entry `QUEST_OVERRIDES` dict — frontmatter is now source of truth.
+- New `scripts/check_cross_source.py` extracts quest_giver/xp/gold from Fextralife + IGN + Fandom; found 10/15 disagreements (mostly Fextralife NPC gaps, 2 real gold conflicts on #36 and #43).
 
 **Stage 1**: completo, no ar em <https://mo3ses.github.io/dd2-walkthrough/>.
 **Stage 2**:
