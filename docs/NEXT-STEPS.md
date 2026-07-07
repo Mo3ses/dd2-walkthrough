@@ -112,3 +112,69 @@ Push em `main` → GitHub Action (`.github/workflows/deploy.yml`) rebuilda e pub
 - **WebFetch blocks** (2026-07-07): `www.ign.com` é blocked no nível do harness (`Claude Code is unable to fetch from www.ign.com`); `dragonsdogma.fandom.com` retorna HTTP 402 em todos os endpoints. Workaround em Bash: `curl -A "Mozilla/5.0 ..."`. Detalhes em `docs/SOURCE-VERIFICATION-REPORT.md`.
 - Fextralife às vezes classifica Main como Side — IGN/Fandom divergem; já verificado e corrigido para 21/24/26
 - "One-Eyed Interloper" (Stage 1, quest 09) tecnicamente dispara durante Stage 2 main quest — mantido em Stage 1 por organização, cross-linkado em `15 - Seat of the Sovran`
+
+### Batch #3 recap
+- Filled 6 `quest_giver: NPC desconhecido` placeholders in 12 MDs (6 PT + 6 EN) using Fandom + IGN HTMLs.
+- Tightened `scripts/check_cross_source.py` regex:
+  - `quest_giver` stops at next capitalized label (no more "Diana Quest Location Vernworth" bleed)
+  - `gold` only matches structured `Reward <N> Gold` (Fandom) or completion-line `reward, <N> gold` near `completing` (IGN) — no more "buy the book for 5,000 G" false positives
+- Result: `python3 scripts/check_cross_source.py` now reports **1 of 15 conflicts** (was 10). The 1 remaining (#15 "Brant / Sovran Disa" vs "Brant") is a Fextralife-vs-Fandom scope difference, not a factual conflict — MD preferred.
+
+## Estado técnico atual
+
+```bash
+# Tudo verde:
+python3 scripts/check_wikilinks.py        # OK: 1262 links across 113 files
+python3 scripts/check_cross_source.py     # 1 of 15 conflicts (noise, not blocking)
+python3 scripts/build.py                  # 44 per-quest pages, 0 errors
+git status                                 # clean working tree on feat/stage-2-bilingual
+```
+
+## Próximas ações (escolher uma)
+
+**A) Abrir PR manual + parar** — merge de `feat/stage-2-bilingual` → `main` no GitHub web. GitHub Actions rebuild Pages automaticamente. ~2 min.
+
+**B) EN translations** (próximo grande escopo) — 41 files PT sem `.en.md` irmão:
+- 7 Stage 2 Main Quests: `15, 17, 21, 23, 24, 26, 44`
+- 28 Stage 2 Side Quests: todos exceto `34, 35, 36` (já têm EN)
+- 5 Locations: `Vernworth, Harve Village, Moonglow Garden, Eini's House, Sacred Arbor, Checkpoint Rest Town`
+- 1 MOC: `Quests/Stage 2.en.md`
+- Estimativa: 4-6h se manual, ou ~1h se script-assistido
+
+**C) Stage 3 (Battahl)** — novo stage. Requer:
+- `Quests/Stage 3/{Main Quests,Side Quests}/` directory + MDs
+- Adicionar `Melve → Vernworth` já está feito; precisa de Bakbattahl, Checkpoint Rest Town final, etc. em `LOCATION_ORDER`
+- Cross-source pass via `scripts/check_cross_source.py`
+- Estimativa: várias sessões
+
+**D) Preencher `sources_verified: []` vazios** — 11 Stage 2 side quests (10, 11, 12, 13, 14, 16, 18, 20, 25, 28, 30) + 3 com `needs_verification: true` (22, 27, 29). Pode usar `scripts/check_cross_source.py` como sanity check após preencher.
+
+## Arquivos importantes para a próxima sessão
+
+- `scripts/build.py` — gerador estático (não tocou desde batch #2)
+- `scripts/check_wikilinks.py` — guardrail de links
+- `scripts/check_cross_source.py` — guardrail de cross-source (regex tightened in batch #3)
+- `docs/SOURCE-VERIFICATION-REPORT.md` — log completo de sourcing + conflicts
+- `docs/NEXT-STEPS.md` — este arquivo
+- `docs/REWRITE-PROPOSAL.md` (untracked, 24KB, criado 2026-07-07 19:12) — proposta manual sua, NÃO toquei. Decidir se incorpora ou deleta.
+
+## Convenções para retomar
+
+- Branch ativo: `feat/stage-2-bilingual`
+- PT é source of truth. EN vem depois.
+- Wikilink anchor syntax `[[Foo#heading]]` não é suportada pelo build — sempre linkar a página inteira.
+- Frontmatter `location:` para `Locations/<name>` (não apenas `<name>`) para o validator passar.
+- `quest_giver: NPC desconhecido` é placeholder; usar nome real quando souber.
+
+## PR manual
+
+Abrir em https://github.com/Mo3ses/dd2-walkthrough/compare/main...feat/stage-2-bilingual
+
+Body sugerido:
+```
+## Batch #2 + #3 — wikilinks, QUEST_OVERRIDES refactor, NPC fills, regex tightening
+
+3 commits, 58 files, ~660 insertions / 160 deletions.
+
+See docs/NEXT-STEPS.md and docs/SOURCE-VERIFICATION-REPORT.md for full context.
+```
