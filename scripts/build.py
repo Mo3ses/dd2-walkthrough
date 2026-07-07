@@ -223,7 +223,16 @@ class Quest:
     @property
     def slug(self) -> str:
         s = self.filename.lower()
-        s = re.sub(r"\.md$", "", s)
+        # Strip BOTH `.en.md` (English source) AND `.md` (Portuguese source)
+        # so the slug is identical for the pair. Without this, q_en.slug
+        # ends up as e.g. `01-gaoled-awakening-en` and the rendered link
+        # points to a file that was never written — `q_pt.slug` produces
+        # the only file actually on disk. Symptom: 404 when clicking
+        # "View full details →" with the language toggle in EN.
+        if s.endswith(".en.md"):
+            s = s[:-6]
+        elif s.endswith(".md"):
+            s = s[:-3]
         s = re.sub(r"[^a-z0-9]+", "-", s).strip("-")
         return s
 
