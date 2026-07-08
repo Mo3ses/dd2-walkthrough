@@ -3038,12 +3038,17 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
         )
         if has_dividers and not is_last:
             # Render Part 1 in place; defer Part 2 to be emitted
-            # just before the last MOC entry.
-            pt_chunks, en_chunks = _split_objectives_at_dividers(q_pt, q_en)
-            if len(pt_chunks) == 2:
+            # just before the last MOC entry. The helper returns
+            # a list of (pt_list, en_list) pairs — one pair per
+            # divider chunk. We unpack the FIRST pair to get
+            # Part 1's chunks (and the second pair below for Part 2).
+            chunks = _split_objectives_at_dividers(q_pt, q_en)
+            if len(chunks) == 2:
+                pt_chunks_1, en_chunks_1 = chunks[0]
+                pt_chunks_2, en_chunks_2 = chunks[1]
                 # Part 1 only at the MOC position
-                q_pt_p1 = replace(q_pt, objectives=pt_chunks[0])
-                q_en_p1 = replace(q_en, objectives=en_chunks[0])
+                q_pt_p1 = replace(q_pt, objectives=pt_chunks_1)
+                q_en_p1 = replace(q_en, objectives=en_chunks_1)
                 body.append(_render_quest_card(
                     q_en_p1, q_pt_p1,
                     show_dividers=False,
@@ -3051,12 +3056,14 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
                     show_continues_note=True,
                     track_id_offset=0,
                 ))
-                # Part 2 deferred
-                q_pt_p2 = replace(q_pt, objectives=pt_chunks[1])
-                q_en_p2 = replace(q_en, objectives=en_chunks[1])
+                # Part 2 deferred — remember it along with the
+                # track_id_offset (= number of objectives in Part 1)
+                # so its checkbox IDs don't collide with Part 1's.
+                q_pt_p2 = replace(q_pt, objectives=pt_chunks_2)
+                q_en_p2 = replace(q_en, objectives=en_chunks_2)
                 q_pt_p2.title = f"{q_pt.title} — Parte 2"
                 q_en_p2.title = f"{q_en.title} — Part 2"
-                deferred_part2s.append((q_en_p2, q_pt_p2))
+                deferred_part2s.append((q_en_p2, q_pt_p2, len(pt_chunks_1)))
                 continue
         if has_dividers and is_last:
             # Edge case: the last MOC entry itself has dividers —
@@ -3068,13 +3075,19 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
             # split-quest's "road" part lands just before the
             # road-trigger side quest.
             if is_last:
-                for de_q_en, de_q_pt in deferred_part2s:
+                # Flush deferred Part 2s right BEFORE this quest so
+                # split-quest's "road" parts land just before the
+                # road-trigger side quest. Each Part 2's track_id_offset
+                # is the number of objectives in its Part 1 (3 for
+                # In Dragon's Wake), so the checkbox IDs don't
+                # collide with Part 1's.
+                for de_q_en, de_q_pt, de_offset in deferred_part2s:
                     body.append(_render_quest_card(
                         de_q_en, de_q_pt,
                         show_dividers=False,
                         minimal=True,
                         show_continues_note=False,
-                        track_id_offset=len(de_q_pt.objectives) and (len(deferred_part2s[0][1].objectives)),
+                        track_id_offset=de_offset,
                     ))
                 deferred_part2s = []
             # show_dividers + split_dividers=True only on the by-flow
