@@ -132,6 +132,13 @@ flowchart TD
 ### 🗡️ Side Quest de Estrada
 - [ ] [[Side Quests/09 - One-Eyed Interloper]]
 
+## 🌉 Cross-Stage Prep (Stage 2 começa aqui)
+
+> Esta seção lista prep de quests que **iniciam** em Stage 1 mas terminam em Stage 2. Comprar/obter os itens listados AGORA evita quest locks em Stage 2.
+
+- ⚔️ **`Claw Them Into Shape` (Stage 2, side quest #34)** — compre **3 espadas** de [[Locations/Borderwatch Outpost]] (Kassandra) **antes** de sair de Stage 1. Sem as 3 espadas, a quest em Stage 2 vira impossível de completar (Borderwatch não é revisitável). Preço: ~850 G cada.
+- 📜 **Grimoires (Stage 2 quests #36 Spellbound + #43 The Sorcerer's Appraisal + #46 A Game of Wits)** — se quiser reservar originals cedo, `Let There Be Light` (Myrddin's Home upstairs), `Fulminous Shield` (Dudley em Melve), `Nation's Death Knell` (Ancient Battleground cenotaph — 2 originais no jogo), `Howling Blizzard` (Wendy em Nameless Village), `Towering Earth` (Waldhar no Gracious Hand's Vaults).
+
 ## ⚠️ Avisos Críticos
 
 > [!warning] **Missable / Timed**

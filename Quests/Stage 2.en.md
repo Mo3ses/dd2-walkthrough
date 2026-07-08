@@ -46,37 +46,53 @@ tags: [moc, stage-2, vermund, index]
 20. [[Side Quests/27 - The Arisen's Shadow]]
 21. [[Side Quests/32 - Readvent of Calamity]]
 
-### Vernworth pt.2 — Battahl prep + archer chain
+### Vernworth pt.2 — Arisen's Shadow finale + Battahl/Sphinx chain + archer chain
 
-22. [[Side Quests/28 - Till Death Do Us Part]]
-23. [[Side Quests/42 - Hunt for the Jadeite Orb]]
-24. [[Side Quests/41 - Prey for the Pack]]
-25. [[Side Quests/43 - The Sorcerer's Appraisal]]
-26. [[Side Quests/39 - A Trial of Archery]]
-27. [[Side Quests/36 - Spellbound]]
-28. [[Side Quests/40 - The Ailing Arborheart]]
-29. [[Side Quests/37 - Trouble on the Cape]]
-30. [[Side Quests/33 - Home Is Where the Hearth Is]]
+22. [[Side Quests/28 - Till Death Do Us Part]] *(START — Margit; **time-sensitive**, complete before Gift of Bow timer expires)*
+23. Tolled To Rest *(START + COMPLETE in a single phase; elder Oscar)*
+24. A Game of Wits *(START + CONTINUE — Sphinx; 4 riddles, bring `SphinxParent` pawn + Nation's Death Knell)*
+25. [[Side Quests/42 - Hunt for the Jadeite Orb]] *(START — Offulve at Checkpoint entrance)*
+26. [[Side Quests/41 - Prey for the Pack]] *(START + COMPLETE — Morris; **time-sensitive**, sleep 2×)*
+27. [[Side Quests/43 - The Sorcerer's Appraisal]] *(START — Myrddin; **do NOT give him any tomes yet**, wear noble set)*
+28. [[Side Quests/39 - A Trial of Archery]] *(START — Glyndwr again in Vernworth)*
+29. Brothers Brave and Timid *(START + CONTINUE — Ian in Melve; **Stage 1 cross-ref**)*
+30. [[Side Quests/36 - Spellbound]] *(CONTINUE — 3 original grimoires to Trysha at once; Turquoise Ring. CONTINUE — rampage event: do NOT attack Trysha, tackle when she pauses. COMPLETE)*
+31. [[Side Quests/40 - The Ailing Arborheart]] *(START — Doireann, follow the tree, accept Taliesin's outing invite)*
+32. [[Side Quests/32 - Readvent of Calamity]] *(CONTINUE — Ulrika fled to Harve; Lennart asks you to locate her)*
 
-### Vernworth pt.3 — final political arc + Dragon ignited
+### Vernworth pt.3 — final political arc + Stage 3 transition
 
-31. [[Side Quests/16 - Masked Correspondence]]
-32. [[Side Quests/22 - A Magesterial Amenity]]
-33. [[Main Quests/24 - An Unsettling Encounter]]
-34. [[Side Quests/25 - Every Rose Has Its Thorn]]
-35. [[Main Quests/44 - Feast of Deception]]
+33. [[Side Quests/37 - Trouble on the Cape]] *(auto-dispatched at the end of Readvent Calamity)*
+34. A Case of Sculptor's Block *(START — Klark in the noble quarter; try after Stolen Throne if it stalls)*
+35. Dulled Steel, Cold Forge *(START — Roman in the castle gardens; try after Stolen Throne if it stalls)*
+36. [[Side Quests/16 - Masked Correspondence]] *(START — Sven in the castle; COMPLETE at the masked ball: letter to man with blue cloak + Magesterial Amenity goggles)*
+37. [[Side Quests/22 - A Magesterial Amenity]] *(START + COMPLETE — Gautstafr; goggles collected at the ball)*
+38. [[Side Quests/20 - Disa's Plot]] *(CONTINUE — invade the castle, guard set, letter to Sven, leave via window; COMPLETE — Waldhar at the Gracious Hand, Towering Earth)*
+39. [[Main Quests/21 - The Caged Magistrate]] *(CONTINUE + COMPLETE — Waldhar in the prison with guard set equipped: "The Arisen" / "Urge to leave" / "Helping hands")*
+40. [[Main Quests/23 - The Stolen Throne]] *(COMPLETE)*
+41. [[Main Quests/24 - An Unsettling Encounter]] *(START + COMPLETE — Brant at the tavern at night)*
+42. [[Side Quests/33 - Home Is Where the Hearth Is]] *(COMPLETE — Brant at Melve)*
+43. [[Side Quests/25 - Every Rose Has Its Thorn]] *(START + COMPLETE; **time-sensitive, 3 days** — Wilhelmina, Sven, Murder Report, Allard, Brant, flee the city)*
+44. [[Main Quests/44 - Feast of Deception]] *(START + CONTINUE + COMPLETE — Brant, noble set + mask, banquet, Godsway)*
+45. A Noble Exchange *(START + COMPLETE — staff from the NPC at the ball, drop it, grab back when guards announce)*
+46. Nation of the Lambert Flame *(START — Stage 3 transition)*
+47. A Veil of Gossamer *(START — Stage 3 setup)*
 
 **Flow tips baked into the order:**
 
 - Keep 2 camping kits in the inventory (optional — cuts down on walking).
+- **`Claw Them Into Shape` (pt.1 step 5) can start in Stage 1**: buy the 3 swords from Kassandra in [[Locations/Borderwatch Outpost]] **before** leaving Stage 1. Without them the Stage 2 quest becomes impossible to complete. Cross-ref Stage 1 MOC.
 - After `Claw Them Into Shape` (pt.1 step 5), camp next to the Borderwatch Training Grounds to wait out the day.
 - Camp next to the Moonglow Garden to unlock `Beren's Final Lesson` (pt.1 step 7).
 - Sleep until nightfall repeatedly to force the night encounters: Brant at the tavern (pt.1 step 1), Saint of the Slums (pt.1 step 15), Albert / Beggar's Tale (pt.1 step 9), Till Death (pt.2 step 22 — time window shared with Gift of the Bow).
 - Mystic Spearhand vocation at Sigurd; Warrior Maister at Lennart after killing the Dragon.
-- Carry 1 Portcrystal (optional) — pt.2 makes it easy to come back from the Ancient Battleground and the Sphinx.
-- Carry a bow (Wayfarer class or Archer) — pt.2 uses bows extensively.
-- SphinxParent pawn: name a pawn "SphinxParent" and put it in the party for the final `A Game of Wits` puzzle.
+- Carry 1 Portcrystal (optional) — pt.2 makes it easy to come back from the Ancient Battleground and the Sphinx (A Game of Wits step 24).
+- Carry a bow (Wayfarer class or Archer) — pt.2 uses bows extensively (Glyndwr training, bridge Cyclops Abridged).
+- SphinxParent pawn: name a pawn "SphinxParent" and put it in the party for the final `A Game of Wits` (pt.2 step 24) puzzle.
 - `Till Death Do Us Part` (pt.2 step 22) is **time-sensitive** — don't stall; complete right after Gift of the Bow.
+- `Spellbound` (pt.2 step 30) has a rampage event at Trysha's house — do NOT attack her, tackle when she pauses to recover.
+- `Every Rose Has Its Thorn` (pt.3 step 43) has a 3-day in-game window — Wilhelmina accepts, Murder Report from Allard's room, Brant → flee the city.
+- `House of the Blue Sunbright` (pt.1 step 16) has a soft prerequisite: needs Daphne in the Slums (Daphne appears after The Gift of Giving) — check pre-req if it stalls.
 
 ## 📍 Stage 2 Locations (progression order)
 
