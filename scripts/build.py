@@ -2433,8 +2433,12 @@ def render_quest_detail_bilingual(
     qe = q_en or q_pt
     type_en, type_pt = _type_label_pair(qt.quest_type)
 
+    # Per-quest detail page: open by default (the user came to read
+    # this specific quest; forcing them to click to see the body is
+    # friction). Stage-page cards stay closed so the cheat sheet
+    # doesn't expand into a wall of text.
     parts: list[str] = []
-    parts.append(f'<details class="quest-card {qt.quest_type}">')
+    parts.append(f'<details class="quest-card {qt.quest_type}" open>')
     parts.append('<summary>')
     parts.append('<span class="quest-card-caret" aria-hidden="true">▶</span>')
     if qt.objectives:
