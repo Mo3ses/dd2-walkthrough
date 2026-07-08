@@ -1799,7 +1799,13 @@ SHARED_JS = r"""
   function applyTo(cb, state) {
     const id = cb.getAttribute("data-track-id");
     if (!id) return;
-    const want = !!state[id];
+    // `state` is the full v2 wrapper ({ version, updatedAt, checked });
+    // we want the id→bool map specifically. Tolerate the legacy
+    // flat-v1 shape (where the map IS the state) too.
+    const checkedMap = (state && typeof state.checked === "object")
+      ? state.checked
+      : state;
+    const want = !!(checkedMap && checkedMap[id]);
     // Set BOTH the property AND the attribute to be defensive
     cb.checked = want;
     if (want) cb.setAttribute("checked", "checked");
@@ -2143,6 +2149,20 @@ SHARED_JS = r"""
         if (view === "flow") document.body.classList.add("flow-view");
         else document.body.classList.remove("flow-view");
         toggles.forEach((t) => t.classList.toggle("active", t === btn));
+        // Re-sync ALL checkboxes (in both views) with the latest
+        // localStorage state. Both the by-location and by-flow
+        // sections render the same set of quest cards (with the same
+        // data-track-ids), so when the user marks an objective in
+        // one view, the matching checkbox in the other view needs
+        // to catch up. We apply to all checkboxes (including
+        // currently-hidden ones — setting cb.checked on a hidden
+        // element is harmless; the visual state updates the moment
+        // it becomes visible).
+        const state = loadState();
+        document.querySelectorAll("input[type=checkbox][data-track-id]").forEach((cb) => {
+          applyTo(cb, state);
+        });
+        updateTotals();
       });
     });
   }
