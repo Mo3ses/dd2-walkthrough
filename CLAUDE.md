@@ -22,9 +22,15 @@ python3 scripts/build.py --repo-root /path/to/repo --out /path/to/out
 # Preview
 xdg-open dist/stage-1.html      # Linux
 open    dist/stage-1.html       # macOS
+start   dist/stage-1.html       # Windows
 
-# Reset progress in the browser console
-# localStorage.removeItem("dd2-tracker-v1")
+# Reset / export / import progress — all three are in the UI:
+#   * On any stage page, the summary bar has Export JSON, Import JSON,
+#     and Reset progress buttons.
+#   * On the homepage, the quick-links section has the same trio.
+# Manual reset (still works): localStorage.removeItem("dd2-tracker-v2")
+# (and optionally localStorage.removeItem("dd2-tracker-v1") for the
+# legacy v1 copy the loader keeps for one release as a safety net).
 ```
 
 The `.github/workflows/deploy.yml` workflow runs `python3 scripts/build.py` on every push to `main` and publishes `dist/` to GitHub Pages — no manual deploy step needed.

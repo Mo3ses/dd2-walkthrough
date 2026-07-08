@@ -1,6 +1,31 @@
 # Próximos Passos — Dragon's Dogma 2 Walkthrough
 
-> Estado em 2026-07-07 (após batch #2). Continuar deste ponto em qualquer máquina.
+> Estado em 2026-07-08 (após branch `feat/tracker-export-import`). Continuar deste ponto em qualquer máquina.
+
+## Onde paramos
+
+> **Batch #3 (tracker export/import + Phase 1 bug fixes) em branch** `feat/tracker-export-import`, ainda não committed. PR description ready (see below).
+
+**What batch #3 did** (no game-research needed — code-only session):
+- Added **Export / Import JSON** buttons next to Reset on every page. Modal with Cancel / Merge / Replace actions. Modal reports "X matched this build, Y unknown" so users importing from another stage see what's accepted.
+- Wrapped `localStorage` schema in **v2** (`{ version: 2, updatedAt, checked: {...} }`). Auto-migrates from v1 on first read; keeps a v1 copy as a safety net for one release.
+- Tightened `loadState()`: rejects arrays / nulls / non-objects; on JSON.parse error the corrupt value is **quarantined** under `dd2-tracker-v1.corrupt-{ts}` and the user gets a clean state. Same for malformed v2 payloads.
+- Stage total no longer displays as `0/38/38` (the duplicated denominator bug). Now shows `34/39` cleanly.
+- Diagnostic banner is **silent by default**; pass `?debug=1` to enable.
+- Reset confirmation is now properly localized for PT users (was hard-coded English before).
+- Removed the "marked marked" / "marcados marcados" duplication in i18n templates.
+- `<html lang>` is set **synchronously** before first paint, so search engines and screen readers see the right language from frame 0.
+- Added cross-tab `storage` event sync: two open tabs of the same page now stay in sync.
+- Homepage progress bar counts only **known IDs** (build-time `data-known-ids` attribute) and clamps to 100%, so stale or imported keys can't inflate the numerator.
+- Footer tip on stage pages no longer tells users to "copy the JSON from localStorage" — it now points at the new buttons.
+
+**Out of scope for this PR** (next session candidates):
+- 7 untranslated `STRINGS` keys (Main Quests / Side Quests in PT — visible chrome bug).
+- a11y: focus-visible outlines, skip-link, prefers-reduced-motion, progressbar ARIA.
+- Wiki-links: `[[Locations/Foo]]` 404, `[[Stage 3+]]` literal links 404, typos silently route to Stage 1.
+- Light/dark theme toggle, print CSS, back-to-top, ?lang=pt URL param, OG/Twitter meta, sitemap, PWA.
+
+## Onde paramos (anterior — batch #2)
 
 ## Onde paramos
 
