@@ -32,7 +32,7 @@ import html
 import json
 import re
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Iterable
 
@@ -87,6 +87,8 @@ STRINGS: dict[str, dict[str, str]] = {
         "alert_coming_soon": "UNDER CONSTRUCTION — translation coming soon",
         "alert_translation_pending": "(Translation pending)",
         "stage_card_open": "Open stage →",
+        "view_toggle_locations": "📍 By location",
+        "view_toggle_flow": "🗺 By recommended flow",
         "stage_card_main_fmt": "⚔ {n} main quests · 🗡 {s} side quests",
         "quick_links_label": "Quick links:",
         "quick_link_stage1": "Stage 1",
@@ -135,6 +137,8 @@ STRINGS: dict[str, dict[str, str]] = {
         "alert_coming_soon": "EM CONSTRUÇÃO — tradução em breve",
         "alert_translation_pending": "(Tradução pendente)",
         "stage_card_open": "Abrir stage →",
+        "view_toggle_locations": "📍 Por local",
+        "view_toggle_flow": "🗺 Por fluxo recomendado",
         "stage_card_main_fmt": "⚔ {n} quests principais · 🗡 {s} quests secundárias",
         "quick_links_label": "Links rápidos:",
         "quick_link_stage1": "Stage 1",
@@ -242,6 +246,7 @@ def _build_file_stage_index(quests_root: Path) -> None:
 class Objective:
     text: str
     done: bool
+    divider: bool = False  # True for visual separator lines in the objectives list
 
 
 @dataclass
@@ -258,6 +263,12 @@ class Quest:
     rewards: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     raw: str = ""
+    # Path of the rendered page (relative to dist/), used to make
+    # wiki-link hrefs in the body relative to the current page. Set
+    # by the page renderer before any body content is emitted; empty
+    # when rendering for the stage page (which uses root-relative
+    # paths).
+    from_path: str = ""
 
     @property
     def track_prefix(self) -> str:
@@ -288,13 +299,16 @@ class Quest:
     def status(self) -> str:
         if not self.objectives:
             return "Sem objetivos"
-        done = sum(1 for o in self.objectives if o.done)
+        # The build-time badge is a *placeholder* — the real state lives
+        # in the user's localStorage and is overwritten by SHARED_JS's
+        # updateTotals() on every page load. Always render as 0/N here
+        # so users never see a misleading "✅ 6/6" flash on initial
+        # paint (or after a JS error) when the MD just happens to have
+        # all objectives authored as `- [x]`. The author-time hint is
+        # preserved in the MD file itself; this string is just the
+        # pre-JS default.
         total = len(self.objectives)
-        if done == total:
-            return f"✅ {done}/{total}"
-        if done == 0:
-            return f"⬜ 0/{total}"
-        return f"⏳ {done}/{total}"
+        return f"0/{total}"
 
 
 # ---------------------------------------------------------------------------
@@ -357,6 +371,59 @@ def load_stage_info(stage_n: int, repo_root: Path) -> StageInfo:
     )
 
 
+def parse_stage_flow(stage_n: int, repo_root: Path) -> list[tuple[str, str]]:
+    """Extract the recommended quest flow from the Stage MOC.
+
+    Scans the MOC tables for `[[Main Quests/...]]` and `[[Side Quests/...]]`
+    wiki-links, preserving document order. Returns a list of
+    (quest_type, filename) tuples — e.g. `[("main", "01 - Gaoled Awakening"),
+    ("main", "02 - Tale's Beginning"), ("side", "03 - Ordeal's of a New Recruit"), ...]`.
+
+    Quests that don't appear in the MOC are appended at the end in
+    filename order so the user still sees them in the flow view.
+    """
+    quests_root = repo_root / "Quests"
+    candidates = [
+        quests_root / f"Stage {stage_n}" / f"Stage {stage_n}.md",
+        quests_root / f"Stage {stage_n}.md",
+    ]
+    moc_text = ""
+    for moc in candidates:
+        if moc.exists():
+            moc_text = moc.read_text(encoding="utf-8")
+            break
+    flow: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    if moc_text:
+        for m in WIKILINK_RE.finditer(moc_text):
+            target = m.group(1)
+            for prefix, qtype in (("Main Quests/", "main"), ("Side Quests/", "side")):
+                if target.startswith(prefix):
+                    # `rstrip(".md")` would be wrong — it strips ANY of
+                    # '.', 'm', 'd' from the end, mangling "Timid" to
+                    # "Timi". Use removesuffix for the .md extension
+                    # only.
+                    fname = target[len(prefix):].removesuffix(".md").strip()
+                    if fname and fname not in seen:
+                        seen.add(fname)
+                        flow.append((qtype, fname))
+                    break
+    # Append any quests not mentioned in the MOC (keeps the flow view
+    # exhaustive even if the MOC is incomplete).
+    stage_dir = quests_root / f"Stage {stage_n}"
+    for sub, qtype in (("Main Quests", "main"), ("Side Quests", "side")):
+        sub_dir = stage_dir / sub
+        if not sub_dir.exists():
+            continue
+        for path in sorted(sub_dir.glob("*.md")):
+            if path.stem.endswith(".en"):
+                continue
+            if path.stem not in seen:
+                seen.add(path.stem)
+                flow.append((qtype, path.stem))
+    return flow
+
+
 # ---------------------------------------------------------------------------
 # Markdown parser
 # ---------------------------------------------------------------------------
@@ -385,7 +452,17 @@ def strip_callout_marker(line: str) -> tuple[str | None, str]:
 
 def parse_objectives(lines: list[str]) -> list[Objective]:
     """Pull the bullet list under `## Objetivos`/`## Objetivo` (PT)
-    OR `## Objectives` (EN). Both spellings are accepted."""
+    OR `## Objectives` (EN). Both spellings are accepted.
+
+    Supports a divider syntax: a list item that starts with `--- ` is
+    treated as a visual separator (not a checkbox), with the rest of
+    the line as the label. This lets MD authors split a quest into
+    parts — e.g. "--- durante [[Side Quests/09 - One-Eyed Interloper]] ---"
+    between objective groups.
+
+    Divider items are returned as `Objective(text=label, done=False,
+    divider=True)`.
+    """
     in_obj = False
     out: list[Objective] = []
     for line in lines:
@@ -406,6 +483,11 @@ def parse_objectives(lines: list[str]) -> list[Objective]:
         cb = CHECKBOX_RE.match(body)
         if cb:
             out.append(Objective(text=cb.group("text"), done=cb.group("state").lower() == "x"))
+        elif body.lstrip().startswith("---"):
+            # Divider: strip leading/trailing `---` and use the rest as label.
+            label = body.strip().strip("-").strip()
+            if label:
+                out.append(Objective(text=label, done=False, divider=True))
     return out
 
 
@@ -775,6 +857,8 @@ def render_quest_objectives_html(
     quest_pt: Quest,
     en_quest: Quest | None = None,
     index_offset: int = 1,
+    show_dividers: bool = False,
+    track_id_offset: int = 0,
 ) -> tuple[str, list[tuple[str, bool]]]:
     """Render the objectives checklist as a single `<ul>`.
 
@@ -796,27 +880,55 @@ def render_quest_objectives_html(
     """
     items: list[str] = []
     tracks: list[tuple[str, bool]] = []
-    for i, obj in enumerate(quest_pt.objectives, index_offset):
+    # Walk PT and EN in parallel so dividers in one list stay aligned
+    # with dividers in the other. The track-id counter advances only
+    # for real (non-divider) objectives so the IDs don't shift.
+    # track_id_offset lets a "Part 2" card start at the next number
+    # (e.g. 4) so its checkbox IDs don't collide with Part 1.
+    en_objs = en_quest.objectives if en_quest is not None else []
+    i = track_id_offset  # 0-based; tid is f"{prefix}-{i+1}"
+    for pt_obj, en_obj in zip(quest_pt.objectives, en_objs):
+        # Both sides a divider: emit the PT version (the EN text is
+        # already represented by the language pill that the user can
+        # click to flip). Resolve wiki-links so the label can mention
+        # another quest by name. Skipped entirely when show_dividers
+        # is False (per-quest page / by-location view).
+        if pt_obj.divider and getattr(en_obj, "divider", False):
+            if show_dividers:
+                label_html = render_inline(pt_obj.text, from_path=quest_pt.from_path)
+                items.append(f'<li class="obj-divider" aria-hidden="true">{label_html}</li>')
+            continue
+        # PT is a divider but EN isn't (or vice versa) — author error.
+        # Treat it as a non-divider to keep both sides rendering.
+        i += 1
         tid = f"{quest_pt.track_prefix}-{i}"
-        en_obj = (
-            en_quest.objectives[i - index_offset]
-            if en_quest is not None and (i - index_offset) < len(en_quest.objectives)
-            else None
+        text_html = (
+            f'<span class="i18n" data-lang="en">{html.escape(en_obj.text)}</span>'
+            f'<span class="i18n" data-lang="pt" hidden>{html.escape(pt_obj.text)}</span>'
         )
-        if en_obj is not None:
-            text_html = (
-                f'<span class="i18n" data-lang="en">{html.escape(en_obj.text)}</span>'
-                f'<span class="i18n" data-lang="pt" hidden>{html.escape(obj.text)}</span>'
-            )
-        else:
-            text_html = html.escape(obj.text)
         items.append(
             f'<li data-track-id="{tid}">'
             f'<label><input type="checkbox" data-track-id="{tid}"> '
             f'<span class="obj-text">{text_html}</span>'
             f'</label></li>'
         )
-        tracks.append((tid, obj.done))
+        tracks.append((tid, pt_obj.done))
+    # Tail of the longer list (in case PT and EN are not the same length)
+    for tail_obj in quest_pt.objectives[len(en_objs):]:
+        if tail_obj.divider:
+            if show_dividers:
+                label_html = render_inline(tail_obj.text, from_path=quest_pt.from_path)
+                items.append(f'<li class="obj-divider" aria-hidden="true">{label_html}</li>')
+            continue
+        i += 1
+        tid = f"{quest_pt.track_prefix}-{i}"
+        items.append(
+            f'<li data-track-id="{tid}">'
+            f'<label><input type="checkbox" data-track-id="{tid}"> '
+            f'<span class="obj-text">{html.escape(tail_obj.text)}</span>'
+            f'</label></li>'
+        )
+        tracks.append((tid, tail_obj.done))
     return "\n".join(items), tracks
 
 
@@ -839,7 +951,7 @@ SHARED_CSS = """
   --code-bg: #f4f0ea;
   --shadow: 0 1px 2px rgba(0,0,0,0.04);
   --radius: 6px;
-  --max-w: 920px;
+  --max-w: 1280px;
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 * { box-sizing: border-box; }
@@ -1116,14 +1228,14 @@ th { background: var(--code-bg); font-weight: 600; }
    the live localStorage counter actually operates. */
 .loc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem;
 }
 .loc-card {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  padding: 0.7rem 0.95rem;
+  gap: 0.3rem;
+  padding: 0.5rem 0.7rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1163,27 +1275,28 @@ th { background: var(--code-bg); font-weight: 600; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 0.9rem 1.1rem;
-  margin: 1.2rem 0;
+  padding: 0.7rem 1rem;
+  margin: 1rem 0;
   box-shadow: var(--shadow);
   display: flex;
   flex-wrap: wrap;
-  gap: 1.2rem;
+  gap: 0.8rem 1.2rem;
   align-items: center;
 }
-.summary-bar .stat { display: flex; flex-direction: column; }
-.summary-bar .stat .label { font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.08em; }
-.summary-bar .stat .value { font-size: 1.4rem; font-weight: 700; color: var(--fg); }
+.summary-bar .stat { display: flex; flex-direction: column; min-width: 0; }
+.summary-bar .stat .label { font-size: 0.65rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.summary-bar .stat .value { font-size: 1.25rem; font-weight: 700; color: var(--fg); }
 .summary-bar button {
-  margin-left: auto;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 0.4rem 0.8rem;
+  padding: 0.35rem 0.7rem;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 .summary-bar button:hover { background: var(--code-bg); }
+.summary-bar-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-left: auto; }
 
 /* ===== Homepage: hero, progress, stage card grid, quick links ===== */
 .hero {
@@ -1372,7 +1485,39 @@ th { background: var(--code-bg); font-weight: 600; }
 .dd2-modal-actions button.danger { background: #c62828; color: #fff; border-color: #c62828; }
 .dd2-modal-actions button.primary:hover { filter: brightness(0.95); }
 
-/* ----- prev/next nav on per-quest pages ----- */
+/* ----- objective divider (for multi-part quests) ----- */
+.dd2-checklist li.obj-divider {
+  list-style: none;
+  margin: 0.8rem 0 0.3rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius);
+  text-align: center;
+}
+/* "continues in next part" hint at the bottom of a split quest card */
+.dd2-checklist li.obj-continues {
+  list-style: none;
+  margin: 0.5rem 0 0.2rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--code-bg);
+  color: var(--fg-muted);
+  font-size: 0.78rem;
+  font-style: italic;
+  text-align: center;
+  border-radius: var(--radius);
+}
+.view-toggle { font-weight: 600; }
+.view-toggle.active { background: var(--accent); color: #1a1a1c; border-color: var(--accent); }
+.view-toggle-group { display: inline-flex; gap: 0.3rem; padding: 0.2rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); }
+.view-toggle-group .view-toggle { border: 0; padding: 0.25rem 0.6rem; font-size: 0.78rem; }
+body.flow-view .by-location { display: none; }
+body.flow-view .by-flow { display: block; }
+body:not(.flow-view) .by-flow { display: none; }
 .quest-nav {
   display: flex; justify-content: space-between; align-items: center;
   gap: 1rem; margin: 2rem 0 1rem; padding: 0.8rem 1rem;
@@ -1957,6 +2102,26 @@ SHARED_JS = r"""
     back.addEventListener("click", onAction);
   }
 
+  // ----- view toggle (stage pages) -----
+  // The stage page renders TWO views in the DOM: a per-location view
+  // (default) and a "by recommended flow" view (a flat list in the
+  // order defined by the Stage MOC). This function wires up the
+  // .view-toggle buttons in the summary bar to swap between them by
+  // toggling a `flow-view` class on <body>; the CSS in SHARED_CSS
+  // does the actual show/hide.
+  function bindViewToggle() {
+    const toggles = document.querySelectorAll(".view-toggle");
+    if (toggles.length === 0) return;
+    toggles.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const view = btn.getAttribute("data-view");
+        if (view === "flow") document.body.classList.add("flow-view");
+        else document.body.classList.remove("flow-view");
+        toggles.forEach((t) => t.classList.toggle("active", t === btn));
+      });
+    });
+  }
+
   // ----- main -----
   function init() {
     // Run language toggle first so diag messages / reset confirm land
@@ -2055,6 +2220,11 @@ SHARED_JS = r"""
     // picker; once a file is chosen, a non-native modal asks the user
     // whether to merge with the current state or replace it outright.
     bindExportImport();
+
+    // View toggle: "By location" / "By recommended flow" buttons in the
+    // summary bar. Adds a body class that CSS uses to swap the per-location
+    // sections for a flat list ordered by the Stage MOC.
+    bindViewToggle();
 
     // Cross-tab sync: when another tab writes to the tracker key, re-apply
     // the new value to this tab's DOM. The storage event is fired in
@@ -2364,8 +2534,121 @@ def _quest_card_inner(quest: Quest, lang: str) -> str:
     return "\n".join(parts)
 
 
-def render_quest_block_bilingual(q_en: Quest, q_pt: Quest) -> str:
-    """Render a quest as a colored, collapsible, bilingual card."""
+def _split_objectives_at_dividers(
+    q_pt: Quest, q_en: Quest,
+) -> list[tuple[list, list]]:
+    """Split a quest's objectives into chunks at every divider pair.
+
+    Returns a list of (pt_chunk, en_chunk) tuples. Each tuple is the
+    objectives between (or before/after) divider lines. Divider items
+    themselves are NOT included in any chunk — they only act as
+    boundary markers.
+    """
+    pt_objs = q_pt.objectives
+    en_objs = q_en.objectives if q_en else []
+    chunks: list[tuple[list, list]] = []
+    cur_pt: list = []
+    cur_en: list = []
+    for pt_o, en_o in zip(pt_objs, en_objs):
+        if getattr(pt_o, "divider", False) and getattr(en_o, "divider", False):
+            chunks.append((cur_pt, cur_en))
+            cur_pt, cur_en = [], []
+        else:
+            cur_pt.append(pt_o)
+            cur_en.append(en_o)
+    chunks.append((cur_pt, cur_en))
+    return chunks
+
+
+def render_quest_block_bilingual(
+    q_en: Quest, q_pt: Quest,
+    show_dividers: bool = False,
+    split_dividers: bool = False,
+) -> str:
+    """Render a quest as a colored, collapsible, bilingual card.
+
+    `show_dividers`: when True, divider lines in the MD's objectives
+    list are emitted as visual separators (e.g. a "during One-Eyed
+    Interloper" badge between objective groups) inside a single card.
+
+    `split_dividers`: when True AND the quest actually has dividers,
+    the card is split into MULTIPLE cards (one per divider chunk).
+    Card 1 is the full content (summary, walkthrough, etc.) plus the
+    first chunk of objectives and a "continues below" hint. Subsequent
+    cards are minimal (title with "— Parte N" suffix, type, status,
+    objectives only). Only used on the by-flow view, where the
+    split structure makes the recommended order easier to follow.
+    """
+    # Detect dividers in BOTH PT and EN — author must mirror the
+    # split in both languages for the split to apply.
+    pt_objs = q_pt.objectives
+    en_objs = q_en.objectives if q_en else []
+    has_dividers = (
+        bool(pt_objs) and bool(en_objs)
+        and any(getattr(o, "divider", False) for o in pt_objs)
+        and any(getattr(o, "divider", False) for o in en_objs)
+    )
+
+    if not split_dividers or not has_dividers:
+        return _render_quest_card(
+            q_en, q_pt,
+            show_dividers=show_dividers,
+            minimal=False,
+            show_continues_note=False,
+            track_id_offset=0,
+        )
+
+    # Walk PT and EN in parallel, splitting at every divider pair.
+    chunks = _split_objectives_at_dividers(q_pt, q_en)
+
+    total = len(chunks)
+    cards: list[str] = []
+    # Track-id numbers must NOT reset between parts (that would
+    # collide with Part 1's IDs and silently lose localStorage
+    # state). Instead, each part's objectives get a base offset
+    # equal to the number of objectives in all preceding parts.
+    id_base = 0
+    for i, (pt_chunk, en_chunk) in enumerate(chunks, 1):
+        # Clone the quest with only this chunk's objectives.
+        q_pt_part = replace(q_pt, objectives=pt_chunk)
+        q_en_part = replace(q_en, objectives=en_chunk) if q_en else None
+        # Subsequent cards get a "— Parte N" / "— Part N" suffix on
+        # the title so the user knows this is a continuation.
+        if i > 1:
+            q_pt_part.title = f"{q_pt.title} — Parte {i}"
+            if q_en_part:
+                q_en_part.title = f"{q_en.title} — Part {i}"
+        cards.append(_render_quest_card(
+            q_en_part, q_pt_part,
+            show_dividers=False,
+            minimal=(i > 1),
+            show_continues_note=(i < total),
+            track_id_offset=id_base,
+        ))
+        # Next part starts after the objectives we just emitted
+        # (i.e. its first checkbox gets the next number).
+        id_base += len(pt_chunk)
+
+    return "\n".join(cards)
+
+
+def _render_quest_card(
+    q_en: Quest,
+    q_pt: Quest,
+    show_dividers: bool = False,
+    minimal: bool = False,
+    show_continues_note: bool = False,
+    track_id_offset: int = 0,
+) -> str:
+    """Render a single quest card. Internal helper used by
+    render_quest_block_bilingual (which may call this multiple times
+    when a quest is split at dividers).
+
+    `minimal=True` skips the summary/walkthrough/rewards/notes
+    sections (used for "Parte 2" cards that follow the main card).
+    `show_continues_note=True` appends a "continues in Part N below ↓"
+    hint at the bottom of the objectives list.
+    """
     q_pt_fallback = q_en  # if q_pt missing, EN acts as fallback
     # Use PT quest for type (always present) and EN for chrome (fallback to PT).
     qt = q_pt or q_pt_fallback
@@ -2389,22 +2672,32 @@ def render_quest_block_bilingual(q_en: Quest, q_pt: Quest) -> str:
     parts.append(status_badge(qt.status, qt.track_prefix))
     parts.append('</summary>')
 
-    # Card body — bilingual wrapper for summary link, then a SINGLE
-    # <ul> for objectives with bilingual <span>s inside each <li>. JS
-    # toggles the inner span visibility, no duplication of checkboxes.
+    # Card body
     parts.append('<div class="quest-card-body">')
-    en_inner = _quest_card_inner(qe, "en")
-    pt_inner = _quest_card_inner(qt, "pt")
-    parts.append(render_bilingual_raw(en_inner, pt_inner))
 
-    # Render objectives ONCE, outside the bilingual wrappers. The text
-    # inside each <li> is itself bilingual (rendered by
-    # render_quest_objectives_html when given an en_quest), so a single
-    # <ul> covers both languages and JS only has to swap which span is
-    # visible.
+    # Full-card sections (skipped for "Parte 2" continuation cards)
+    if not minimal:
+        en_inner = _quest_card_inner(qe, "en")
+        pt_inner = _quest_card_inner(qt, "pt")
+        parts.append(render_bilingual_raw(en_inner, pt_inner))
+
+    # Objectives — single UL with bilingual text inside each <li>.
     en_for_obj = qe if qe.objectives else None
     if qt.objectives or (en_for_obj and en_for_obj.objectives):
-        obj_html, _ = render_quest_objectives_html(qt, en_for_obj)
+        obj_html, _ = render_quest_objectives_html(
+            qt, en_for_obj,
+            show_dividers=show_dividers,
+            track_id_offset=track_id_offset,
+        )
+        if show_continues_note:
+            # Append a "continues in next part" hint at the end of the
+            # objectives list. Bilingual so it flips with the language pill.
+            obj_html += (
+                '\n<li class="obj-continues">'
+                '<span class="i18n" data-lang="en">↓ Continues in Part 2 below</span>'
+                '<span class="i18n" data-lang="pt" hidden>↓ Continua na Parte 2 abaixo</span>'
+                '</li>'
+            )
         parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
 
     parts.append('</div>')  # /quest-card-body
@@ -2480,7 +2773,10 @@ def render_quest_detail_bilingual(
     # duplicating the checklist.
     if qt.objectives or qe.objectives:
         parts.append(f'<h2>{render_bilingual(L("en", "section_objetivos"), L("pt", "section_objetivos"))}</h2>')
-        obj_html, _ = render_quest_objectives_html(qt, qe if qe.objectives else None)
+        # Per-quest detail page: no dividers (flat list of all
+        # objectives; the 2-part structure is a flow-context concept
+        # shown only on the by-flow view).
+        obj_html, _ = render_quest_objectives_html(qt, qe if qe.objectives else None, show_dividers=False)
         parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
 
     # Section-level content
@@ -2546,7 +2842,7 @@ def render_quest_detail_bilingual(
     )
 
 
-def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
+def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root: Path) -> str:
     """Generate dist/stage-{n}.html — the cheat sheet (bilingual)."""
     # Flatten PT quests for location grouping + totals. Bilingual content
     # is rendered pair-by-pair in the loop below; here we just need
@@ -2574,12 +2870,18 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
   <div class="stat"><span class="label">{L("en", "stat_main")}</span><span class="value">{main_count}</span></div>
   <div class="stat"><span class="label">{L("pt", "stat_side")}</span><span class="value">{side_count}</span></div>
   <div class="stat"><span class="label">{L("en", "stat_subs")}</span><span class="value"><span data-total-for="s{stage_n}-">{total_done}/{total_all}</span></span></div>
-  <button id="export-tracker" type="button" class="reset-link">{L("en", "export_btn")}</button>
-  <button id="export-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "export_btn")}</button>
-  <button id="import-tracker" type="button" class="reset-link">{L("en", "import_btn")}</button>
-  <button id="import-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "import_btn")}</button>
-  <button id="reset-tracker" type="button">{L("en", "resetar_progresso")}</button>
-  <button id="reset-tracker-pt" type="button" style="display:none">{L("pt", "resetar_progresso")}</button>
+  <div class="view-toggle-group">
+    <button id="view-toggle-locations" type="button" class="view-toggle active" data-view="locations">{render_bilingual(L("en", "view_toggle_locations"), L("pt", "view_toggle_locations"))}</button>
+    <button id="view-toggle-flow" type="button" class="view-toggle" data-view="flow">{render_bilingual(L("en", "view_toggle_flow"), L("pt", "view_toggle_flow"))}</button>
+  </div>
+  <div class="summary-bar-actions">
+    <button id="export-tracker" type="button" class="reset-link">{L("en", "export_btn")}</button>
+    <button id="export-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "export_btn")}</button>
+    <button id="import-tracker" type="button" class="reset-link">{L("en", "import_btn")}</button>
+    <button id="import-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "import_btn")}</button>
+    <button id="reset-tracker" type="button">{L("en", "resetar_progresso")}</button>
+    <button id="reset-tracker-pt" type="button" style="display:none">{L("pt", "resetar_progresso")}</button>
+  </div>
 </div>''')
 
     # TOC — minimal card grid. Just header + progress bar + meta (quest
@@ -2612,7 +2914,8 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
     body.append('</div>')
     body.append('</nav>')
 
-    # Per-location sections
+    # Per-location sections (the default "by location" view)
+    body.append('<div class="by-location">')
     for loc, emoji in LOCATION_ORDER:
         if not by_loc.get(loc):
             continue
@@ -2638,6 +2941,97 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
                 q_pt = bundle.get("pt") or q
                 q_en = bundle.get("en") or q
                 body.append(render_quest_block_bilingual(q_en, q_pt))
+    body.append('</div>')  # /by-location
+
+    # "By recommended flow" view: flat list in MOC order, no location
+    # grouping. Hidden by default; toggled by the .view-toggle buttons
+    # in the summary bar (JS in SHARED_JS).
+    flow_order = parse_stage_flow(stage_n, repo_root)
+    body.append('<div class="by-flow" hidden>')
+    body.append('<h2 id="flow">🗺 <span class="i18n" data-lang="en">Recommended flow</span>'
+                '<span class="i18n" data-lang="pt" hidden>Fluxo recomendado</span></h2>')
+    # Deferred Part 2 cards from split-dividers quests. We emit Part 1
+    # in place and queue Part 2 to be inserted RIGHT BEFORE the last
+    # quest in the MOC order — that way the road-trip part of a
+    # split quest (e.g. In Dragon's Wake Part 2: "Escort Gregor" +
+    # "Arrive in Vernworth") lands just before the road-trigger
+    # side quest (One-Eyed Interloper) instead of interrupting the
+    # Borderwatch/Melve side-quest sequence.
+    deferred_part2s: list[tuple[Quest, Quest]] = []
+    for idx, (qtype, fname) in enumerate(flow_order):
+        is_last = (idx == len(flow_order) - 1)
+        sub = "main-quests" if qtype == "main" else "side-quests"
+        # Find the matching quest in any bundle (look for a PT or EN match
+        # with the same filename stem)
+        match = None
+        for b in bundles.values():
+            for side in ("pt", "en"):
+                q = b.get(side)
+                if q is not None and q.filename.replace(".md", "").replace(".en", "") == fname:
+                    match = b
+                    break
+            if match:
+                break
+        if not match:
+            continue
+        q_pt = match.get("pt") or match["en"]
+        q_en = match.get("en") or match["pt"]
+        # Detect a divider-equipped quest so we can split it: emit
+        # Part 1 at the MOC position, defer Part 2 to just before
+        # the last quest.
+        has_dividers = (
+            bool(q_pt.objectives) and bool(q_en.objectives)
+            and any(getattr(o, "divider", False) for o in q_pt.objectives)
+            and any(getattr(o, "divider", False) for o in q_en.objectives)
+        )
+        if has_dividers and not is_last:
+            # Render Part 1 in place; defer Part 2 to be emitted
+            # just before the last MOC entry.
+            pt_chunks, en_chunks = _split_objectives_at_dividers(q_pt, q_en)
+            if len(pt_chunks) == 2:
+                # Part 1 only at the MOC position
+                q_pt_p1 = replace(q_pt, objectives=pt_chunks[0])
+                q_en_p1 = replace(q_en, objectives=en_chunks[0])
+                body.append(_render_quest_card(
+                    q_en_p1, q_pt_p1,
+                    show_dividers=False,
+                    minimal=False,
+                    show_continues_note=True,
+                    track_id_offset=0,
+                ))
+                # Part 2 deferred
+                q_pt_p2 = replace(q_pt, objectives=pt_chunks[1])
+                q_en_p2 = replace(q_en, objectives=en_chunks[1])
+                q_pt_p2.title = f"{q_pt.title} — Parte 2"
+                q_en_p2.title = f"{q_en.title} — Part 2"
+                deferred_part2s.append((q_en_p2, q_pt_p2))
+                continue
+        if has_dividers and is_last:
+            # Edge case: the last MOC entry itself has dividers —
+            # emit it normally, then append any deferred Part 2s.
+            body.append(render_quest_block_bilingual(q_en, q_pt, show_dividers=True, split_dividers=True))
+        else:
+            # Plain quest (no dividers). If this is the LAST iteration,
+            # flush any deferred Part 2s right BEFORE this quest so the
+            # split-quest's "road" part lands just before the
+            # road-trigger side quest.
+            if is_last:
+                for de_q_en, de_q_pt in deferred_part2s:
+                    body.append(_render_quest_card(
+                        de_q_en, de_q_pt,
+                        show_dividers=False,
+                        minimal=True,
+                        show_continues_note=False,
+                        track_id_offset=len(de_q_pt.objectives) and (len(deferred_part2s[0][1].objectives)),
+                    ))
+                deferred_part2s = []
+            # show_dividers + split_dividers=True only on the by-flow
+            # view: the per-quest page and the by-location view show
+            # objectives as a flat list. In the by-flow, a quest with
+            # dividers is split into multiple cards for easier
+            # following of the recommended order.
+            body.append(render_quest_block_bilingual(q_en, q_pt, show_dividers=True, split_dividers=True))
+    body.append('</div>')  # /by-flow
 
     # Footer tip
     body.append('<div class="callout callout-tip"><div class="callout-title">Tip</div>'
@@ -2716,7 +3110,7 @@ def main(argv: list[str] | None = None) -> int:
             continue
 
         # dist/stage-{n}.html
-        (out / f"stage-{n}.html").write_text(render_stage(n, bundles), encoding="utf-8")
+        (out / f"stage-{n}.html").write_text(render_stage(n, bundles, repo_root), encoding="utf-8")
         print(f"[ok] {out/f'stage-{n}.html'}")
 
         # dist/quests/stage-{n}/{main-quests,side-quests}/<slug>.html
@@ -2739,6 +3133,10 @@ def main(argv: list[str] | None = None) -> int:
             # (only neighbour quest objects, not the full bundle dict).
             prev_q = ordered_bundles[idx - 1].get("pt") or ordered_bundles[idx - 1]["en"] if idx > 0 else None
             next_q = ordered_bundles[idx + 1].get("pt") or ordered_bundles[idx + 1]["en"] if idx + 1 < len(ordered_bundles) else None
+            # from_path lets wiki-links inside this page's body
+            # resolve to hrefs that work from the per-quest file
+            # (3 levels deep in dist/).
+            q_en.from_path = q_pt.from_path = f"quests/stage-{n}/{sub}/{q_pt.slug}.html"
             target.write_text(
                 render_quest_detail_bilingual(q_en, q_pt, stage_n=n,
                                               prev_quest=prev_q, next_quest=next_q),
