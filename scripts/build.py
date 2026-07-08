@@ -2534,6 +2534,32 @@ def _quest_card_inner(quest: Quest, lang: str) -> str:
     return "\n".join(parts)
 
 
+def _split_objectives_at_dividers(
+    q_pt: Quest, q_en: Quest,
+) -> list[tuple[list, list]]:
+    """Split a quest's objectives into chunks at every divider pair.
+
+    Returns a list of (pt_chunk, en_chunk) tuples. Each tuple is the
+    objectives between (or before/after) divider lines. Divider items
+    themselves are NOT included in any chunk — they only act as
+    boundary markers.
+    """
+    pt_objs = q_pt.objectives
+    en_objs = q_en.objectives if q_en else []
+    chunks: list[tuple[list, list]] = []
+    cur_pt: list = []
+    cur_en: list = []
+    for pt_o, en_o in zip(pt_objs, en_objs):
+        if getattr(pt_o, "divider", False) and getattr(en_o, "divider", False):
+            chunks.append((cur_pt, cur_en))
+            cur_pt, cur_en = [], []
+        else:
+            cur_pt.append(pt_o)
+            cur_en.append(en_o)
+    chunks.append((cur_pt, cur_en))
+    return chunks
+
+
 def render_quest_block_bilingual(
     q_en: Quest, q_pt: Quest,
     show_dividers: bool = False,
@@ -2573,17 +2599,7 @@ def render_quest_block_bilingual(
         )
 
     # Walk PT and EN in parallel, splitting at every divider pair.
-    chunks: list[tuple[list, list]] = []
-    cur_pt: list = []
-    cur_en: list = []
-    for pt_o, en_o in zip(pt_objs, en_objs):
-        if getattr(pt_o, "divider", False) and getattr(en_o, "divider", False):
-            chunks.append((cur_pt, cur_en))
-            cur_pt, cur_en = [], []
-        else:
-            cur_pt.append(pt_o)
-            cur_en.append(en_o)
-    chunks.append((cur_pt, cur_en))
+    chunks = _split_objectives_at_dividers(q_pt, q_en)
 
     total = len(chunks)
     cards: list[str] = []
@@ -2934,7 +2950,16 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
     body.append('<div class="by-flow" hidden>')
     body.append('<h2 id="flow">🗺 <span class="i18n" data-lang="en">Recommended flow</span>'
                 '<span class="i18n" data-lang="pt" hidden>Fluxo recomendado</span></h2>')
-    for qtype, fname in flow_order:
+    # Deferred Part 2 cards from split-dividers quests. We emit Part 1
+    # in place and queue Part 2 to be inserted RIGHT BEFORE the last
+    # quest in the MOC order — that way the road-trip part of a
+    # split quest (e.g. In Dragon's Wake Part 2: "Escort Gregor" +
+    # "Arrive in Vernworth") lands just before the road-trigger
+    # side quest (One-Eyed Interloper) instead of interrupting the
+    # Borderwatch/Melve side-quest sequence.
+    deferred_part2s: list[tuple[Quest, Quest]] = []
+    for idx, (qtype, fname) in enumerate(flow_order):
+        is_last = (idx == len(flow_order) - 1)
         sub = "main-quests" if qtype == "main" else "side-quests"
         # Find the matching quest in any bundle (look for a PT or EN match
         # with the same filename stem)
@@ -2951,13 +2976,61 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
             continue
         q_pt = match.get("pt") or match["en"]
         q_en = match.get("en") or match["pt"]
-        # show_dividers + split_dividers=True only on the by-flow view:
-        # the per-quest page and the by-location view show objectives
-        # as a flat list (the 2-part structure is a flow-context
-        # concept). In the by-flow, a quest with dividers is split
-        # into multiple cards (Part 1, Part 2, ...) for easier
-        # following of the recommended order.
-        body.append(render_quest_block_bilingual(q_en, q_pt, show_dividers=True, split_dividers=True))
+        # Detect a divider-equipped quest so we can split it: emit
+        # Part 1 at the MOC position, defer Part 2 to just before
+        # the last quest.
+        has_dividers = (
+            bool(q_pt.objectives) and bool(q_en.objectives)
+            and any(getattr(o, "divider", False) for o in q_pt.objectives)
+            and any(getattr(o, "divider", False) for o in q_en.objectives)
+        )
+        if has_dividers and not is_last:
+            # Render Part 1 in place; defer Part 2 to be emitted
+            # just before the last MOC entry.
+            pt_chunks, en_chunks = _split_objectives_at_dividers(q_pt, q_en)
+            if len(pt_chunks) == 2:
+                # Part 1 only at the MOC position
+                q_pt_p1 = replace(q_pt, objectives=pt_chunks[0])
+                q_en_p1 = replace(q_en, objectives=en_chunks[0])
+                body.append(_render_quest_card(
+                    q_en_p1, q_pt_p1,
+                    show_dividers=False,
+                    minimal=False,
+                    show_continues_note=True,
+                    track_id_offset=0,
+                ))
+                # Part 2 deferred
+                q_pt_p2 = replace(q_pt, objectives=pt_chunks[1])
+                q_en_p2 = replace(q_en, objectives=en_chunks[1])
+                q_pt_p2.title = f"{q_pt.title} — Parte 2"
+                q_en_p2.title = f"{q_en.title} — Part 2"
+                deferred_part2s.append((q_en_p2, q_pt_p2))
+                continue
+        if has_dividers and is_last:
+            # Edge case: the last MOC entry itself has dividers —
+            # emit it normally, then append any deferred Part 2s.
+            body.append(render_quest_block_bilingual(q_en, q_pt, show_dividers=True, split_dividers=True))
+        else:
+            # Plain quest (no dividers). If this is the LAST iteration,
+            # flush any deferred Part 2s right BEFORE this quest so the
+            # split-quest's "road" part lands just before the
+            # road-trigger side quest.
+            if is_last:
+                for de_q_en, de_q_pt in deferred_part2s:
+                    body.append(_render_quest_card(
+                        de_q_en, de_q_pt,
+                        show_dividers=False,
+                        minimal=True,
+                        show_continues_note=False,
+                        track_id_offset=len(de_q_pt.objectives) and (len(deferred_part2s[0][1].objectives)),
+                    ))
+                deferred_part2s = []
+            # show_dividers + split_dividers=True only on the by-flow
+            # view: the per-quest page and the by-location view show
+            # objectives as a flat list. In the by-flow, a quest with
+            # dividers is split into multiple cards for easier
+            # following of the recommended order.
+            body.append(render_quest_block_bilingual(q_en, q_pt, show_dividers=True, split_dividers=True))
     body.append('</div>')  # /by-flow
 
     # Footer tip
