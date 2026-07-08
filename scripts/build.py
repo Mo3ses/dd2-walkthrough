@@ -87,6 +87,8 @@ STRINGS: dict[str, dict[str, str]] = {
         "alert_coming_soon": "UNDER CONSTRUCTION — translation coming soon",
         "alert_translation_pending": "(Translation pending)",
         "stage_card_open": "Open stage →",
+        "view_toggle_locations": "📍 By location",
+        "view_toggle_flow": "🗺 By recommended flow",
         "stage_card_main_fmt": "⚔ {n} main quests · 🗡 {s} side quests",
         "quick_links_label": "Quick links:",
         "quick_link_stage1": "Stage 1",
@@ -135,6 +137,8 @@ STRINGS: dict[str, dict[str, str]] = {
         "alert_coming_soon": "EM CONSTRUÇÃO — tradução em breve",
         "alert_translation_pending": "(Tradução pendente)",
         "stage_card_open": "Abrir stage →",
+        "view_toggle_locations": "📍 Por local",
+        "view_toggle_flow": "🗺 Por fluxo recomendado",
         "stage_card_main_fmt": "⚔ {n} quests principais · 🗡 {s} quests secundárias",
         "quick_links_label": "Links rápidos:",
         "quick_link_stage1": "Stage 1",
@@ -358,6 +362,59 @@ def load_stage_info(stage_n: int, repo_root: Path) -> StageInfo:
         main_count=main_n,
         side_count=side_n,
     )
+
+
+def parse_stage_flow(stage_n: int, repo_root: Path) -> list[tuple[str, str]]:
+    """Extract the recommended quest flow from the Stage MOC.
+
+    Scans the MOC tables for `[[Main Quests/...]]` and `[[Side Quests/...]]`
+    wiki-links, preserving document order. Returns a list of
+    (quest_type, filename) tuples — e.g. `[("main", "01 - Gaoled Awakening"),
+    ("main", "02 - Tale's Beginning"), ("side", "03 - Ordeal's of a New Recruit"), ...]`.
+
+    Quests that don't appear in the MOC are appended at the end in
+    filename order so the user still sees them in the flow view.
+    """
+    quests_root = repo_root / "Quests"
+    candidates = [
+        quests_root / f"Stage {stage_n}" / f"Stage {stage_n}.md",
+        quests_root / f"Stage {stage_n}.md",
+    ]
+    moc_text = ""
+    for moc in candidates:
+        if moc.exists():
+            moc_text = moc.read_text(encoding="utf-8")
+            break
+    flow: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    if moc_text:
+        for m in WIKILINK_RE.finditer(moc_text):
+            target = m.group(1)
+            for prefix, qtype in (("Main Quests/", "main"), ("Side Quests/", "side")):
+                if target.startswith(prefix):
+                    # `rstrip(".md")` would be wrong — it strips ANY of
+                    # '.', 'm', 'd' from the end, mangling "Timid" to
+                    # "Timi". Use removesuffix for the .md extension
+                    # only.
+                    fname = target[len(prefix):].removesuffix(".md").strip()
+                    if fname and fname not in seen:
+                        seen.add(fname)
+                        flow.append((qtype, fname))
+                    break
+    # Append any quests not mentioned in the MOC (keeps the flow view
+    # exhaustive even if the MOC is incomplete).
+    stage_dir = quests_root / f"Stage {stage_n}"
+    for sub, qtype in (("Main Quests", "main"), ("Side Quests", "side")):
+        sub_dir = stage_dir / sub
+        if not sub_dir.exists():
+            continue
+        for path in sorted(sub_dir.glob("*.md")):
+            if path.stem.endswith(".en"):
+                continue
+            if path.stem not in seen:
+                seen.add(path.stem)
+                flow.append((qtype, path.stem))
+    return flow
 
 
 # ---------------------------------------------------------------------------
@@ -1375,7 +1432,12 @@ th { background: var(--code-bg); font-weight: 600; }
 .dd2-modal-actions button.danger { background: #c62828; color: #fff; border-color: #c62828; }
 .dd2-modal-actions button.primary:hover { filter: brightness(0.95); }
 
-/* ----- prev/next nav on per-quest pages ----- */
+/* ----- view toggle: by-location vs by-flow on stage pages ----- */
+.view-toggle { font-weight: 600; }
+.view-toggle.active { background: var(--accent); color: #1a1a1c; border-color: var(--accent); }
+body.flow-view .by-location { display: none; }
+body.flow-view .by-flow { display: block; }
+body:not(.flow-view) .by-flow { display: none; }
 .quest-nav {
   display: flex; justify-content: space-between; align-items: center;
   gap: 1rem; margin: 2rem 0 1rem; padding: 0.8rem 1rem;
@@ -1960,6 +2022,26 @@ SHARED_JS = r"""
     back.addEventListener("click", onAction);
   }
 
+  // ----- view toggle (stage pages) -----
+  // The stage page renders TWO views in the DOM: a per-location view
+  // (default) and a "by recommended flow" view (a flat list in the
+  // order defined by the Stage MOC). This function wires up the
+  // .view-toggle buttons in the summary bar to swap between them by
+  // toggling a `flow-view` class on <body>; the CSS in SHARED_CSS
+  // does the actual show/hide.
+  function bindViewToggle() {
+    const toggles = document.querySelectorAll(".view-toggle");
+    if (toggles.length === 0) return;
+    toggles.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const view = btn.getAttribute("data-view");
+        if (view === "flow") document.body.classList.add("flow-view");
+        else document.body.classList.remove("flow-view");
+        toggles.forEach((t) => t.classList.toggle("active", t === btn));
+      });
+    });
+  }
+
   // ----- main -----
   function init() {
     // Run language toggle first so diag messages / reset confirm land
@@ -2058,6 +2140,11 @@ SHARED_JS = r"""
     // picker; once a file is chosen, a non-native modal asks the user
     // whether to merge with the current state or replace it outright.
     bindExportImport();
+
+    // View toggle: "By location" / "By recommended flow" buttons in the
+    // summary bar. Adds a body class that CSS uses to swap the per-location
+    // sections for a flat list ordered by the Stage MOC.
+    bindViewToggle();
 
     // Cross-tab sync: when another tab writes to the tracker key, re-apply
     // the new value to this tab's DOM. The storage event is fired in
@@ -2549,7 +2636,7 @@ def render_quest_detail_bilingual(
     )
 
 
-def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
+def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root: Path) -> str:
     """Generate dist/stage-{n}.html — the cheat sheet (bilingual)."""
     # Flatten PT quests for location grouping + totals. Bilingual content
     # is rendered pair-by-pair in the loop below; here we just need
@@ -2577,6 +2664,8 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
   <div class="stat"><span class="label">{L("en", "stat_main")}</span><span class="value">{main_count}</span></div>
   <div class="stat"><span class="label">{L("pt", "stat_side")}</span><span class="value">{side_count}</span></div>
   <div class="stat"><span class="label">{L("en", "stat_subs")}</span><span class="value"><span data-total-for="s{stage_n}-">{total_done}/{total_all}</span></span></div>
+  <button id="view-toggle-locations" type="button" class="reset-link view-toggle active" data-view="locations">{render_bilingual(L("en", "view_toggle_locations"), L("pt", "view_toggle_locations"))}</button>
+  <button id="view-toggle-flow" type="button" class="reset-link view-toggle" data-view="flow">{render_bilingual(L("en", "view_toggle_flow"), L("pt", "view_toggle_flow"))}</button>
   <button id="export-tracker" type="button" class="reset-link">{L("en", "export_btn")}</button>
   <button id="export-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "export_btn")}</button>
   <button id="import-tracker" type="button" class="reset-link">{L("en", "import_btn")}</button>
@@ -2615,7 +2704,8 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
     body.append('</div>')
     body.append('</nav>')
 
-    # Per-location sections
+    # Per-location sections (the default "by location" view)
+    body.append('<div class="by-location">')
     for loc, emoji in LOCATION_ORDER:
         if not by_loc.get(loc):
             continue
@@ -2641,6 +2731,34 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
                 q_pt = bundle.get("pt") or q
                 q_en = bundle.get("en") or q
                 body.append(render_quest_block_bilingual(q_en, q_pt))
+    body.append('</div>')  # /by-location
+
+    # "By recommended flow" view: flat list in MOC order, no location
+    # grouping. Hidden by default; toggled by the .view-toggle buttons
+    # in the summary bar (JS in SHARED_JS).
+    flow_order = parse_stage_flow(stage_n, repo_root)
+    body.append('<div class="by-flow" hidden>')
+    body.append('<h2 id="flow">🗺 <span class="i18n" data-lang="en">Recommended flow</span>'
+                '<span class="i18n" data-lang="pt" hidden>Fluxo recomendado</span></h2>')
+    for qtype, fname in flow_order:
+        sub = "main-quests" if qtype == "main" else "side-quests"
+        # Find the matching quest in any bundle (look for a PT or EN match
+        # with the same filename stem)
+        match = None
+        for b in bundles.values():
+            for side in ("pt", "en"):
+                q = b.get(side)
+                if q is not None and q.filename.replace(".md", "").replace(".en", "") == fname:
+                    match = b
+                    break
+            if match:
+                break
+        if not match:
+            continue
+        q_pt = match.get("pt") or match["en"]
+        q_en = match.get("en") or match["pt"]
+        body.append(render_quest_block_bilingual(q_en, q_pt))
+    body.append('</div>')  # /by-flow
 
     # Footer tip
     body.append('<div class="callout callout-tip"><div class="callout-title">Tip</div>'
@@ -2719,7 +2837,7 @@ def main(argv: list[str] | None = None) -> int:
             continue
 
         # dist/stage-{n}.html
-        (out / f"stage-{n}.html").write_text(render_stage(n, bundles), encoding="utf-8")
+        (out / f"stage-{n}.html").write_text(render_stage(n, bundles, repo_root), encoding="utf-8")
         print(f"[ok] {out/f'stage-{n}.html'}")
 
         # dist/quests/stage-{n}/{main-quests,side-quests}/<slug>.html
