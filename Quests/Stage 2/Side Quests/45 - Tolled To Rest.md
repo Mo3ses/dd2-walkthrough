@@ -39,4 +39,4 @@ O ancião Oscar foi capturado após o ciclope de One-Eyed Interloper, e jaz pres
 
 ## Related
 
-- [[Main Quests/28 - Till Death Do Us Part]] *(continuação natural)*
+- [[Side Quests/28 - Till Death Do Us Part]] *(continuação natural)*

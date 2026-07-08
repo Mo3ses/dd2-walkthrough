@@ -39,4 +39,4 @@ The elder Oscar was captured after the One-Eyed Interloper cyclops and lies impr
 
 ## Related
 
-- [[Main Quests/28 - Till Death Do Us Part]] *(natural follow-up)*
+- [[Side Quests/28 - Till Death Do Us Part]] *(natural follow-up)*
