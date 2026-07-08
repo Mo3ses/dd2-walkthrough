@@ -214,6 +214,7 @@ def main() -> int:
     print("-" * 80)
 
     all_conflicts: list[tuple[str, list[str]]] = []
+    coverage = {"3/3": 0, "2/3": 0, "1/3": 0, "0/3": 0}
     for md in quests:
         q = QuestFacts(name=md.stem, md_path=md)
         q.fextralife = load_md_facts(md)
@@ -222,14 +223,22 @@ def main() -> int:
             q.ign = load_html_facts(HTML_CACHE / f"ign_{num}.html")
             q.fandom = load_html_facts(HTML_CACHE / f"fan_{num}.html")
         conflicts = q.conflicts()
+        # Sources with at least one non-None field = "has data".
+        n_src = sum(
+            1 for s in (q.fextralife, q.ign, q.fandom)
+            if any(getattr(s, f) is not None for f in ("quest_giver", "xp", "gold"))
+        )
+        coverage[f"{n_src}/3"] = coverage.get(f"{n_src}/3", 0) + 1
         flag = "OK" if not conflicts else "CONFLICT"
-        print(f"[{flag}] {num or '?':>2}  {md.stem:<40}  {len(conflicts)} conflict(s)")
+        print(f"[{flag}] {num or '?':>2}  {md.stem:<40}  {len(conflicts)} conflict(s)  ({n_src}/3 sources)")
         for c in conflicts:
             print(f"           - {c}")
         if conflicts:
             all_conflicts.append((md.stem, conflicts))
 
     print(f"\nSummary: {len(all_conflicts)} of {len(quests)} quests have cross-source conflicts.")
+    cov = ", ".join(f"{k}={v}" for k, v in coverage.items() if v)
+    print(f"Source coverage: {cov}")
     return 1 if all_conflicts else 0
 
 
