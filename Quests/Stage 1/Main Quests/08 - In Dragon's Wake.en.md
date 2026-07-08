@@ -54,9 +54,13 @@ Complete [[Main Quests/02 - Tale's Beginning]] and (recommended) the Borderwatch
 
 ## Objectives
 
-- [x] Head to Melve
-- [x] Explore Melve
-- [x] Talk to Lennart
+> [!info] Two-part structure
+> This quest has **2 parts**. The first 3 objectives (up to "Talk to Lennart") are the normal flow from Borderwatch → Melve. The last 2 (Escort Gregor + Arrive in Vernworth) **can only be completed during [[Side Quests/09 - One-Eyed Interloper]]** — the side quest triggers automatically on the road and Gregor must survive.
+
+- [ ] Head to Melve
+- [ ] Explore Melve
+- [ ] Talk to Lennart
+- --- during [[Side Quests/09 - One-Eyed Interloper]] ---
 - [ ] Escort Gregor to the capital
 - [ ] Arrive in Vernworth
 

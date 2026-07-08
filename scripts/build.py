@@ -246,6 +246,7 @@ def _build_file_stage_index(quests_root: Path) -> None:
 class Objective:
     text: str
     done: bool
+    divider: bool = False  # True for visual separator lines in the objectives list
 
 
 @dataclass
@@ -262,6 +263,12 @@ class Quest:
     rewards: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     raw: str = ""
+    # Path of the rendered page (relative to dist/), used to make
+    # wiki-link hrefs in the body relative to the current page. Set
+    # by the page renderer before any body content is emitted; empty
+    # when rendering for the stage page (which uses root-relative
+    # paths).
+    from_path: str = ""
 
     @property
     def track_prefix(self) -> str:
@@ -445,7 +452,17 @@ def strip_callout_marker(line: str) -> tuple[str | None, str]:
 
 def parse_objectives(lines: list[str]) -> list[Objective]:
     """Pull the bullet list under `## Objetivos`/`## Objetivo` (PT)
-    OR `## Objectives` (EN). Both spellings are accepted."""
+    OR `## Objectives` (EN). Both spellings are accepted.
+
+    Supports a divider syntax: a list item that starts with `--- ` is
+    treated as a visual separator (not a checkbox), with the rest of
+    the line as the label. This lets MD authors split a quest into
+    parts — e.g. "--- durante [[Side Quests/09 - One-Eyed Interloper]] ---"
+    between objective groups.
+
+    Divider items are returned as `Objective(text=label, done=False,
+    divider=True)`.
+    """
     in_obj = False
     out: list[Objective] = []
     for line in lines:
@@ -466,6 +483,11 @@ def parse_objectives(lines: list[str]) -> list[Objective]:
         cb = CHECKBOX_RE.match(body)
         if cb:
             out.append(Objective(text=cb.group("text"), done=cb.group("state").lower() == "x"))
+        elif body.lstrip().startswith("---"):
+            # Divider: strip leading/trailing `---` and use the rest as label.
+            label = body.strip().strip("-").strip()
+            if label:
+                out.append(Objective(text=label, done=False, divider=True))
     return out
 
 
@@ -856,27 +878,50 @@ def render_quest_objectives_html(
     """
     items: list[str] = []
     tracks: list[tuple[str, bool]] = []
-    for i, obj in enumerate(quest_pt.objectives, index_offset):
+    # Walk PT and EN in parallel so dividers in one list stay aligned
+    # with dividers in the other. The track-id counter advances only
+    # for real (non-divider) objectives so the IDs don't shift.
+    en_objs = en_quest.objectives if en_quest is not None else []
+    i = 0  # 1-based tracker id (skips dividers)
+    for pt_obj, en_obj in zip(quest_pt.objectives, en_objs):
+        # Both sides a divider: emit the PT version (the EN text is
+        # already represented by the language pill that the user can
+        # click to flip). Resolve wiki-links so the label can mention
+        # another quest by name.
+        if pt_obj.divider and getattr(en_obj, "divider", False):
+            label_html = render_inline(pt_obj.text, from_path=quest_pt.from_path)
+            items.append(f'<li class="obj-divider" aria-hidden="true">{label_html}</li>')
+            continue
+        # PT is a divider but EN isn't (or vice versa) — author error.
+        # Treat it as a non-divider to keep both sides rendering.
+        i += 1
         tid = f"{quest_pt.track_prefix}-{i}"
-        en_obj = (
-            en_quest.objectives[i - index_offset]
-            if en_quest is not None and (i - index_offset) < len(en_quest.objectives)
-            else None
+        text_html = (
+            f'<span class="i18n" data-lang="en">{html.escape(en_obj.text)}</span>'
+            f'<span class="i18n" data-lang="pt" hidden>{html.escape(pt_obj.text)}</span>'
         )
-        if en_obj is not None:
-            text_html = (
-                f'<span class="i18n" data-lang="en">{html.escape(en_obj.text)}</span>'
-                f'<span class="i18n" data-lang="pt" hidden>{html.escape(obj.text)}</span>'
-            )
-        else:
-            text_html = html.escape(obj.text)
         items.append(
             f'<li data-track-id="{tid}">'
             f'<label><input type="checkbox" data-track-id="{tid}"> '
             f'<span class="obj-text">{text_html}</span>'
             f'</label></li>'
         )
-        tracks.append((tid, obj.done))
+        tracks.append((tid, pt_obj.done))
+    # Tail of the longer list (in case PT and EN are not the same length)
+    for tail_obj in quest_pt.objectives[len(en_objs):]:
+        if tail_obj.divider:
+            label_html = render_inline(tail_obj.text, from_path=quest_pt.from_path)
+            items.append(f'<li class="obj-divider" aria-hidden="true">{label_html}</li>')
+            continue
+        i += 1
+        tid = f"{quest_pt.track_prefix}-{i}"
+        items.append(
+            f'<li data-track-id="{tid}">'
+            f'<label><input type="checkbox" data-track-id="{tid}"> '
+            f'<span class="obj-text">{html.escape(tail_obj.text)}</span>'
+            f'</label></li>'
+        )
+        tracks.append((tid, tail_obj.done))
     return "\n".join(items), tracks
 
 
@@ -899,7 +944,7 @@ SHARED_CSS = """
   --code-bg: #f4f0ea;
   --shadow: 0 1px 2px rgba(0,0,0,0.04);
   --radius: 6px;
-  --max-w: 920px;
+  --max-w: 1280px;
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 * { box-sizing: border-box; }
@@ -1176,14 +1221,14 @@ th { background: var(--code-bg); font-weight: 600; }
    the live localStorage counter actually operates. */
 .loc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem;
 }
 .loc-card {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  padding: 0.7rem 0.95rem;
+  gap: 0.3rem;
+  padding: 0.5rem 0.7rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1223,27 +1268,28 @@ th { background: var(--code-bg); font-weight: 600; }
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 0.9rem 1.1rem;
-  margin: 1.2rem 0;
+  padding: 0.7rem 1rem;
+  margin: 1rem 0;
   box-shadow: var(--shadow);
   display: flex;
   flex-wrap: wrap;
-  gap: 1.2rem;
+  gap: 0.8rem 1.2rem;
   align-items: center;
 }
-.summary-bar .stat { display: flex; flex-direction: column; }
-.summary-bar .stat .label { font-size: 0.7rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.08em; }
-.summary-bar .stat .value { font-size: 1.4rem; font-weight: 700; color: var(--fg); }
+.summary-bar .stat { display: flex; flex-direction: column; min-width: 0; }
+.summary-bar .stat .label { font-size: 0.65rem; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; }
+.summary-bar .stat .value { font-size: 1.25rem; font-weight: 700; color: var(--fg); }
 .summary-bar button {
-  margin-left: auto;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 0.4rem 0.8rem;
+  padding: 0.35rem 0.7rem;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 .summary-bar button:hover { background: var(--code-bg); }
+.summary-bar-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-left: auto; }
 
 /* ===== Homepage: hero, progress, stage card grid, quick links ===== */
 .hero {
@@ -1432,9 +1478,24 @@ th { background: var(--code-bg); font-weight: 600; }
 .dd2-modal-actions button.danger { background: #c62828; color: #fff; border-color: #c62828; }
 .dd2-modal-actions button.primary:hover { filter: brightness(0.95); }
 
-/* ----- view toggle: by-location vs by-flow on stage pages ----- */
+/* ----- objective divider (for multi-part quests) ----- */
+.dd2-checklist li.obj-divider {
+  list-style: none;
+  margin: 0.8rem 0 0.3rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius);
+  text-align: center;
+}
 .view-toggle { font-weight: 600; }
 .view-toggle.active { background: var(--accent); color: #1a1a1c; border-color: var(--accent); }
+.view-toggle-group { display: inline-flex; gap: 0.3rem; padding: 0.2rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); }
+.view-toggle-group .view-toggle { border: 0; padding: 0.25rem 0.6rem; font-size: 0.78rem; }
 body.flow-view .by-location { display: none; }
 body.flow-view .by-flow { display: block; }
 body:not(.flow-view) .by-flow { display: none; }
@@ -2664,14 +2725,18 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
   <div class="stat"><span class="label">{L("en", "stat_main")}</span><span class="value">{main_count}</span></div>
   <div class="stat"><span class="label">{L("pt", "stat_side")}</span><span class="value">{side_count}</span></div>
   <div class="stat"><span class="label">{L("en", "stat_subs")}</span><span class="value"><span data-total-for="s{stage_n}-">{total_done}/{total_all}</span></span></div>
-  <button id="view-toggle-locations" type="button" class="reset-link view-toggle active" data-view="locations">{render_bilingual(L("en", "view_toggle_locations"), L("pt", "view_toggle_locations"))}</button>
-  <button id="view-toggle-flow" type="button" class="reset-link view-toggle" data-view="flow">{render_bilingual(L("en", "view_toggle_flow"), L("pt", "view_toggle_flow"))}</button>
-  <button id="export-tracker" type="button" class="reset-link">{L("en", "export_btn")}</button>
-  <button id="export-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "export_btn")}</button>
-  <button id="import-tracker" type="button" class="reset-link">{L("en", "import_btn")}</button>
-  <button id="import-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "import_btn")}</button>
-  <button id="reset-tracker" type="button">{L("en", "resetar_progresso")}</button>
-  <button id="reset-tracker-pt" type="button" style="display:none">{L("pt", "resetar_progresso")}</button>
+  <div class="view-toggle-group">
+    <button id="view-toggle-locations" type="button" class="view-toggle active" data-view="locations">{render_bilingual(L("en", "view_toggle_locations"), L("pt", "view_toggle_locations"))}</button>
+    <button id="view-toggle-flow" type="button" class="view-toggle" data-view="flow">{render_bilingual(L("en", "view_toggle_flow"), L("pt", "view_toggle_flow"))}</button>
+  </div>
+  <div class="summary-bar-actions">
+    <button id="export-tracker" type="button" class="reset-link">{L("en", "export_btn")}</button>
+    <button id="export-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "export_btn")}</button>
+    <button id="import-tracker" type="button" class="reset-link">{L("en", "import_btn")}</button>
+    <button id="import-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "import_btn")}</button>
+    <button id="reset-tracker" type="button">{L("en", "resetar_progresso")}</button>
+    <button id="reset-tracker-pt" type="button" style="display:none">{L("pt", "resetar_progresso")}</button>
+  </div>
 </div>''')
 
     # TOC — minimal card grid. Just header + progress bar + meta (quest
@@ -2860,6 +2925,10 @@ def main(argv: list[str] | None = None) -> int:
             # (only neighbour quest objects, not the full bundle dict).
             prev_q = ordered_bundles[idx - 1].get("pt") or ordered_bundles[idx - 1]["en"] if idx > 0 else None
             next_q = ordered_bundles[idx + 1].get("pt") or ordered_bundles[idx + 1]["en"] if idx + 1 < len(ordered_bundles) else None
+            # from_path lets wiki-links inside this page's body
+            # resolve to hrefs that work from the per-quest file
+            # (3 levels deep in dist/).
+            q_en.from_path = q_pt.from_path = f"quests/stage-{n}/{sub}/{q_pt.slug}.html"
             target.write_text(
                 render_quest_detail_bilingual(q_en, q_pt, stage_n=n,
                                               prev_quest=prev_q, next_quest=next_q),

@@ -54,9 +54,13 @@ Conclua [[Main Quests/02 - Tale's Beginning]] e (recomendado) as side quests de 
 
 ## Objetivos
 
-- [x] Vá até Melve
-- [x] Explore Melve
-- [x] Fale com Lennart
+> [!info] Estrutura em 2 partes
+> Esta quest tem **2 partes**. Os 3 primeiros objetivos (até "Fale com Lennart") são o fluxo normal em Borderwatch → Melve. Os 2 últimos (Acompanhar Gregor + Chegar em Vernworth) **só podem ser completados durante [[Side Quests/09 - One-Eyed Interloper]]** — a side quest é disparada automaticamente na estrada e o Gregor precisa sobreviver.
+
+- [ ] Vá até Melve
+- [ ] Explore Melve
+- [ ] Fale com Lennart
+- --- durante [[Side Quests/09 - One-Eyed Interloper]] ---
 - [ ] Acompanhe Gregor até a capital
 - [ ] Chegue em Vernworth
 
