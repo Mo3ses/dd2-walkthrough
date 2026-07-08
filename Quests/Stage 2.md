@@ -46,37 +46,53 @@ tags: [moc, stage-2, vermund, index]
 20. [[Side Quests/27 - The Arisen's Shadow]]
 21. [[Side Quests/32 - Readvent of Calamity]]
 
-### Vernworth pt.2 — Battahl prep + archer chain
+### Vernworth pt.2 — Arisen's Shadow finale + Battahl/Sphinx chain + archer chain
 
-22. [[Side Quests/28 - Till Death Do Us Part]]
-23. [[Side Quests/42 - Hunt for the Jadeite Orb]]
-24. [[Side Quests/41 - Prey for the Pack]]
-25. [[Side Quests/43 - The Sorcerer's Appraisal]]
-26. [[Side Quests/39 - A Trial of Archery]]
-27. [[Side Quests/36 - Spellbound]]
-28. [[Side Quests/40 - The Ailing Arborheart]]
-29. [[Side Quests/37 - Trouble on the Cape]]
-30. [[Side Quests/33 - Home Is Where the Hearth Is]]
+22. [[Side Quests/28 - Till Death Do Us Part]] *(INICIAR — Margit; **time-sensitive**, complete before Gift of Bow timer expires)*
+23. Tolled To Rest *(INICIAR + COMPLETAR em uma única fase; Ancião Oscar)*
+24. A Game of Wits *(INICIAR + CONTINUAR — Esfinge; 4 riddles, traz `SphinxParent` pawn + Nation's Death Knell)*
+25. [[Side Quests/42 - Hunt for the Jadeite Orb]] *(INICIAR — Offulve na entrada de Checkpoint)*
+26. [[Side Quests/41 - Prey for the Pack]] *(INICIAR + COMPLETAR — Morris; **time-sensitive**, sleep 2×)*
+27. [[Side Quests/43 - The Sorcerer's Appraisal]] *(INICIAR — Myrddin; **NÃO dê nenhum tomo ainda**, vista set nobre)*
+28. [[Side Quests/39 - A Trial of Archery]] *(INICIAR — Glyndwr de novo em Vernworth)*
+39. [[Main Quests/21 - The Caged Magistrate]] *(CONTINUAR + COMPLETAR — Waldhar na prisão com set de guarda: "The Arisen" / "Urge to leave" / "Helping hands")*
+30. [[Side Quests/36 - Spellbound]] *(CONTINUAR — 3 grimórios originais à Trysha de uma vez; Turquoise Ring. CONTINUAR — rampage event: NÃO ataque Trysha, tackle quando ela parar. COMPLETAR)*
+31. [[Side Quests/40 - The Ailing Arborheart]] *(INICIAR — Doireann, siga a árvore, aceite sair com Taliesin)*
+32. [[Side Quests/32 - Readvent of Calamity]] *(CONTINUAR — Ulrika fugiu para Harve; Lennart pede para localizar)*
 
-### Vernworth pt.3 — final political arc + Dragon ignited
+### Vernworth pt.3 — final political arc + Steigerian transition
 
-31. [[Side Quests/16 - Masked Correspondence]]
-32. [[Side Quests/22 - A Magesterial Amenity]]
-33. [[Main Quests/24 - An Unsettling Encounter]]
-34. [[Side Quests/25 - Every Rose Has Its Thorn]]
-35. [[Main Quests/44 - Feast of Deception]]
+33. [[Side Quests/37 - Trouble on the Cape]] *(auto-dispatched no fim de Readvent Calamity)*
+34. A Case of Sculptor's Block *(INICIAR — Klark no bairro nobre; tentar após Stolen Throne se stall)*
+35. Dulled Steel, Cold Forge *(INICIAR — Roman nos jardins do castelo; tentar após Stolen Throne se stall)*
+36. [[Side Quests/16 - Masked Correspondence]] *(INICIAR — Sven no castelo; COMPLETAR no baile de máscara: carta para homem com capa azul + óculos da Magesterial Amenity)*
+37. [[Side Quests/22 - A Magesterial Amenity]] *(INICIAR + COMPLETAR — Gautstafr; óculos coletado no baile)*
+38. [[Side Quests/20 - Disa's Plot]] *(CONTINUAR — invadir castelo, set de guarda, carta pra Sven, sair pela janela; COMPLETAR — Waldhar no Gracious Hand, Towering Earth)*
+39. [[Main Quests/21 - The Caged Magistrate]] *(CONTINUAR + COMPLETAR — Waldhar na prisão com set de guarda: "The Arisen" / "Urge to leave" / "Helping hands")*
+40. [[Main Quests/23 - The Stolen Throne]] *(COMPLETAR)*
+41. [[Main Quests/24 - An Unsettling Encounter]] *(INICIAR + COMPLETAR — Brant na taverna à noite)*
+42. [[Side Quests/33 - Home Is Where the Hearth Is]] *(COMPLETAR — Brant em Melve)*
+43. [[Side Quests/25 - Every Rose Has Its Thorn]] *(INICIAR + COMPLETAR; **time-sensitive, 3 dias** — Wilhelmina, Sven, Murder Report, Allard, Brant, fugir da cidade)*
+44. [[Main Quests/44 - Feast of Deception]] *(INICIAR + CONTINUAR + COMPLETAR — Brant, set nobre + máscara, banquete, Godsway)*
+45. A Noble Exchange *(INICIAR + COMPLETAR — bastão do NPC no baile, descarta, agarra quando guardas anunciarem)*
+46. Nation of the Lambert Flame *(INICIAR — Stage 3 transition)*
+47. A Veil of Gossamer *(INICIAR — Stage 3 setup)*
 
 **Dicas embutidas no fluxo:**
 
 - Tenha 2 kits de acampamento no inventário (opcional — reduz caminhada).
+- **`Claw Them Into Shape` (pt.1 step 5) pode começar em Stage 1**: compre as 3 espadas de Kassandra em [[Locations/Borderwatch Outpost]] **antes** de sair de Stage 1. Sem elas, a quest em Stage 2 fica impossível de completar. Cross-ref Stage 1 MOC.
 - Após `Claw Them Into Shape` (pt.1 step 5), acampe ao lado do Borderwatch Training Grounds para esperar o dia passar.
 - Acampe ao lado do Moonglow Garden para liberar `Beren's Final Lesson` (pt.1 step 7).
 - Durma até a noite várias vezes para forçar encontros noturnos: Brant na taverna (pt.1 step 1), Saint of the Slums (pt.1 step 15), Albert/Beggar's Tale (pt.1 step 9), Till Death (pt.2 step 22 — janela de tempo compartilhada com Gift of the Bow).
 - Vocation Mystic Spearhand em Sigurd; Warrior Maister em Lennart após matar o Dragão.
-- Leve 1 Portcrystal (opcional) — pt.2 facilita voltar do Ancient Battleground e do Sphinx.
-- Leve arco no inventário (Wayfarer classe ou Arqueiro) — pt.2 usa extensivamente.
-- SphinxParent pawn: nomeie um pawn "SphinxParent" e coloque na party para o puzzle final do `A Game of Wits`.
+- Leve 1 Portcrystal (opcional) — pt.2 facilita voltar do Ancient Battleground e do Sphinx (A Game of Wits step 24).
+- Leve arco no inventário (Wayfarer classe ou Arqueiro) — pt.2 usa extensivamente (Glyndwr training, Bridge Cyclops Abridged).
+- SphinxParent pawn: nomeie um pawn "SphinxParent" e coloque na party para o puzzle final do `A Game of Wits` (pt.2 step 24).
 - `Till Death Do Us Part` (pt.2 step 22) é **time-sensitive** — não enrole, completa logo após Gift of the Bow.
+- `Spellbound` (pt.2 step 30) tem rampage event na casa da Trysha — NÃO ataque ela, tackle quando ela parar para recuperar.
+- `Every Rose Has Its Thorn` (pt.3 step 43) tem janela de 3 dias in-game — Wilhelmina aceita, Murder Report no quarto do Allard, Brant → fugir da cidade.
+- `House of the Blue Sunbright` (pt.1 step 16) tem janela soft: precisa de Daphne no Slums de Vernworth (Daphne aparece após Gift of Giving) — verifique pre-req se stall.
 
 ## 📍 Locais do Stage 2 (ordem de progressão)
 
