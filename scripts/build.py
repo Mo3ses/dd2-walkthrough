@@ -32,7 +32,7 @@ import html
 import json
 import re
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Iterable
 
@@ -858,6 +858,7 @@ def render_quest_objectives_html(
     en_quest: Quest | None = None,
     index_offset: int = 1,
     show_dividers: bool = False,
+    track_id_offset: int = 0,
 ) -> tuple[str, list[tuple[str, bool]]]:
     """Render the objectives checklist as a single `<ul>`.
 
@@ -882,8 +883,10 @@ def render_quest_objectives_html(
     # Walk PT and EN in parallel so dividers in one list stay aligned
     # with dividers in the other. The track-id counter advances only
     # for real (non-divider) objectives so the IDs don't shift.
+    # track_id_offset lets a "Part 2" card start at the next number
+    # (e.g. 4) so its checkbox IDs don't collide with Part 1.
     en_objs = en_quest.objectives if en_quest is not None else []
-    i = 0  # 1-based tracker id (skips dividers)
+    i = track_id_offset  # 0-based; tid is f"{prefix}-{i+1}"
     for pt_obj, en_obj in zip(quest_pt.objectives, en_objs):
         # Both sides a divider: emit the PT version (the EN text is
         # already represented by the language pill that the user can
@@ -1495,6 +1498,18 @@ th { background: var(--code-bg); font-weight: 600; }
   letter-spacing: 0.06em;
   border-radius: var(--radius);
   text-align: center;
+}
+/* "continues in next part" hint at the bottom of a split quest card */
+.dd2-checklist li.obj-continues {
+  list-style: none;
+  margin: 0.5rem 0 0.2rem;
+  padding: 0.4rem 0.6rem;
+  background: var(--code-bg);
+  color: var(--fg-muted);
+  font-size: 0.78rem;
+  font-style: italic;
+  text-align: center;
+  border-radius: var(--radius);
 }
 .view-toggle { font-weight: 600; }
 .view-toggle.active { background: var(--accent); color: #1a1a1c; border-color: var(--accent); }
@@ -2519,8 +2534,105 @@ def _quest_card_inner(quest: Quest, lang: str) -> str:
     return "\n".join(parts)
 
 
-def render_quest_block_bilingual(q_en: Quest, q_pt: Quest, show_dividers: bool = False) -> str:
-    """Render a quest as a colored, collapsible, bilingual card."""
+def render_quest_block_bilingual(
+    q_en: Quest, q_pt: Quest,
+    show_dividers: bool = False,
+    split_dividers: bool = False,
+) -> str:
+    """Render a quest as a colored, collapsible, bilingual card.
+
+    `show_dividers`: when True, divider lines in the MD's objectives
+    list are emitted as visual separators (e.g. a "during One-Eyed
+    Interloper" badge between objective groups) inside a single card.
+
+    `split_dividers`: when True AND the quest actually has dividers,
+    the card is split into MULTIPLE cards (one per divider chunk).
+    Card 1 is the full content (summary, walkthrough, etc.) plus the
+    first chunk of objectives and a "continues below" hint. Subsequent
+    cards are minimal (title with "— Parte N" suffix, type, status,
+    objectives only). Only used on the by-flow view, where the
+    split structure makes the recommended order easier to follow.
+    """
+    # Detect dividers in BOTH PT and EN — author must mirror the
+    # split in both languages for the split to apply.
+    pt_objs = q_pt.objectives
+    en_objs = q_en.objectives if q_en else []
+    has_dividers = (
+        bool(pt_objs) and bool(en_objs)
+        and any(getattr(o, "divider", False) for o in pt_objs)
+        and any(getattr(o, "divider", False) for o in en_objs)
+    )
+
+    if not split_dividers or not has_dividers:
+        return _render_quest_card(
+            q_en, q_pt,
+            show_dividers=show_dividers,
+            minimal=False,
+            show_continues_note=False,
+            track_id_offset=0,
+        )
+
+    # Walk PT and EN in parallel, splitting at every divider pair.
+    chunks: list[tuple[list, list]] = []
+    cur_pt: list = []
+    cur_en: list = []
+    for pt_o, en_o in zip(pt_objs, en_objs):
+        if getattr(pt_o, "divider", False) and getattr(en_o, "divider", False):
+            chunks.append((cur_pt, cur_en))
+            cur_pt, cur_en = [], []
+        else:
+            cur_pt.append(pt_o)
+            cur_en.append(en_o)
+    chunks.append((cur_pt, cur_en))
+
+    total = len(chunks)
+    cards: list[str] = []
+    # Track-id numbers must NOT reset between parts (that would
+    # collide with Part 1's IDs and silently lose localStorage
+    # state). Instead, each part's objectives get a base offset
+    # equal to the number of objectives in all preceding parts.
+    id_base = 0
+    for i, (pt_chunk, en_chunk) in enumerate(chunks, 1):
+        # Clone the quest with only this chunk's objectives.
+        q_pt_part = replace(q_pt, objectives=pt_chunk)
+        q_en_part = replace(q_en, objectives=en_chunk) if q_en else None
+        # Subsequent cards get a "— Parte N" / "— Part N" suffix on
+        # the title so the user knows this is a continuation.
+        if i > 1:
+            q_pt_part.title = f"{q_pt.title} — Parte {i}"
+            if q_en_part:
+                q_en_part.title = f"{q_en.title} — Part {i}"
+        cards.append(_render_quest_card(
+            q_en_part, q_pt_part,
+            show_dividers=False,
+            minimal=(i > 1),
+            show_continues_note=(i < total),
+            track_id_offset=id_base,
+        ))
+        # Next part starts after the objectives we just emitted
+        # (i.e. its first checkbox gets the next number).
+        id_base += len(pt_chunk)
+
+    return "\n".join(cards)
+
+
+def _render_quest_card(
+    q_en: Quest,
+    q_pt: Quest,
+    show_dividers: bool = False,
+    minimal: bool = False,
+    show_continues_note: bool = False,
+    track_id_offset: int = 0,
+) -> str:
+    """Render a single quest card. Internal helper used by
+    render_quest_block_bilingual (which may call this multiple times
+    when a quest is split at dividers).
+
+    `minimal=True` skips the summary/walkthrough/rewards/notes
+    sections (used for "Parte 2" cards that follow the main card).
+    `show_continues_note=True` appends a "continues in Part N below ↓"
+    hint at the bottom of the objectives list.
+    """
     q_pt_fallback = q_en  # if q_pt missing, EN acts as fallback
     # Use PT quest for type (always present) and EN for chrome (fallback to PT).
     qt = q_pt or q_pt_fallback
@@ -2544,25 +2656,32 @@ def render_quest_block_bilingual(q_en: Quest, q_pt: Quest, show_dividers: bool =
     parts.append(status_badge(qt.status, qt.track_prefix))
     parts.append('</summary>')
 
-    # Card body — bilingual wrapper for summary link, then a SINGLE
-    # <ul> for objectives with bilingual <span>s inside each <li>. JS
-    # toggles the inner span visibility, no duplication of checkboxes.
+    # Card body
     parts.append('<div class="quest-card-body">')
-    en_inner = _quest_card_inner(qe, "en")
-    pt_inner = _quest_card_inner(qt, "pt")
-    parts.append(render_bilingual_raw(en_inner, pt_inner))
 
-    # Render objectives ONCE, outside the bilingual wrappers. The text
-    # inside each <li> is itself bilingual (rendered by
-    # render_quest_objectives_html when given an en_quest), so a single
-    # <ul> covers both languages and JS only has to swap which span is
-    # visible.
+    # Full-card sections (skipped for "Parte 2" continuation cards)
+    if not minimal:
+        en_inner = _quest_card_inner(qe, "en")
+        pt_inner = _quest_card_inner(qt, "pt")
+        parts.append(render_bilingual_raw(en_inner, pt_inner))
+
+    # Objectives — single UL with bilingual text inside each <li>.
     en_for_obj = qe if qe.objectives else None
     if qt.objectives or (en_for_obj and en_for_obj.objectives):
-        # Forward the show_dividers flag to the objectives renderer so
-        # the by-flow view on the stage page can show the 2-part
-        # structure while the per-quest card (default caller) stays flat.
-        obj_html, _ = render_quest_objectives_html(qt, en_for_obj, show_dividers=show_dividers)
+        obj_html, _ = render_quest_objectives_html(
+            qt, en_for_obj,
+            show_dividers=show_dividers,
+            track_id_offset=track_id_offset,
+        )
+        if show_continues_note:
+            # Append a "continues in next part" hint at the end of the
+            # objectives list. Bilingual so it flips with the language pill.
+            obj_html += (
+                '\n<li class="obj-continues">'
+                '<span class="i18n" data-lang="en">↓ Continues in Part 2 below</span>'
+                '<span class="i18n" data-lang="pt" hidden>↓ Continua na Parte 2 abaixo</span>'
+                '</li>'
+            )
         parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
 
     parts.append('</div>')  # /quest-card-body
@@ -2832,10 +2951,13 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
             continue
         q_pt = match.get("pt") or match["en"]
         q_en = match.get("en") or match["pt"]
-        # show_dividers=True only on the by-flow view: the per-quest
-        # page and the by-location view show objectives as a flat list
-        # (the 2-part structure is a flow-context concept).
-        body.append(render_quest_block_bilingual(q_en, q_pt, show_dividers=True))
+        # show_dividers + split_dividers=True only on the by-flow view:
+        # the per-quest page and the by-location view show objectives
+        # as a flat list (the 2-part structure is a flow-context
+        # concept). In the by-flow, a quest with dividers is split
+        # into multiple cards (Part 1, Part 2, ...) for easier
+        # following of the recommended order.
+        body.append(render_quest_block_bilingual(q_en, q_pt, show_dividers=True, split_dividers=True))
     body.append('</div>')  # /by-flow
 
     # Footer tip
