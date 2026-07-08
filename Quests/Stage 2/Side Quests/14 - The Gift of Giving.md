@@ -45,6 +45,7 @@ Iniciar [[10 - A Place to Call Home]] e conversar com NPCs no Merchant Quarter.
 
 - [ ] Fale com o quest giver
 - [ ] Compre os itens solicitados
+- --- após entregar minérios de prata ---
 - [ ] Entregue aos destinatários
 
 ## Recompensas

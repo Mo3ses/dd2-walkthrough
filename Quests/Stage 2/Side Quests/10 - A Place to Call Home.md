@@ -46,6 +46,7 @@ Concluir [[Main Quests/08 - In Dragon's Wake]] e chegar nos portões de [[Locati
 
 - [ ] Encontre-se com Brant nos portões
 - [ ] Escolha uma acomodação (pousada ou quarto)
+- --- após conhecer os distritos ---
 - [ ] Conheça os distritos principais da capital
 - [ ] Estabeleça residência temporária
 

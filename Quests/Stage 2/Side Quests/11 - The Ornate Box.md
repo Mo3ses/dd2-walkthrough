@@ -46,7 +46,9 @@ Iniciar [[10 - A Place to Call Home]] e explorar [[Locations/Vernworth]].
 
 - [ ] Receba a caixa ornamentada
 - [ ] Investigue o conteúdo
+- --- após falar com Sven no poço ---
 - [ ] Descubra o remetente
+- --- após falar com Sven de novo ---
 - [ ] Entregue ao destinatário correto
 
 ## Recompensas

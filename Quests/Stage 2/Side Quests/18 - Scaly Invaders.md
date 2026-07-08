@@ -47,6 +47,7 @@ Concluir [[10 - A Place to Call Home]] e viajar para [[Locations/Harve Village]]
 
 - [ ] Fale com Oskar em Harve
 - [ ] Investigue a costa
+- --- após a derrota dos saurians ---
 - [ ] Cace os invaders
 - [ ] Reporte-se a Oskar
 

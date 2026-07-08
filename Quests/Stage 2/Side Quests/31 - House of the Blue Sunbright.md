@@ -54,6 +54,7 @@ Concluir [[15 - Seat of the Sovran]] e seguir pistas para a mansão Sunbright.
 
 - [ ] Entre na mansão Sunbright
 - [ ] Investigue os residentes
+- --- após levar Daphne à mansão ---
 - [ ] Colete pistas
 - [ ] Confronte a verdade
 

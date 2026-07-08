@@ -55,6 +55,7 @@ Concluir [[43 - The Sorcerer's Appraisal]] e voltar a [[Locations/Vernworth]].
 
 - [ ] Participe do banquete
 - [ ] Observe os convidados
+- --- após o baile de máscara (noite) ---
 - [ ] Investigue a conspiração
 - [ ] Confronte a deception
 - [ ] Feche o arco de Stage 2

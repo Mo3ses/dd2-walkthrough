@@ -46,7 +46,9 @@ Iniciar [[10 - A Place to Call Home]] e conversar com NPCs nos Slums.
 ## Objetivos
 
 - [ ] Conheça os habitantes dos Slums
+- --- após falar com Radcliff ---
 - [ ] Doe itens ou ajude em tarefas
+- --- após o encontro noturno ---
 - [ ] Media conflitos
 
 ## Recompensas

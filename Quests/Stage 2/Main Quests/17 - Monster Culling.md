@@ -50,6 +50,7 @@ Iniciar [[15 - Seat of the Sovran]] e aceitar a missão de Brant.
 
 - [ ] Receba a missão do Brant / Guarda
 - [ ] Cace os monstros designados
+- --- após Trevo Mine + Nameless + Harve (e o grifo) ---
 - [ ] Volte a Vernworth
 - [ ] Reporte-se à Guarda
 

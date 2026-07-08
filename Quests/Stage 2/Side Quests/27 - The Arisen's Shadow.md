@@ -45,6 +45,7 @@ Iniciar [[10 - A Place to Call Home]] e conversar com NPCs.
 
 - [ ] Receba relatos do doppelganger
 - [ ] Encontre o suspeito
+- --- após agarrar sem matar (reviva com Wakestone se matar) ---
 - [ ] Confronte
 - [ ] Decida o destino
 

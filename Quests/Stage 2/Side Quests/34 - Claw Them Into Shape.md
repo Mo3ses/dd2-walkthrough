@@ -62,6 +62,7 @@ Concluir [[15 - Seat of the Sovran]] e viajar a [[Locations/Moonglow Garden]].
 - [ ] Tenha 3 espadas no inventário (compradas em Borderwatch)
 - [ ] Vá a Moonglow Garden
 - [ ] Fale com Beren
+- --- após Humphrey ir treinar com Beren ---
 - [ ] Entregue as espadas
 - [ ] Derrote enemies com as garras-forjadas
 

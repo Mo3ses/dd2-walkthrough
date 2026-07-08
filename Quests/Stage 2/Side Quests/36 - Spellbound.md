@@ -61,7 +61,9 @@ Concluir [[35 - Beren's Final Lesson]] e visitar [[Locations/Eini's House]] (sul
 
 - [ ] Fale com Trysha em Eini's House
 - [ ] Obtenha o spellbook necessário
+- --- após entregar 3 grimórios originais de uma vez ---
 - [ ] Ensine Trysha
+- --- após o rampage event (não ataque Trysha) ---
 - [ ] Retorne periodicamente para verificar progresso
 
 ## Recompensas

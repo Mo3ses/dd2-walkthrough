@@ -46,7 +46,9 @@ Iniciar [[10 - A Place to Call Home]] e falar com Sven ou NPC relacionado.
 
 - [ ] Fale com o quest giver
 - [ ] Colete rosas / ingredientes
+- --- após Wilhelmina aceitar ajuda ---
 - [ ] Processe (se necessário)
+- --- após a fuga da cidade ---
 - [ ] Entregue
 
 ## Recompensas

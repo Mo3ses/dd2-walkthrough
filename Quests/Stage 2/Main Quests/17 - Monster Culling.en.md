@@ -48,6 +48,7 @@ Start [[15 - Seat of the Sovran]] and accept Brant's mission.
 
 - [ ] Receive the mission from Brant / Guard
 - [ ] Cull the designated monsters
+- --- after Trevo Mine + Nameless + Harve (and the griffin) ---
 - [ ] Return to Vernworth
 - [ ] Report to the Guard
 

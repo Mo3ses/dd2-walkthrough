@@ -44,6 +44,7 @@ Iniciar [[10 - A Place to Call Home]] e conversar com Gautstafr na Tavern Distri
 
 - [ ] Fale com Gautstafr
 - [ ] Compre os itens de melhoria
+- --- após o baile de máscara ---
 - [ ] Decore / expanda a taverna
 - [ ] Reporte-se a Gautstafr
 

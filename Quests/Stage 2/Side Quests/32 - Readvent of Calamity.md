@@ -53,7 +53,9 @@ Concluir [[15 - Seat of the Sovran]] e viajar de volta a [[Locations/Melve]].
 
 - [ ] Volte a Melve
 - [ ] Fale com os aldeões
+- --- após a cutscene com Ulrika (amanhã) ---
 - [ ] Investigue a nova ameaça
+- --- após localizar Ulrika em Harve ---
 - [ ] Resolva o conflito
 
 ## Recompensas
