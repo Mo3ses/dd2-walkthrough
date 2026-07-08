@@ -13,7 +13,9 @@ tags:
   - stage-2
   - side-quest
   - noble-chain
-sources_verified: []
+sources_verified:
+  - fextralife
+  - ign
 needs_verification: true
 ---
 
@@ -28,10 +30,14 @@ Klark, escultor no bairro nobre de Vernworth, está com bloqueio criativo. Ajude
 1. Fale com **Klark** no bairro nobre de Vernworth (na sua oficina).
 2. Se a quest não estiver disponível, tente após [[23 - The Stolen Throne]].
 
+## Recompensas
+
+- 4.500 XP
+- 18.500 G (esculpir perfeito) ou 7.000 G (esculpir mal)
+
 ## Notas Importantes
 
-- Adicionada 2026-07-08 via transcript do usuário (stub inicial).
-- NÃO tocar até cross-source confirmar walkthrough + recompensas.
+- Adicionada 2026-07-08 via transcript do usuário; recompensas cross-sourced em 2026-07-08 (Fextralife + IGN).
 - Quest pre-finale (Stage 2). Fica indisponível se Feast of Deception fechar.
 
 ## Related

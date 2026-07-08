@@ -14,7 +14,8 @@ tags:
   - stage-2
   - side-quest
   - sphinx-chain
-sources_verified: []
+sources_verified:
+  - fextralife
 needs_verification: true
 ---
 
@@ -48,11 +49,16 @@ The Sphinx proposes a sequence of riddles to the Arisen. Complete them all to un
 6. Give the **Jadeite Orb** (from `Hunt for the Jadeite Orb`) to the Sphinx.
 7. Afterwards you receive the **Sorcerer Maister Skill** + Enchanted attire.
 
+## Rewards
+
+- Rewards depend on outcome (Fextralife: "x XP x Dcp" in template — exact values not tabulated; IGN has no separate page)
+- **Eternal Wakestone** (key item from the victorious outcome)
+
 ## Important Notes
 
 - **IMPORTANT**: Have a `SphinxParent` pawn in the party BEFORE reaching the Sphinx (can't rename in-place).
 - Bring **Nation's Death Knell** (from Tolled To Rest) to offer if you want the full dialogue.
-- Added 2026-07-08 from user's gameplay transcript (initial stub).
+- Added 2026-07-08 from user's gameplay transcript; rewards cross-sourced 2026-07-08 (Fextralife only — IGN 404, Fandom 403).
 
 ## Related
 
