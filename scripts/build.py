@@ -857,6 +857,7 @@ def render_quest_objectives_html(
     quest_pt: Quest,
     en_quest: Quest | None = None,
     index_offset: int = 1,
+    show_dividers: bool = False,
 ) -> tuple[str, list[tuple[str, bool]]]:
     """Render the objectives checklist as a single `<ul>`.
 
@@ -887,10 +888,12 @@ def render_quest_objectives_html(
         # Both sides a divider: emit the PT version (the EN text is
         # already represented by the language pill that the user can
         # click to flip). Resolve wiki-links so the label can mention
-        # another quest by name.
+        # another quest by name. Skipped entirely when show_dividers
+        # is False (per-quest page / by-location view).
         if pt_obj.divider and getattr(en_obj, "divider", False):
-            label_html = render_inline(pt_obj.text, from_path=quest_pt.from_path)
-            items.append(f'<li class="obj-divider" aria-hidden="true">{label_html}</li>')
+            if show_dividers:
+                label_html = render_inline(pt_obj.text, from_path=quest_pt.from_path)
+                items.append(f'<li class="obj-divider" aria-hidden="true">{label_html}</li>')
             continue
         # PT is a divider but EN isn't (or vice versa) — author error.
         # Treat it as a non-divider to keep both sides rendering.
@@ -910,8 +913,9 @@ def render_quest_objectives_html(
     # Tail of the longer list (in case PT and EN are not the same length)
     for tail_obj in quest_pt.objectives[len(en_objs):]:
         if tail_obj.divider:
-            label_html = render_inline(tail_obj.text, from_path=quest_pt.from_path)
-            items.append(f'<li class="obj-divider" aria-hidden="true">{label_html}</li>')
+            if show_dividers:
+                label_html = render_inline(tail_obj.text, from_path=quest_pt.from_path)
+                items.append(f'<li class="obj-divider" aria-hidden="true">{label_html}</li>')
             continue
         i += 1
         tid = f"{quest_pt.track_prefix}-{i}"
@@ -2515,7 +2519,7 @@ def _quest_card_inner(quest: Quest, lang: str) -> str:
     return "\n".join(parts)
 
 
-def render_quest_block_bilingual(q_en: Quest, q_pt: Quest) -> str:
+def render_quest_block_bilingual(q_en: Quest, q_pt: Quest, show_dividers: bool = False) -> str:
     """Render a quest as a colored, collapsible, bilingual card."""
     q_pt_fallback = q_en  # if q_pt missing, EN acts as fallback
     # Use PT quest for type (always present) and EN for chrome (fallback to PT).
@@ -2555,7 +2559,10 @@ def render_quest_block_bilingual(q_en: Quest, q_pt: Quest) -> str:
     # visible.
     en_for_obj = qe if qe.objectives else None
     if qt.objectives or (en_for_obj and en_for_obj.objectives):
-        obj_html, _ = render_quest_objectives_html(qt, en_for_obj)
+        # Forward the show_dividers flag to the objectives renderer so
+        # the by-flow view on the stage page can show the 2-part
+        # structure while the per-quest card (default caller) stays flat.
+        obj_html, _ = render_quest_objectives_html(qt, en_for_obj, show_dividers=show_dividers)
         parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
 
     parts.append('</div>')  # /quest-card-body
@@ -2631,7 +2638,10 @@ def render_quest_detail_bilingual(
     # duplicating the checklist.
     if qt.objectives or qe.objectives:
         parts.append(f'<h2>{render_bilingual(L("en", "section_objetivos"), L("pt", "section_objetivos"))}</h2>')
-        obj_html, _ = render_quest_objectives_html(qt, qe if qe.objectives else None)
+        # Per-quest detail page: no dividers (flat list of all
+        # objectives; the 2-part structure is a flow-context concept
+        # shown only on the by-flow view).
+        obj_html, _ = render_quest_objectives_html(qt, qe if qe.objectives else None, show_dividers=False)
         parts.append(f'<ul class="dd2-checklist">\n{obj_html}\n</ul>')
 
     # Section-level content
@@ -2822,7 +2832,10 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
             continue
         q_pt = match.get("pt") or match["en"]
         q_en = match.get("en") or match["pt"]
-        body.append(render_quest_block_bilingual(q_en, q_pt))
+        # show_dividers=True only on the by-flow view: the per-quest
+        # page and the by-location view show objectives as a flat list
+        # (the 2-part structure is a flow-context concept).
+        body.append(render_quest_block_bilingual(q_en, q_pt, show_dividers=True))
     body.append('</div>')  # /by-flow
 
     # Footer tip
