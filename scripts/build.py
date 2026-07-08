@@ -1834,20 +1834,30 @@ SHARED_JS = r"""
     // Re-sync master checkboxes in case totals moved
     syncAllMasters();
 
-    // Per-quest badges: text and class are recomputed from current
-    // checkbox state (which already reflects localStorage). This means
-    // the build-time label ("✅ 6/6" from MDs with `- [x]`) gets
-    // overwritten on every page load, after every checkbox change, and
-    // after reset — so the badges are always in sync with reality.
-    document.querySelectorAll("[data-quest-count-for]").forEach((el) => {
-      const prefix = el.getAttribute("data-quest-count-for");
+    // Collect every VISIBLE tracked checkbox once. We skip checkboxes
+    // inside a hidden section (e.g. the .by-flow cards live in the
+    // DOM but are display:none when the user is on the by-location
+    // view) so each quest's checkboxes are only counted from the
+    // currently active view — otherwise the same quest's checkboxes
+    // would be counted twice (6 + 6 = 12).
+    const allCbs = Array.from(
+      document.querySelectorAll("input[type=checkbox][data-track-id]")
+    ).filter((cb) => cb.offsetParent !== null);
+    const countMatching = (prefix) => {
       let done = 0, total = 0;
-      document.querySelectorAll("input[type=checkbox][data-track-id]").forEach((cb) => {
+      for (const cb of allCbs) {
         if ((cb.getAttribute("data-track-id") || "").startsWith(prefix)) {
           total += 1;
           if (cb.checked) done += 1;
         }
-      });
+      }
+      return { done, total };
+    };
+
+    // Per-quest badges: text and class are recomputed from current
+    // checkbox state (which already reflects localStorage).
+    document.querySelectorAll("[data-quest-count-for]").forEach((el) => {
+      const { done, total } = countMatching(el.getAttribute("data-quest-count-for"));
       if (total === 0) {
         el.textContent = "Sem objetivos";
         el.className = "badge";
@@ -1866,16 +1876,31 @@ SHARED_JS = r"""
 
     // Stage-level summary (e.g. "12/39 sub-objetivos")
     document.querySelectorAll("[data-total-for]").forEach((el) => {
-      const prefix = el.getAttribute("data-total-for");
-      let done = 0, total = 0;
-      document.querySelectorAll("input[type=checkbox][data-track-id]").forEach((cb) => {
-        if ((cb.getAttribute("data-track-id") || "").startsWith(prefix)) {
-          total += 1;
-          if (cb.checked) done += 1;
-        }
-      });
+      const { done, total } = countMatching(el.getAttribute("data-total-for"));
       el.textContent = total === 0 ? "—" : done + "/" + total;
     });
+
+    // Per-location progress bar + counter. Rendered at build time with
+    // data-loc-prefixes (comma-separated list of track prefixes for
+    // the location's quests); we aggregate the live done/total from
+    // localStorage so an "untouched" location shows 0/0 + 0% instead
+    // of any "fully done" state inherited from the MD's `- [x]`
+    // markers.
+    const updateLoc = (el) => {
+      const prefixes = (el.getAttribute("data-loc-prefixes") || "").split(",").filter(Boolean);
+      let done = 0, total = 0;
+      for (const p of prefixes) {
+        const c = countMatching(p);
+        done += c.done;
+        total += c.total;
+      }
+      if (el.classList.contains("loc-bar-fill")) {
+        el.style.width = (total > 0 ? Math.round((100 * done) / total) : 0) + "%";
+      } else {
+        el.textContent = total === 0 ? "0/0" : done + "/" + total;
+      }
+    };
+    document.querySelectorAll(".loc-counter, .loc-bar-fill").forEach(updateLoc);
   }
 
   // ----- global progress (homepage only) -----
@@ -2902,13 +2927,20 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
         total_done = sum(sum(1 for o in q.objectives if o.done) for q in loc_quests)
         pct = (100 * total_done / total_obj) if total_obj else 0
 
+        # Build the comma-separated list of track prefixes for this
+        # location's quests so SHARED_JS's updateTotals can compute the
+        # live done/total + progress bar width. Render the counter and
+        # bar with placeholder values (0/0, width:0%); JS overwrites them
+        # on load from localStorage so the MD's `- [x]` markers can't
+        # give a false "fully green" Excavation Site on a fresh visit.
+        prefixes = ",".join(q.track_prefix for q in loc_quests)
         body.append('<div class="loc-card">')
         body.append(f'  <a href="#{slug}" class="loc-card-head">')
         body.append(f'    <span class="loc-emoji">{emoji}</span>')
         body.append(f'    <span class="loc-name">{html.escape(loc)}</span>')
-        body.append(f'    <span class="loc-counter">{total_done}/{total_obj}</span>')
+        body.append(f'    <span class="loc-counter" data-loc-prefixes="{html.escape(prefixes)}">0/0</span>')
         body.append('  </a>')
-        body.append(f'  <div class="loc-bar"><div class="loc-bar-fill" style="width: {pct:.0f}%"></div></div>')
+        body.append(f'  <div class="loc-bar"><div class="loc-bar-fill" data-loc-prefixes="{html.escape(prefixes)}" style="width:0%"></div></div>')
         body.append(f'  <div class="loc-meta">{len(main_q)} main · {len(side_q)} side · {len(loc_quests)} quests</div>')
         body.append('</div>')
     body.append('</div>')
