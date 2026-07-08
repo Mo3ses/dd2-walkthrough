@@ -534,8 +534,14 @@ def collect_quests(roots: Iterable[Path]) -> list[Quest]:
 # Markdown → HTML (minimal)
 # ---------------------------------------------------------------------------
 
-def render_inline(text: str) -> str:
+def render_inline(text: str, from_path: str = "") -> str:
     """Apply inline transforms: wiki-links → anchors, escape HTML, bold, code.
+
+    `from_path` is the path (relative to dist/) of the page being
+    rendered. It's used to make wiki-link hrefs relative to the current
+    page so they work from per-quest pages too (not just the stage
+    page). Pass an empty string to use absolute-from-root paths
+    (suitable for the homepage and stage pages).
 
     Walks the text once, splitting on wiki-link matches. Plain text
     segments get html.escape()'d ONCE; wiki-link matches are
@@ -556,7 +562,7 @@ def render_inline(text: str) -> str:
             target, alias = target.split("|", 1)
         else:
             alias = target.rsplit("/", 1)[-1].rsplit(".", 1)[0]
-        href = resolve_wikilink(target)
+        href = resolve_wikilink(target, from_path=from_path)
         parts.append(f'<a href="{html.escape(href)}">{html.escape(alias)}</a>')
         last_end = m.end()
     # Escape the trailing text after the last wiki-link (or all of it if none)
@@ -568,8 +574,43 @@ def render_inline(text: str) -> str:
     return text
 
 
-def resolve_wikilink(target: str) -> str:
-    """Map a [[wiki-link]] target to a relative HTML URL."""
+def _relative_path(from_path: str, to_path: str) -> str:
+    """Compute a path from `from_path`'s directory to `to_path`.
+
+    Both args are relative paths (no leading slash). Examples:
+      ("stage-1.html", "quests/stage-1/main-quests/x.html")
+        -> "quests/stage-1/main-quests/x.html"
+      ("quests/stage-1/main-quests/01-foo.html", "quests/stage-1/main-quests/02-bar.html")
+        -> "02-bar.html"
+      ("quests/stage-1/main-quests/01-foo.html", "stage-1.html")
+        -> "../../../stage-1.html"
+    """
+    from_dir = "/".join(from_path.split("/")[:-1])  # drop filename
+    # Standard relpath: walk up from from_dir to root, then down to to_path
+    from_parts = from_dir.split("/") if from_dir else []
+    to_parts = to_path.split("/")
+    # Find common prefix
+    common = 0
+    while common < len(from_parts) and common < len(to_parts) and from_parts[common] == to_parts[common]:
+        common += 1
+    ups = [".."] * (len(from_parts) - common)
+    downs = to_parts[common:]
+    if ups or downs:
+        rel = "/".join(ups + downs)
+        return rel if rel else to_path
+    return to_path
+
+
+def resolve_wikilink(target: str, from_path: str = "") -> str:
+    """Map a [[wiki-link]] target to a relative HTML URL.
+
+    `from_path` is the path of the page being rendered (relative to
+    `dist/`). When provided, the returned path is relative to the
+    current page's directory — so wiki-links work from per-quest
+    pages as well as the stage page. When `from_path` is empty, the
+    path is returned as-is (suitable for the homepage and stage page,
+    where the default "from" is the dist/ root).
+    """
     target = target.strip()
     # Strip .md
     if target.endswith(".md"):
@@ -588,21 +629,27 @@ def resolve_wikilink(target: str) -> str:
         return _FILE_STAGE.get(candidate, 1)
     # "Stage 1.md" / "Stage 2.md" — special-case for MOC links
     if target.lower() in {"stage 1", "stage-1"}:
-        return "stage-1.html"
+        abs_path = "stage-1.html"
+        return _relative_path(from_path, abs_path) if from_path else abs_path
     if target.lower() in {"stage 2", "stage-2"}:
-        return "stage-2.html"
+        abs_path = "stage-2.html"
+        return _relative_path(from_path, abs_path) if from_path else abs_path
     if target.startswith("Main Quests/"):
-        return f"quests/stage-{_target_stage()}/main-quests/{slug}.html"
+        abs_path = f"quests/stage-{_target_stage()}/main-quests/{slug}.html"
+        return _relative_path(from_path, abs_path) if from_path else abs_path
     if target.startswith("Side Quests/"):
-        return f"quests/stage-{_target_stage()}/side-quests/{slug}.html"
+        abs_path = f"quests/stage-{_target_stage()}/side-quests/{slug}.html"
+        return _relative_path(from_path, abs_path) if from_path else abs_path
     if target.startswith("Locations/"):
         # Locations are not stage-scoped — they live at the top of the
         # vault. resolve_wikilink does not know if a Locations/ page has
         # been emitted; the build may 404 if not, but the path stays
         # stable across stages.
-        return f"locations/{slug}.html"
+        abs_path = f"locations/{slug}.html"
+        return _relative_path(from_path, abs_path) if from_path else abs_path
     if target.lower().startswith("quest"):
-        return f"stage-1.html#{slugify(target)}"
+        abs_path = f"stage-1.html#{slugify(target)}"
+        return _relative_path(from_path, abs_path) if from_path else abs_path
     # Fallback: if the bare target is a known quest file, route to its
     # actual stage (handles cross-stage links written without prefix).
     target_stage = _FILE_STAGE.get(fname + ".md", 1)
@@ -614,9 +661,12 @@ def resolve_wikilink(target: str) -> str:
         for sub_try in ("Main Quests", "Side Quests"):
             if (repo_root / "Quests" / f"Stage {target_stage}" / sub_try / (fname + ".md")).exists():
                 sub = "main-quests" if sub_try == "Main Quests" else "side-quests"
-                return f"quests/stage-{target_stage}/{sub}/{slug}.html"
-        return f"{slug}.html"
-    return f"{slug}.html"
+                abs_path = f"quests/stage-{target_stage}/{sub}/{slug}.html"
+                return _relative_path(from_path, abs_path) if from_path else abs_path
+        abs_path = f"{slug}.html"
+        return _relative_path(from_path, abs_path) if from_path else abs_path
+    abs_path = f"{slug}.html"
+    return _relative_path(from_path, abs_path) if from_path else abs_path
 
 
 def slugify(text: str) -> str:
@@ -634,8 +684,12 @@ def slugify(text: str) -> str:
     return s
 
 
-def render_md_block(text: str) -> str:
+def render_md_block(text: str, from_path: str = "") -> str:
     """Render a small MD block (after parse_section) as HTML.
+
+    `from_path` is forwarded to `render_inline` so wiki-link hrefs
+    are computed relative to the current page (per-quest pages need
+    `../../sub/sibling.html`, the stage page can use absolute paths).
 
     Supports: paragraphs, bullet lists, simple tables, callouts.
     """
@@ -660,7 +714,7 @@ def render_md_block(text: str) -> str:
                     break
                 callout_lines.append(cont.lstrip()[1:].lstrip())
                 i += 1
-            inner = "<br>".join(render_inline(l) for l in callout_lines if l.strip())
+            inner = "<br>".join(render_inline(l, from_path) for l in callout_lines if l.strip())
             out.append(f'<div class="callout callout-{kind}"><div class="callout-title">{kind}</div><div class="callout-body">{inner}</div></div>')
             continue
 
@@ -669,7 +723,7 @@ def render_md_block(text: str) -> str:
             items: list[str] = []
             while i < len(lines) and LIST_ITEM_RE.match(lines[i]):
                 m = LIST_ITEM_RE.match(lines[i])
-                items.append(f'<li>{render_inline(m.group("body"))}</li>')
+                items.append(f'<li>{render_inline(m.group("body"), from_path)}</li>')
                 i += 1
             out.append("<ul>" + "".join(items) + "</ul>")
             continue
@@ -679,7 +733,7 @@ def render_md_block(text: str) -> str:
             items: list[str] = []
             while i < len(lines) and NUMBERED_ITEM_RE.match(lines[i]):
                 m = NUMBERED_ITEM_RE.match(lines[i])
-                items.append(f'<li>{render_inline(m.group("body"))}</li>')
+                items.append(f'<li>{render_inline(m.group("body"), from_path)}</li>')
                 i += 1
             out.append("<ol>" + "".join(items) + "</ol>")
             continue
@@ -691,9 +745,9 @@ def render_md_block(text: str) -> str:
             rows = []
             while i < len(lines) and "|" in lines[i] and lines[i].strip():
                 row = [c.strip() for c in lines[i].strip().strip("|").split("|")]
-                rows.append("<tr>" + "".join(f"<td>{render_inline(c)}</td>" for c in row) + "</tr>")
+                rows.append("<tr>" + "".join(f"<td>{render_inline(c, from_path)}</td>" for c in row) + "</tr>")
                 i += 1
-            thead = "<thead><tr>" + "".join(f"<th>{render_inline(h)}</th>" for h in header) + "</tr></thead>"
+            thead = "<thead><tr>" + "".join(f"<th>{render_inline(h, from_path)}</th>" for h in header) + "</tr></thead>"
             out.append(f"<table>{thead}<tbody>{''.join(rows)}</tbody></table>")
             continue
 
@@ -702,7 +756,7 @@ def render_md_block(text: str) -> str:
         if h:
             level = len(h.group(1))
             txt = re.sub(r"\s*\^[A-Za-z0-9_-]+\s*$", "", h.group("text"))
-            out.append(f"<h{level + 2}>{render_inline(txt)}</h{level + 2}>")
+            out.append(f"<h{level + 2}>{render_inline(txt, from_path)}</h{level + 2}>")
             i += 1
             continue
 
@@ -712,7 +766,7 @@ def render_md_block(text: str) -> str:
         while i < len(lines) and lines[i].strip() and not LIST_ITEM_RE.match(lines[i]) and not NUMBERED_ITEM_RE.match(lines[i]) and not HEADING_RE.match(lines[i]) and not CALLOUT_RE.match(lines[i].strip()):
             para.append(lines[i].strip())
             i += 1
-        out.append("<p>" + render_inline(" ".join(para)) + "</p>")
+        out.append("<p>" + render_inline(" ".join(para), from_path) + "</p>")
 
     return "\n".join(out)
 
@@ -1317,6 +1371,17 @@ th { background: var(--code-bg); font-weight: 600; }
 .dd2-modal-actions button.primary { background: var(--accent); color: #1a1a1c; border-color: var(--accent); }
 .dd2-modal-actions button.danger { background: #c62828; color: #fff; border-color: #c62828; }
 .dd2-modal-actions button.primary:hover { filter: brightness(0.95); }
+
+/* ----- prev/next nav on per-quest pages ----- */
+.quest-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 1rem; margin: 2rem 0 1rem; padding: 0.8rem 1rem;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.quest-nav a { color: var(--accent); text-decoration: none; font-weight: 500; }
+.quest-nav a:hover { text-decoration: underline; }
+.quest-nav-prev { margin-right: auto; }
+.quest-nav-next { margin-left: auto; }
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -2005,7 +2070,6 @@ SHARED_JS = r"""
       }
     });
   }
-  }
 
   // Robust initialization
   function boot() {
@@ -2030,7 +2094,8 @@ SHARED_JS = r"""
 """
 
 
-def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: str = "") -> str:
+def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: str = "",
+               crumbs_safe: bool = False, crumbs_home_href: str = "index.html") -> str:
     # Dropdown lang switcher: single pill button (current lang) + a
     # hidden menu listing both options. JS in SHARED_JS handles toggling,
     # selection, and click-outside-to-close.
@@ -2045,7 +2110,7 @@ def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: 
           '</ul>'
         '</div>'
     )
-    page_bar = f'<div class="page-bar">{nav_crumbs(crumbs_html)}{lang_switcher}</div>\n' if crumbs_html else lang_switcher
+    page_bar = f'<div class="page-bar">{nav_crumbs(crumbs_html, home_href=crumbs_home_href, safe=crumbs_safe)}{lang_switcher}</div>\n' if crumbs_html else lang_switcher
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2070,12 +2135,18 @@ def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: 
 """
 
 
-def nav_crumbs(inner_html: str) -> str:
+def nav_crumbs(inner_html: str, *, home_href: str = "index.html", safe: bool = False) -> str:
     """Render a bilingual breadcrumb.
 
     EN and PT both show the full chain `Home › {inner_html}`. The page
     name (e.g., "Stage 1") comes from `inner_html` — typically the
-    current page's section label.
+    current page's section label. On per-quest pages, the caller can
+    pass safe=True to inject pre-built HTML with clickable links to
+    the stage and sub-folder (the default html.escape would otherwise
+    mangle the `<a>` tags).
+
+    `home_href` lets per-quest pages point back to the site root with
+    the right relative path (e.g. "../../../index.html").
 
     Each text segment is wrapped in `<span class="i18n"
     data-lang="…">` so JS (or CSS) can swap visibility per language.
@@ -2084,14 +2155,16 @@ def nav_crumbs(inner_html: str) -> str:
     """
     if not inner_html:
         return ""
+    suffix_en = inner_html if safe else html.escape(inner_html)
+    suffix_pt = inner_html if safe else html.escape(inner_html)
     return (
         '<nav class="crumbs">'
         # Home link, bilingual
-        f'<a href="index.html" class="i18n" data-lang="en">{html.escape(L("en", "page_title_home"))}</a>'
-        f'<a href="index.html" class="i18n" data-lang="pt" hidden>{html.escape(L("pt", "page_title_home"))}</a>'
+        f'<a href="{html.escape(home_href)}" class="i18n" data-lang="en">{html.escape(L("en", "page_title_home"))}</a>'
+        f'<a href="{html.escape(home_href)}" class="i18n" data-lang="pt" hidden>{html.escape(L("pt", "page_title_home"))}</a>'
         # › <inner_html> suffix, bilingual
-        f'<span class="i18n" data-lang="en"> &rsaquo; {html.escape(inner_html)}</span>'
-        f'<span class="i18n" data-lang="pt" hidden> &rsaquo; {html.escape(inner_html)}</span>'
+        f'<span class="i18n" data-lang="en"> &rsaquo; {suffix_en}</span>'
+        f'<span class="i18n" data-lang="pt" hidden> &rsaquo; {suffix_pt}</span>'
         '</nav>\n'
     )
 
@@ -2300,7 +2373,7 @@ def render_quest_block_bilingual(q_en: Quest, q_pt: Quest) -> str:
     type_en, type_pt = _type_label_pair(qt.quest_type)
 
     parts: list[str] = []
-    parts.append(f'<details class="quest-card {qt.quest_type}" open>')
+    parts.append(f'<details class="quest-card {qt.quest_type}">')
     parts.append('<summary>')
     parts.append('<span class="quest-card-caret" aria-hidden="true">▶</span>')
     if qt.objectives:
@@ -2339,12 +2412,31 @@ def render_quest_block_bilingual(q_en: Quest, q_pt: Quest) -> str:
     return "\n".join(parts)
 
 
-def render_quest_detail_bilingual(q_en: Quest, q_pt: Quest) -> str:
-    """Generate a per-quest detail page with bilingual chrome + content."""
+def render_quest_detail_bilingual(
+    q_en: Quest,
+    q_pt: Quest,
+    stage_n: int,
+    prev_quest: "Quest | None" = None,
+    next_quest: "Quest | None" = None,
+) -> str:
+    """Generate a per-quest detail page with bilingual chrome + content.
+
+    `prev_quest` and `next_quest` are rendered as Previous/Next links
+    at the bottom of the page (built from the same iteration order
+    `render_stage` uses), so the user can walk through the quest list
+    linearly without bouncing back to the stage index.
+
+    `stage_n` is used to render the breadcrumb correctly (the old code
+    hardcoded "Stage 1" which broke for Stage 2+).
+    """
     qt = q_pt or q_en
     qe = q_en or q_pt
     type_en, type_pt = _type_label_pair(qt.quest_type)
 
+    # Per-quest detail page: open by default (the user came to read
+    # this specific quest; forcing them to click to see the body is
+    # friction). Stage-page cards stay closed so the cheat sheet
+    # doesn't expand into a wall of text.
     parts: list[str] = []
     parts.append(f'<details class="quest-card {qt.quest_type}" open>')
     parts.append('<summary>')
@@ -2355,6 +2447,11 @@ def render_quest_detail_bilingual(q_en: Quest, q_pt: Quest) -> str:
             f'aria-label="Mark all objectives for {html.escape(qe.title)}" '
             'onclick="event.stopPropagation()">'
         )
+    # from_path is used by render_md_block below to make wiki-link hrefs
+    # relative to the current per-quest page. Must be defined BEFORE
+    # the Summary block that consumes it.
+    sub_early = "main-quests" if qt.quest_type == "main" else "side-quests"
+    from_path = f"quests/stage-{stage_n}/{sub_early}/{qt.slug}.html"
     parts.append(f'<span class="quest-type-label">{render_bilingual(type_en, type_pt)}</span>')
     parts.append(f'<h1>{render_bilingual(qe.title, qt.title)}</h1>')
     parts.append(status_badge(qt.status, qt.track_prefix))
@@ -2373,8 +2470,8 @@ def render_quest_detail_bilingual(q_en: Quest, q_pt: Quest) -> str:
     # Summary in both langs
     if qe.summary or qt.summary:
         parts.append(f'<h2>{render_bilingual(L("en", "section_resumo"), L("pt", "section_resumo"))}</h2>')
-        en_summary = render_md_block(qe.summary) if qe.summary else ''
-        pt_summary = render_md_block(qt.summary) if qt.summary else ''
+        en_summary = render_md_block(qe.summary, from_path=from_path) if qe.summary else ''
+        pt_summary = render_md_block(qt.summary, from_path=from_path) if qt.summary else ''
         parts.append(render_bilingual_raw(en_summary, pt_summary))
 
     # Objectives — single UL with bilingual text inside each <li>;
@@ -2389,30 +2486,63 @@ def render_quest_detail_bilingual(q_en: Quest, q_pt: Quest) -> str:
     # Section-level content
     if qt.walkthrough or qe.walkthrough:
         parts.append(f'<h2>{render_bilingual(L("en", "section_walkthrough"), L("pt", "section_walkthrough"))}</h2>')
-        en_walk = render_md_block("\n".join(qe.walkthrough)) if qe.walkthrough else ''
-        pt_walk = render_md_block("\n".join(qt.walkthrough)) if qt.walkthrough else ''
+        en_walk = render_md_block("\n".join(qe.walkthrough), from_path=from_path) if qe.walkthrough else ''
+        pt_walk = render_md_block("\n".join(qt.walkthrough), from_path=from_path) if qt.walkthrough else ''
         parts.append(render_bilingual_raw(en_walk, pt_walk))
 
     if qt.rewards or qe.rewards:
         parts.append(f'<h2>{render_bilingual(L("en", "section_recompensas"), L("pt", "section_recompensas"))}</h2>')
-        en_r = render_md_block("\n".join(qe.rewards)) if qe.rewards else ''
-        pt_r = render_md_block("\n".join(qt.rewards)) if qt.rewards else ''
+        en_r = render_md_block("\n".join(qe.rewards), from_path=from_path) if qe.rewards else ''
+        pt_r = render_md_block("\n".join(qt.rewards), from_path=from_path) if qt.rewards else ''
         parts.append(render_bilingual_raw(en_r, pt_r))
 
     if qt.notes or qe.notes:
         parts.append(f'<h2>{render_bilingual(L("en", "section_notas"), L("pt", "section_notas"))}</h2>')
-        en_n = render_md_block("\n".join(qe.notes)) if qe.notes else ''
-        pt_n = render_md_block("\n".join(qt.notes)) if qt.notes else ''
+        en_n = render_md_block("\n".join(qe.notes), from_path=from_path) if qe.notes else ''
+        pt_n = render_md_block("\n".join(qt.notes), from_path=from_path) if qt.notes else ''
         parts.append(render_bilingual_raw(en_n, pt_n))
 
     parts.append('</div>')  # /quest-card-body
     parts.append('</details>')  # /quest-card
 
     sub = "main-quests" if qt.quest_type == "main" else "side-quests"
+    sub_label = "Main Quests" if qt.quest_type == "main" else "Side Quests"
+    # Clickable breadcrumb suffix (nav_crumbs already adds the Home link).
+    # Stage N → Sub-folder → quest title. The quest title is the current
+    # page (plain text, not a link). All links use ../../../ because the
+    # page lives 3 levels deep in dist/quests/stage-N/sub/.
+    crumbs_html = (
+        f'<a href="../../../stage-{stage_n}.html">Stage {stage_n}</a>'
+        f' &rsaquo; '
+        f'<a href="../../../stage-{stage_n}.html#locations">{sub_label}</a>'
+        f' &rsaquo; '
+        f'<span class="i18n" data-lang="en">{html.escape(qt.title)}</span>'
+        f'<span class="i18n" data-lang="pt" hidden>{html.escape(qt.title)}</span>'
+    )
+
+    # Prev / Next navigation at the bottom of the page.
+    nav_links: list[str] = []
+    if prev_quest is not None:
+        nav_links.append(
+            f'<a class="quest-nav-prev" href="../../{sub}/{prev_quest.slug}.html">'
+            f'← {html.escape(prev_quest.title)}</a>'
+        )
+    if next_quest is not None:
+        nav_links.append(
+            f'<a class="quest-nav-next" href="../../{sub}/{next_quest.slug}.html">'
+            f'{html.escape(next_quest.title)} →</a>'
+        )
+    if nav_links:
+        parts.append('<nav class="quest-nav">')
+        parts.extend(nav_links)
+        parts.append('</nav>')
+
     return page_shell(
         title=qt.title,
         body_html="\n".join(parts),
-        crumbs_html=f'Stage 1 › {sub.replace("-", " ").title()} › {html.escape(qt.title)}',
+        crumbs_html=crumbs_html,
+        crumbs_safe=True,
+        crumbs_home_href="../../../index.html",
     )
 
 
@@ -2590,13 +2720,30 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[ok] {out/f'stage-{n}.html'}")
 
         # dist/quests/stage-{n}/{main-quests,side-quests}/<slug>.html
-        for stem, bundle in sorted(bundles.items()):
+        # Pre-sort so we can hand each quest page its prev/next neighbour
+        # for the bottom-of-page navigation links.
+        ordered_bundles = []
+        for loc_key, _ in LOCATION_ORDER:
+            loc_quests = [b for b in bundles.values()
+                          if (b.get("pt") or b["en"]).location == loc_key]
+            loc_quests.sort(key=lambda b: (0 if (b.get("pt") or b["en"]).quest_type == "main" else 1,
+                                           (b.get("pt") or b["en"]).quest_num))
+            ordered_bundles.extend(loc_quests)
+        for idx, bundle in enumerate(ordered_bundles):
             q_pt = bundle.get("pt") or bundle["en"]
             q_en = bundle.get("en") or bundle["pt"]
             sub = "main-quests" if q_pt.quest_type == "main" else "side-quests"
             target = out / "quests" / f"stage-{n}" / sub / f"{q_pt.slug}.html"
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(render_quest_detail_bilingual(q_en, q_pt), encoding="utf-8")
+            # Use the same stage ordering to find the prev/next Quest objects
+            # (only neighbour quest objects, not the full bundle dict).
+            prev_q = ordered_bundles[idx - 1].get("pt") or ordered_bundles[idx - 1]["en"] if idx > 0 else None
+            next_q = ordered_bundles[idx + 1].get("pt") or ordered_bundles[idx + 1]["en"] if idx + 1 < len(ordered_bundles) else None
+            target.write_text(
+                render_quest_detail_bilingual(q_en, q_pt, stage_n=n,
+                                              prev_quest=prev_q, next_quest=next_q),
+                encoding="utf-8",
+            )
         total_quests += len(bundles)
         print(f"[ok] {len(bundles)} per-quest pages for Stage {n}")
 
