@@ -92,6 +92,10 @@ STRINGS: dict[str, dict[str, str]] = {
         "quick_link_stage1": "Stage 1",
         "quick_link_locations": "Browse locations",
         "quick_link_reset": "Reset tracker",
+        "quick_link_export": "Export JSON",
+        "quick_link_import": "Import JSON",
+        "export_btn": "⬇ Export JSON",
+        "import_btn": "⬆ Import JSON",
         "diag_init": "Tracker initializing…",
         "diag_blocked": "localStorage BLOCKED. Progress will NOT persist.",
         "diag_active_fmt": "Tracker active: {n} checkboxes · {d} marked",
@@ -136,6 +140,10 @@ STRINGS: dict[str, dict[str, str]] = {
         "quick_link_stage1": "Stage 1",
         "quick_link_locations": "Ver locais",
         "quick_link_reset": "Zerar tracker",
+        "quick_link_export": "Exportar JSON",
+        "quick_link_import": "Importar JSON",
+        "export_btn": "⬇ Exportar JSON",
+        "import_btn": "⬆ Importar JSON",
         "diag_init": "Tracker inicializando…",
         "diag_blocked": "localStorage BLOQUEADO. Progresso NÃO vai persistir.",
         "diag_active_fmt": "Tracker ativo: {n} checkboxes · {d} marcados",
@@ -1273,6 +1281,43 @@ th { background: var(--code-bg); font-weight: 600; }
 }
 .page-footer a { color: var(--fg-muted); text-decoration: underline; }
 
+/* ----- import modal (built imperatively by SHARED_JS) ----- */
+.dd2-modal-back {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.dd2-modal-back[hidden] { display: none; }
+.dd2-modal {
+  background: var(--bg-card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  font: inherit;
+}
+.dd2-modal h3 { margin: 0 0 0.6rem; font-size: 1.1rem; }
+.dd2-modal p { margin: 0 0 1rem; line-height: 1.45; }
+.dd2-modal-actions {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end;
+}
+.dd2-modal-actions button {
+  font: inherit; cursor: pointer;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg);
+}
+.dd2-modal-actions button:hover { background: var(--code-bg); }
+.dd2-modal-actions button.primary { background: var(--accent); color: #1a1a1c; border-color: var(--accent); }
+.dd2-modal-actions button.danger { background: #c62828; color: #fff; border-color: #c62828; }
+.dd2-modal-actions button.primary:hover { filter: brightness(0.95); }
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1a1a1c;
@@ -1297,17 +1342,30 @@ th { background: var(--code-bg); font-weight: 600; }
 SHARED_JS = r"""
 (function () {
   "use strict";
-  const STORAGE_KEY = "dd2-tracker-v1";
+  // v1 is the legacy flat shape: { "s1-main-01-1": true, ... }.
+  // v2 wraps the data with a version + timestamp for future migrations.
+  // On load: prefer v2; if absent, migrate v1 → v2 on the fly.
+  // On save: always write v2. The v1 key is kept for one release as a
+  // safety copy in case a user with a stale page hits save.
+  const STORAGE_KEY_V1 = "dd2-tracker-v1";
+  const STORAGE_KEY_V2 = "dd2-tracker-v2";
+  const STORAGE_KEY = STORAGE_KEY_V2;  // current key
   const LANG_KEY = "dd2-lang";
-  const DEBUG = true;  // set to false to silence the diagnostic banner
+  // Diagnostic banner is silent by default. Set DEBUG=true for ad-hoc
+  // dev work, or append ?debug=1 to the URL to enable the banner
+  // without rebuilding.
+  const DEBUG = false;
+  const debugEnabled = () => DEBUG ||
+    (typeof location !== "undefined" &&
+     new URLSearchParams(location.search).has("debug"));
 
   // ----- i18n: language toggle -----
   // Body class controls CSS visibility of <span class="i18n" data-lang="...">.
   // EN is default; everything in the page is rendered twice (en + pt inline
   // spans) and we swap which is visible by toggling body.lang-pt.
   const I18N = {
-    en: { init: "Tracker initializing…", blocked: "localStorage BLOCKED in this browser/context. Progress will NOT persist.", active: "Tracker active: " + "%n% checkboxes · %d% marked", saved: "Saved ✓ (%n% marked)", save_fail: "Failed to save localStorage: " + "%msg%", load_fail: "Failed to read localStorage: " + "%msg%", clear_fail: "Failed to clear localStorage: " + "%msg%", reset: "Reset ✓ Reloading…", init_fail: "Init failed: " + "%msg%", confirm_reset: "Reset ALL progress? This clears localStorage for this site." },
-    pt: { init: "Tracker inicializando…", blocked: "localStorage BLOQUEADO neste browser/contexto. Progresso não vai persistir.", active: "Tracker ativo: " + "%n% checkboxes · %d% marcados", saved: "Salvo ✓ (%n% marcados)", save_fail: "Erro salvando localStorage: " + "%msg%", load_fail: "Erro lendo localStorage: " + "%msg%", clear_fail: "Erro limpando localStorage: " + "%msg%", reset: "Resetado ✓ Recarregando…", init_fail: "Init falhou: " + "%msg%", confirm_reset: "Reset ALL progress? This clears localStorage for this site." },
+    en: { init: "Tracker initializing…", blocked: "localStorage BLOCKED in this browser/context. Progress will NOT persist.", active: "Tracker active: %n% checkboxes · %d% marked", saved: "Saved ✓ (%n% marked)", save_fail: "Failed to save localStorage: %msg%", load_fail: "Failed to read localStorage: %msg%", clear_fail: "Failed to clear localStorage: %msg%", reset: "Reset ✓ Reloading…", init_fail: "Init failed: %msg%", confirm_reset: "Reset ALL progress? This clears localStorage for this site.", export_btn: "⬇ Export JSON", import_btn: "⬆ Import JSON", import_modal_title: "Import progress", import_summary: "File contains %total% checked objective(s): %matched% match this build, %unknown% are from other stages or unknown.", import_action_merge: "Merge with current", import_action_replace: "Replace everything", import_action_cancel: "Cancel", import_merged: "Merged %n% objective(s).", import_replaced: "Replaced progress with %n% objective(s).", import_invalid: "Invalid file: not a DD2 progress JSON.", import_blocked: "localStorage is blocked; import cannot persist." },
+    pt: { init: "Tracker inicializando…", blocked: "localStorage BLOQUEADO neste browser/contexto. Progresso não vai persistir.", active: "Tracker ativo: %n% checkboxes · %d% marcados", saved: "Salvo ✓ (%n% marcados)", save_fail: "Erro salvando localStorage: %msg%", load_fail: "Erro lendo localStorage: %msg%", clear_fail: "Erro limpando localStorage: %msg%", reset: "Resetado ✓ Recarregando…", init_fail: "Init falhou: %msg%", confirm_reset: "Resetar TODO o progresso? Isso limpa o localStorage deste site.", export_btn: "⬇ Exportar JSON", import_btn: "⬆ Importar JSON", import_modal_title: "Importar progresso", import_summary: "O arquivo contém %total% objetivo(s) marcado(s): %matched% deste build, %unknown% de outros stages ou desconhecidos.", import_action_merge: "Mesclar com o atual", import_action_replace: "Substituir tudo", import_action_cancel: "Cancelar", import_merged: "Mesclado(s) %n% objetivo(s).", import_replaced: "Progresso substituído por %n% objetivo(s).", import_invalid: "Arquivo inválido: não é um JSON de progresso do DD2.", import_blocked: "localStorage está bloqueado; o import não vai persistir." },
   };
 
   function getLang() {
@@ -1344,11 +1402,17 @@ SHARED_JS = r"""
       b.classList.toggle("active", b.dataset.setLang === lang);
     });
 
-    // Show/hide the matching reset button (we render two, one per lang)
-    const ren = document.getElementById("reset-tracker");
-    const rpt = document.getElementById("reset-tracker-pt");
-    if (ren) ren.style.display = (lang === "en") ? "" : "none";
-    if (rpt) rpt.style.display = (lang === "pt") ? "" : "none";
+    // Show/hide the matching reset/export/import buttons (we render two of each, one per lang)
+    const enBtns = ["reset-tracker", "export-tracker", "import-tracker"];
+    const ptBtns = ["reset-tracker-pt", "export-tracker-pt", "import-tracker-pt"];
+    enBtns.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = (lang === "en") ? "" : "none";
+    });
+    ptBtns.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = (lang === "pt") ? "" : "none";
+    });
 
     // Re-render homepage progress text in the new language ("X / N sub-objectives" / "sub-objetivos").
     if (typeof updateGlobalProgress === "function") updateGlobalProgress();
@@ -1401,7 +1465,7 @@ SHARED_JS = r"""
   // ----- diagnostic banner (visible feedback) -----
   let diagTimer = null;
   function showDiag(msg, level, autoHideMs) {
-    if (!DEBUG) return;
+    if (!debugEnabled()) return;
     let el = document.getElementById("dd2-diag");
     if (!el) {
       el = document.createElement("div");
@@ -1422,24 +1486,69 @@ SHARED_JS = r"""
   }
 
   // ----- storage helpers (with explicit error reporting) -----
+  // Storage shape (v2):
+  //   { "version": 2, "updatedAt": ISO-timestamp, "checked": { id: true, ... } }
+  // v1 (legacy flat { id: true, ... }) is auto-migrated on first read and
+  // a copy is left in the v1 key for one release as a safety net.
+
+  function emptyState() {
+    return { version: 2, updatedAt: new Date().toISOString(), checked: {} };
+  }
+
   function loadState() {
+    // Prefer v2; fall back to v1 with on-the-fly migration.
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return {};
-      const parsed = JSON.parse(raw);
-      return (parsed && typeof parsed === "object") ? parsed : {};
+      const rawV2 = localStorage.getItem(STORAGE_KEY_V2);
+      if (rawV2) {
+        const parsed = JSON.parse(rawV2);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)
+            && parsed.version === 2 && parsed.checked
+            && typeof parsed.checked === "object" && !Array.isArray(parsed.checked)) {
+          // Strip values that aren't strictly true; unknown keys stay
+          // (they don't break anything and the user can re-import clean
+          // data via Import).
+          return parsed;
+        }
+        // v2 payload is malformed — quarantine it and start fresh.
+        try { localStorage.setItem(STORAGE_KEY_V2 + ".corrupt-" + Date.now(), rawV2); } catch (_) {}
+        try { localStorage.removeItem(STORAGE_KEY_V2); } catch (_) {}
+      }
+      // Try legacy v1.
+      const rawV1 = localStorage.getItem(STORAGE_KEY_V1);
+      if (rawV1) {
+        const parsedV1 = JSON.parse(rawV1);
+        if (parsedV1 && typeof parsedV1 === "object" && !Array.isArray(parsedV1)) {
+          // Migrate: wrap v1's flat shape into v2. v1 stays in localStorage
+          // for one release as a safety copy.
+          const migrated = emptyState();
+          Object.keys(parsedV1).forEach((k) => {
+            if (parsedV1[k] === true) migrated.checked[k] = true;
+          });
+          return migrated;
+        }
+        // v1 is corrupt too — quarantine.
+        try { localStorage.setItem(STORAGE_KEY_V1 + ".corrupt-" + Date.now(), rawV1); } catch (_) {}
+        try { localStorage.removeItem(STORAGE_KEY_V1); } catch (_) {}
+      }
+      return emptyState();
     } catch (e) {
       showDiag(i18nFmt("load_fail", { msg: e.message }), "err");
-      return {};
+      return emptyState();
     }
   }
 
   function saveState(state) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      const n = Object.values(state).filter(Boolean).length;
-      const lang = getLang();
-      showDiag(i18nFmt("saved", { n: lang === "pt" ? n + " marcados" : n + " marked" }), "ok", 1200);
+      // Always write a fully-formed v2 object so future code can rely on
+      // the shape without re-validating.
+      const toSave = {
+        version: 2,
+        updatedAt: new Date().toISOString(),
+        checked: (state && state.checked) ? state.checked : {},
+      };
+      localStorage.setItem(STORAGE_KEY_V2, JSON.stringify(toSave));
+      const n = Object.values(toSave.checked).filter(Boolean).length;
+      showDiag(i18nFmt("saved", { n: String(n) }), "ok", 1200);
       return true;
     } catch (e) {
       showDiag(i18nFmt("save_fail", { msg: e.message }), "err");
@@ -1449,12 +1558,31 @@ SHARED_JS = r"""
 
   function clearAll() {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY_V2);
+      // Drop the legacy v1 too, so a user who resets and then re-imports
+      // a v1 file doesn't get surprised by phantom IDs.
+      try { localStorage.removeItem(STORAGE_KEY_V1); } catch (_) {}
       return true;
     } catch (e) {
       showDiag(i18nFmt("clear_fail", { msg: e.message }), "err");
       return false;
     }
+  }
+
+  // Return the current known tracker IDs from the current page DOM
+  // (or, on the homepage, from a build-time data-known-ids attribute).
+  function currentKnownIds() {
+    const fromAttr = document.querySelector("[data-known-ids]");
+    if (fromAttr) {
+      try { return new Set(JSON.parse(fromAttr.getAttribute("data-known-ids") || "[]")); }
+      catch (_) { return new Set(); }
+    }
+    const set = new Set();
+    document.querySelectorAll("input[type=checkbox][data-track-id]").forEach((cb) => {
+      const id = cb.getAttribute("data-track-id");
+      if (id) set.add(id);
+    });
+    return set;
   }
 
   // ----- apply state to a single checkbox (overrides HTML's checked attr) -----
@@ -1551,15 +1679,28 @@ SHARED_JS = r"""
     const total = parseInt((text && text.getAttribute("data-total")) || "0", 10) || 0;
     let done = 0;
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(STORAGE_KEY_V2) || localStorage.getItem(STORAGE_KEY_V1);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === "object") {
-          done = Object.values(parsed).filter(Boolean).length;
+        // Accept both v2 (wrapped) and v1 (flat) shapes.
+        let checked = null;
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          if (parsed.version === 2 && parsed.checked && typeof parsed.checked === "object") {
+            checked = parsed.checked;
+          } else {
+            // Treat as v1: every key with a truthy value counts.
+            checked = parsed;
+          }
+        }
+        if (checked) {
+          // Count only IDs that the current build knows about, to avoid
+          // overcounting from stale or imported keys.
+          const known = currentKnownIds();
+          done = Object.keys(checked).filter((k) => checked[k] === true && known.has(k)).length;
         }
       }
     } catch (e) { /* ignore */ }
-    const pct = total > 0 ? Math.round((100 * done) / total) : 0;
+    const pct = total > 0 ? Math.min(100, Math.round((100 * done) / total)) : 0;
     if (fill) fill.style.width = pct + "%";
     if (text) {
       const lang = getLang();
@@ -1569,13 +1710,195 @@ SHARED_JS = r"""
     }
   }
 
+  // ----- export / import JSON -----
+  // "Export" writes the current tracker payload to a downloadable .json
+  // file (date-stamped). "Import" opens a hidden file input, parses the
+  // chosen file, and shows a non-native modal with Cancel / Merge / Replace
+  // actions. Merge keeps the current state for matching IDs and adds the
+  // imported ones; Replace overwrites everything.
+  //
+  // The modal is built imperatively (no extra HTML in the page) and uses
+  // the same `i18n` data-lang swap as the rest of the page so its
+  // labels flip with the language pill.
+  function buildModal() {
+    const back = document.createElement("div");
+    back.id = "dd2-import-modal";
+    back.className = "dd2-modal-back";
+    back.hidden = true;
+    back.innerHTML = `
+      <div class="dd2-modal" role="dialog" aria-modal="true" aria-labelledby="dd2-import-title">
+        <h3 id="dd2-import-title" class="i18n" data-lang="en">${htmlEscape(i18nFmt("import_modal_title", {}))}</h3>
+        <h3 class="i18n" data-lang="pt" hidden>${htmlEscape(i18nFmt("import_modal_title", {}))}</h3>
+        <p id="dd2-import-summary" class="i18n" data-lang="en"></p>
+        <p id="dd2-import-summary-pt" class="i18n" data-lang="pt" hidden></p>
+        <div class="dd2-modal-actions">
+          <button type="button" data-import-action="cancel" class="i18n" data-lang="en">${htmlEscape(i18nFmt("import_action_cancel", {}))}</button>
+          <button type="button" data-import-action="cancel-pt" class="i18n" data-lang="pt" hidden>${htmlEscape(i18nFmt("import_action_cancel", {}))}</button>
+          <button type="button" data-import-action="merge" class="primary i18n" data-lang="en">${htmlEscape(i18nFmt("import_action_merge", {}))}</button>
+          <button type="button" data-import-action="merge-pt" class="primary i18n" data-lang="pt" hidden>${htmlEscape(i18nFmt("import_action_merge", {}))}</button>
+          <button type="button" data-import-action="replace" class="danger i18n" data-lang="en">${htmlEscape(i18nFmt("import_action_replace", {}))}</button>
+          <button type="button" data-import-action="replace-pt" class="danger i18n" data-lang="pt" hidden>${htmlEscape(i18nFmt("import_action_replace", {}))}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(back);
+    return back;
+  }
+
+  function htmlEscape(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function bindExportImport() {
+    // Export buttons (one per language; only the active one is shown by applyLang).
+    ["export-tracker", "export-tracker-pt"].forEach((id) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        try {
+          const state = loadState();
+          const exportObj = {
+            version: 2,
+            exportedAt: new Date().toISOString(),
+            checked: state.checked || {},
+          };
+          const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          const stamp = new Date().toISOString().slice(0, 10);
+          a.href = url;
+          a.download = "dd2-progress-" + stamp + ".json";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 0);
+        } catch (err) {
+          showDiag(i18nFmt("save_fail", { msg: err.message }), "err");
+        }
+      });
+    });
+
+    // Import: a single hidden file input + a single click handler on the
+    // (per-language) import button. The button just clicks the input.
+    const fileInput = document.getElementById("dd2-import-file");
+    ["import-tracker", "import-tracker-pt"].forEach((id) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.addEventListener("click", () => { if (fileInput) fileInput.click(); });
+    });
+    if (!fileInput) return;
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        let parsed = null;
+        try { parsed = JSON.parse(reader.result); }
+        catch (err) { showDiag(i18nFmt("import_invalid", {}), "err"); fileInput.value = ""; return; }
+
+        // Accept either v2 wrapped or v1 flat shape; normalize to a flat map.
+        let incoming = {};
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          if (parsed.version === 2 && parsed.checked && typeof parsed.checked === "object" && !Array.isArray(parsed.checked)) {
+            incoming = parsed.checked;
+          } else {
+            // Treat as v1: keep only keys whose value is strictly true.
+            Object.keys(parsed).forEach((k) => { if (parsed[k] === true) incoming[k] = true; });
+          }
+        } else {
+          showDiag(i18nFmt("import_invalid", {}), "err");
+          fileInput.value = "";
+          return;
+        }
+
+        const known = currentKnownIds();
+        let matched = 0, unknown = 0;
+        Object.keys(incoming).forEach((k) => {
+          if (known.has(k)) matched++;
+          else unknown++;
+        });
+        const total = matched + unknown;
+
+        // Persist a staging copy so the modal can read the proposed payload
+        // regardless of which action the user picks.
+        window.__dd2PendingImport = incoming;
+        showImportModal(total, matched, unknown, fileInput);
+      };
+      reader.onerror = () => {
+        showDiag(i18nFmt("load_fail", { msg: reader.error ? reader.error.message : "" }), "err");
+        fileInput.value = "";
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  function showImportModal(total, matched, unknown, fileInput) {
+    let back = document.getElementById("dd2-import-modal");
+    if (!back) back = buildModal();
+    back.hidden = false;
+    const summaryEn = document.getElementById("dd2-import-summary");
+    const summaryPt = document.getElementById("dd2-import-summary-pt");
+    const sEn = i18nFmt("import_summary", { total: String(total), matched: String(matched), unknown: String(unknown) });
+    const sPt = i18nFmt("import_summary", { total: String(total), matched: String(matched), unknown: String(unknown) });
+    if (summaryEn) summaryEn.textContent = sEn;
+    if (summaryPt) summaryPt.textContent = sPt;
+
+    const close = () => {
+      back.hidden = true;
+      if (fileInput) fileInput.value = "";
+      window.__dd2PendingImport = null;
+    };
+    const onAction = (e) => {
+      const t = e.target;
+      if (!(t instanceof HTMLElement)) return;
+      const a = t.getAttribute("data-import-action") || "";
+      const incoming = window.__dd2PendingImport || {};
+      const current = loadState();
+      const cur = current.checked || (current.checked = {});
+      if (a === "cancel" || a === "cancel-pt") {
+        close();
+        return;
+      }
+      if (a === "merge" || a === "merge-pt") {
+        // Additive merge: current state wins for conflicting keys, but
+        // we also add keys from `incoming` that are missing locally.
+        // Net effect: the union, with the current tab's choices preserved.
+        let added = 0;
+        Object.keys(incoming).forEach((k) => {
+          if (incoming[k] === true && !cur[k]) { cur[k] = true; added++; }
+        });
+        saveState(current);
+        showDiag(i18nFmt("import_merged", { n: String(added) }), "ok", 1500);
+      } else if (a === "replace" || a === "replace-pt") {
+        // Replace: drop everything and re-apply the imported set as-is.
+        const next = { version: 2, updatedAt: new Date().toISOString(), checked: {} };
+        Object.keys(incoming).forEach((k) => { if (incoming[k] === true) next.checked[k] = true; });
+        saveState(next);
+        showDiag(i18nFmt("import_replaced", { n: String(Object.keys(next.checked).length) }), "ok", 1500);
+      }
+      close();
+      // Re-apply state to DOM and refresh every counter.
+      const items = document.querySelectorAll("input[type=checkbox][data-track-id]");
+      items.forEach((cb) => applyTo(cb, next ? next.checked : current.checked));
+      updateTotals();
+      updateGlobalProgress();
+    };
+    // Use one delegated listener; replace it on each open to avoid stacking.
+    if (back.__handler) back.removeEventListener("click", back.__handler);
+    back.__handler = onAction;
+    back.addEventListener("click", onAction);
+  }
+
   // ----- main -----
   function init() {
     // Run language toggle first so diag messages / reset confirm land
     // in the user's preferred language for the rest of init.
     try { initLang(); } catch (e) { /* non-fatal */ }
 
-    if (DEBUG) showDiag(i18nFmt("init", {}), "info");
+    if (debugEnabled()) showDiag(i18nFmt("init", {}), "info");
 
     // Verify localStorage is usable
     try {
@@ -1587,18 +1910,15 @@ SHARED_JS = r"""
     }
 
     const state = loadState();
+    const checkedMap = state.checked || {};
     const items = document.querySelectorAll("input[type=checkbox][data-track-id]");
-    items.forEach((cb) => applyTo(cb, state));
+    items.forEach((cb) => applyTo(cb, checkedMap));
     updateTotals();
     updateGlobalProgress();
 
-    const doneCount = Object.values(state).filter(Boolean).length;
-    const lang = getLang();
-    if (DEBUG) showDiag(
-      i18nFmt("active", {
-        n: items.length,
-        d: lang === "pt" ? doneCount + " marcados" : doneCount + " marked",
-      }),
+    const doneCount = Object.values(checkedMap).filter(Boolean).length;
+    if (debugEnabled()) showDiag(
+      i18nFmt("active", { n: String(items.length), d: String(doneCount) }),
       "ok", 2000
     );
 
@@ -1617,6 +1937,7 @@ SHARED_JS = r"""
         const want = t.checked;
         const children = card.querySelectorAll("input[type=checkbox][data-track-id]");
         const s = loadState();
+        const m = s.checked || (s.checked = {});
         let dirty = false;
         children.forEach((cb) => {
           if (cb.checked === want) return;
@@ -1624,8 +1945,8 @@ SHARED_JS = r"""
           cb.closest("li")?.classList.toggle("is-checked", want);
           const cid = cb.getAttribute("data-track-id");
           if (cid) {
-            if (want) s[cid] = true;
-            else delete s[cid];
+            if (want) m[cid] = true;
+            else delete m[cid];
             dirty = true;
           }
         });
@@ -1638,8 +1959,9 @@ SHARED_JS = r"""
       const id = t.getAttribute("data-track-id");
       if (!id) return;
       const s = loadState();
-      if (t.checked) s[id] = true;
-      else delete s[id];
+      const m = s.checked || (s.checked = {});
+      if (t.checked) m[id] = true;
+      else delete m[id];
       t.closest("li")?.classList.toggle("is-checked", t.checked);
       const ok = saveState(s);
       if (ok) updateTotals();
@@ -1653,10 +1975,6 @@ SHARED_JS = r"""
       const btn = document.getElementById(id);
       if (!btn) return;
       btn.addEventListener("click", () => {
-        const currentLang = getLang();
-        const confirmMsg = (currentLang === "pt")
-          ? "Reset ALL progress? This clears localStorage for this site."  // same wording, both langs
-          : "Reset ALL progress? This clears localStorage for this site.";
         if (confirm(i18nFmt("confirm_reset", {}))) {
           if (clearAll()) {
             showDiag(i18nFmt("reset", {}), "ok");
@@ -1665,6 +1983,28 @@ SHARED_JS = r"""
         }
       });
     });
+
+    // ----- export / import JSON -----
+    // The "Export" button writes the current localStorage payload to a
+    // downloadable .json file. The "Import" button opens a hidden file
+    // picker; once a file is chosen, a non-native modal asks the user
+    // whether to merge with the current state or replace it outright.
+    bindExportImport();
+
+    // Cross-tab sync: when another tab writes to the tracker key, re-apply
+    // the new value to this tab's DOM. The storage event is fired in
+    // OTHER tabs only (not the one that wrote), so this is safe to call
+    // on every change.
+    window.addEventListener("storage", (e) => {
+      if (e.key === STORAGE_KEY_V2 || e.key === STORAGE_KEY_V1) {
+        const s = loadState();
+        const items = document.querySelectorAll("input[type=checkbox][data-track-id]");
+        items.forEach((cb) => applyTo(cb, s.checked));
+        updateTotals();
+        updateGlobalProgress();
+      }
+    });
+  }
   }
 
   // Robust initialization
@@ -1672,6 +2012,14 @@ SHARED_JS = r"""
     try { init(); }
     catch (e) { showDiag(i18nFmt("init_fail", { msg: e.message }), "err"); }
   }
+
+  // Set <html lang> synchronously, before first paint, so search engines
+  // and screen readers see the correct language from the first frame.
+  // (The body is not yet available here, so this is intentionally a
+  // minimal version of applyLang — the full version runs in init().)
+  try {
+    document.documentElement.lang = getLang();
+  } catch (e) { /* no-op */ }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
@@ -1712,6 +2060,10 @@ def page_shell(*, title: str, body_html: str, crumbs_html: str = "", extra_css: 
 {page_bar}
 {body_html}
 </main>
+<!-- Hidden file picker used by the "Import JSON" buttons rendered on
+     every page. The picker is duplicated for each stage so it lives
+     outside the summary bar (which gets remounted on language toggle). -->
+<input type="file" id="dd2-import-file" accept="application/json,.json" hidden>
 <script>{SHARED_JS}</script>
 </body>
 </html>
@@ -1782,11 +2134,15 @@ def render_index(repo_root: Path, stages: list[int]) -> str:
     hero_tagline_pt = "Walkthrough interativo EN/PT com tracker de progresso."
     body.append(f'<p class="hero-tagline">{render_bilingual(hero_tagline_en, hero_tagline_pt)}</p>')
     # Global progress bar — JS in SHARED_JS reads `data-total` for the
-    # denominator and live-counts `localStorage[dd2-tracker-v1]` for the
+    # denominator and live-counts `localStorage[dd2-tracker-v2]` for the
     # numerator. The page has no checkboxes of its own, so this is the
-    # only place global progress shows.
-    total_objectives = _count_total_objectives(repo_root, stages)
-    body.append('<div class="progress">')
+    # only place global progress shows. The `data-known-ids` attribute
+    # carries the full set of tracker IDs from the current build, so the
+    # JS can ignore stale or imported IDs that no longer match anything
+    # in the vault (and the progress bar can never exceed 100%).
+    total_objectives, known_ids = _count_total_objectives(repo_root, stages)
+    body.append('<div class="progress"'
+                f' data-known-ids=\'{html.escape(json.dumps(sorted(known_ids), ensure_ascii=False))}\'>')
     body.append('  <div class="progress-track">')
     body.append('    <div class="progress-fill" data-progress-fill="global"></div>')
     body.append('  </div>')
@@ -1835,6 +2191,14 @@ def render_index(repo_root: Path, stages: list[int]) -> str:
     # render_stage when it has locations; fall back to # for safety).
     body.append(f'  <a href="stage-1.html#locations">{render_bilingual(L("en", "quick_link_locations"), L("pt", "quick_link_locations"))}</a>')
     body.append('  <span class="dot">·</span>')
+    body.append(f'  <button type="button" id="export-tracker" class="reset-link">'
+                f'{render_bilingual(L("en", "quick_link_export"), L("pt", "quick_link_export"))}</button>')
+    body.append('  <button type="button" id="export-tracker-pt" class="reset-link" style="display:none">'
+                f'{render_bilingual(L("en", "quick_link_export"), L("pt", "quick_link_export"))}</button>')
+    body.append(f'  <button type="button" id="import-tracker" class="reset-link">'
+                f'{render_bilingual(L("en", "quick_link_import"), L("pt", "quick_link_import"))}</button>')
+    body.append('  <button type="button" id="import-tracker-pt" class="reset-link" style="display:none">'
+                f'{render_bilingual(L("en", "quick_link_import"), L("pt", "quick_link_import"))}</button>')
     body.append(f'  <button type="button" id="reset-tracker-home" class="reset-link">'
                 f'{render_bilingual(L("en", "quick_link_reset"), L("pt", "quick_link_reset"))}</button>')
     body.append('</section>')
@@ -1853,9 +2217,16 @@ def render_index(repo_root: Path, stages: list[int]) -> str:
     return page_shell(title=L("en", "page_title_home"), body_html="\n".join(body))
 
 
-def _count_total_objectives(repo_root: Path, stages: list[int]) -> int:
-    """Sum objective counts across all stages for the global progress bar."""
+def _count_total_objectives(repo_root: Path, stages: list[int]) -> tuple[int, list[str]]:
+    """Sum objective counts across all stages for the global progress bar.
+
+    Returns (total, known_ids). The known_ids list is the full set of
+    `data-track-id` strings emitted by the build; it's used to filter
+    storage on the homepage so stale or imported keys don't inflate the
+    progress numerator.
+    """
     total = 0
+    known: list[str] = []
     for n in stages:
         stage_dir = repo_root / "Quests" / f"Stage {n}"
         for sub in ("Main Quests", "Side Quests"):
@@ -1865,9 +2236,15 @@ def _count_total_objectives(repo_root: Path, stages: list[int]) -> int:
             for path in sub_dir.glob("*.md"):
                 if path.stem.endswith(".en"):  # only count one of the pair
                     continue
-                body_text = parse_frontmatter(path.read_text(encoding="utf-8"))[1]
+                fm, body_text = parse_frontmatter(path.read_text(encoding="utf-8"))
+                qtype = "side" if "Side Quests" in str(path) else "main"
+                num_match = re.match(r"^(\d+)", path.name)
+                qnum = num_match.group(1) if num_match else "x"
+                prefix = f"s{n}-{qtype}-{qnum}"
+                for i, _ in enumerate(parse_objectives(body_text.splitlines()), start=1):
+                    known.append(f"{prefix}-{i}")
                 total += len(parse_objectives(body_text.splitlines()))
-    return total
+    return total, known
 
 
 # ---------------------------------------------------------------------------
@@ -2066,7 +2443,11 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
     body.append(f'''<div class="summary-bar">
   <div class="stat"><span class="label">{L("en", "stat_main")}</span><span class="value">{main_count}</span></div>
   <div class="stat"><span class="label">{L("pt", "stat_side")}</span><span class="value">{side_count}</span></div>
-  <div class="stat"><span class="label">{L("en", "stat_subs")}</span><span class="value"><span data-total-for="s{stage_n}-">{total_done}</span>/{total_all}</span></div>
+  <div class="stat"><span class="label">{L("en", "stat_subs")}</span><span class="value"><span data-total-for="s{stage_n}-">{total_done}/{total_all}</span></span></div>
+  <button id="export-tracker" type="button" class="reset-link">{L("en", "export_btn")}</button>
+  <button id="export-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "export_btn")}</button>
+  <button id="import-tracker" type="button" class="reset-link">{L("en", "import_btn")}</button>
+  <button id="import-tracker-pt" type="button" class="reset-link" style="display:none">{L("pt", "import_btn")}</button>
   <button id="reset-tracker" type="button">{L("en", "resetar_progresso")}</button>
   <button id="reset-tracker-pt" type="button" style="display:none">{L("pt", "resetar_progresso")}</button>
 </div>''')
@@ -2130,12 +2511,12 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]") -> str:
 
     # Footer tip
     body.append('<div class="callout callout-tip"><div class="callout-title">Tip</div>'
-                '<div class="callout-body"><span class="i18n" data-lang="en">The <code>data-track-id</code> values are '
-                f'deterministic (format <code>s{stage_n}-{{main|side}}-{{NN}}-{{i}}</code>). To export or import '
-                'your progress, just copy the JSON from <code>localStorage</code>.</span>'
-                '<span class="i18n" data-lang="pt" hidden>Os <code>data-track-id</code> são determinísticos '
-                f'(formato <code>s{stage_n}-{{main|side}}-{{NN}}-{{i}}</code>), então se você quiser '
-                'exportar/importar progresso é só copiar o JSON do <code>localStorage</code>.</span></div></div>')
+                '<div class="callout-body"><span class="i18n" data-lang="en">Use the <strong>Export JSON</strong> and '
+                '<strong>Import JSON</strong> buttons above to back up or move your progress between browsers and devices. '
+                f'IDs follow the format <code>s{stage_n}-{{main|side}}-{{NN}}-{{i}}</code>.</span>'
+                '<span class="i18n" data-lang="pt" hidden>Use os botões <strong>Exportar JSON</strong> e '
+                '<strong>Importar JSON</strong> acima para fazer backup ou mover seu progresso entre navegadores e '
+                f'dispositivos. Os IDs seguem o formato <code>s{stage_n}-{{main|side}}-{{NN}}-{{i}}</code>.</span></div></div>')
 
     return page_shell(
         title=f"Stage {stage_n}",
