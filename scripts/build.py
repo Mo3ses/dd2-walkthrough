@@ -2005,7 +2005,6 @@ SHARED_JS = r"""
       }
     });
   }
-  }
 
   // Robust initialization
   function boot() {
