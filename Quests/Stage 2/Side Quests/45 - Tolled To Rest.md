@@ -6,7 +6,7 @@ location: "[[Locations/Ancient Battleground]]"
 quest_giver: NPC desconhecido (verificar — provável Oscar ancião)
 prerequisites: []
 related:
-  - "[[Main Quests/28 - Till Death Do Us Part]]"
+  - "[[Side Quests/28 - Till Death Do Us Part]]"
 tags:
   - quest
   - stage-2
