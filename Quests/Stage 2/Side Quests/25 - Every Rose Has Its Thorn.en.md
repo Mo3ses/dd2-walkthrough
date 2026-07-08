@@ -47,7 +47,9 @@ Start [[10 - A Place to Call Home]] and talk to Sven or a related NPC.
 
 - [ ] Talk to the quest giver
 - [ ] Collect roses / ingredients
+- --- after Wilhelmina accepts your help ---
 - [ ] Process (if necessary)
+- --- after fleeing the city ---
 - [ ] Deliver
 
 ## Rewards

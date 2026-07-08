@@ -52,6 +52,7 @@ Complete [[15 - Seat of the Sovran]] and follow clues to the Sunbright manor.
 
 - [ ] Enter the Sunbright manor
 - [ ] Investigate the residents
+- --- after bringing Daphne to the manor ---
 - [ ] Collect clues
 - [ ] Confront the truth
 

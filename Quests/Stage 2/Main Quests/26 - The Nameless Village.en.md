@@ -52,6 +52,7 @@ Complete [[24 - An Unsettling Encounter]] and follow Brant's instructions.
 
 - [ ] Find the Nameless Village
 - [ ] Explore the village
+- --- after talking to Flaude at night ---
 - [ ] Investigate the central area
 - [ ] Confront the leader
 - [ ] Report to Brant

@@ -48,6 +48,7 @@ Iniciar [[15 - Seat of the Sovran]] e conversar com NPCs próximos a Brant / cas
 
 - [ ] Fale com NPCs-chave sobre Disa
 - [ ] Colete evidências
+- --- após invadir o castelo pelo Guardhouse ---
 - [ ] Confronte ou relate a conspiração
 
 ## Recompensas

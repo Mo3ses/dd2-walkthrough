@@ -16,6 +16,68 @@ tags: [moc, stage-2, vermund, index]
 > - **Progressão**: Vernworth → Harve Village → Moonglow Garden → Eini's House → Harve (return) → Sacred Arbor → Checkpoint Rest Town → Vernworth (finale)
 > - **Duração estimada**: 12–18 horas
 
+## 🎮 Ordem Recomendada de Execução
+
+> Step-by-step da gameplay do usuário (2026-07-08, atualizada com Vernworth pt.2 e pt.3). Esta seção vem antes das tabelas abaixo de propósito: `parse_stage_flow` dedupe por primeira ocorrência — wiki-links aqui dominam o by-flow view. Multiple "INICIAR/CONTINUAR/COMPLETAR" do mesmo quest viram objectives dentro do card (use o divider `- --- label ---` no MD para dividir em partes no fluxo — ver In Dragon's Wake). Os subheaders pt.1/2/3 abaixo são só organização visual: o parser vê o fluxo como uma lista flat.
+>
+> **Importante**: 7 quests mencionadas pelo usuário **não têm arquivo MD ainda**: `Tolled To Rest`, `A Game of Wits`, `A Case of Sculptor's Block`, `Dulled Steel, Cold Forge`, `A Noble Exchange`, `Nation of the Lambert Flame`, `A Veil of Gossamer` — links quebrados até serem criadas. Achievements (The Regriffining, Cyclops Abridged, I'm In) também não estão modeladas como quests no build atual.
+
+### Vernworth pt.1 — chegada + carroça de retorno
+
+1. [[Main Quests/15 - Seat of the Sovran]]
+2. [[Side Quests/38 - Gift of the Bow]]
+3. [[Side Quests/19 - Vocation Frustration]]
+4. [[Side Quests/10 - A Place to Call Home]]
+5. [[Side Quests/34 - Claw Them Into Shape]]
+6. [[Side Quests/12 - Oxcart Courier]]
+7. [[Side Quests/35 - Beren's Final Lesson]]
+8. [[Side Quests/11 - The Ornate Box]]
+9. [[Side Quests/29 - A Beggar's Tale]]
+10. [[Side Quests/14 - The Gift of Giving]]
+11. [[Side Quests/13 - The Heel of History]]
+12. [[Main Quests/17 - Monster Culling]]
+13. [[Side Quests/20 - Disa's Plot]]
+14. [[Main Quests/21 - The Caged Magistrate]]
+15. [[Side Quests/30 - Saint of the Slums]]
+16. [[Side Quests/31 - House of the Blue Sunbright]]
+17. [[Side Quests/18 - Scaly Invaders]]
+18. [[Main Quests/26 - The Nameless Village]]
+19. [[Main Quests/23 - The Stolen Throne]]
+20. [[Side Quests/27 - The Arisen's Shadow]]
+21. [[Side Quests/32 - Readvent of Calamity]]
+
+### Vernworth pt.2 — Battahl prep + archer chain
+
+22. [[Side Quests/28 - Till Death Do Us Part]]
+23. [[Side Quests/42 - Hunt for the Jadeite Orb]]
+24. [[Side Quests/41 - Prey for the Pack]]
+25. [[Side Quests/43 - The Sorcerer's Appraisal]]
+26. [[Side Quests/39 - A Trial of Archery]]
+27. [[Side Quests/36 - Spellbound]]
+28. [[Side Quests/40 - The Ailing Arborheart]]
+29. [[Side Quests/37 - Trouble on the Cape]]
+30. [[Side Quests/33 - Home Is Where the Hearth Is]]
+
+### Vernworth pt.3 — final political arc + Dragon ignited
+
+31. [[Side Quests/16 - Masked Correspondence]]
+32. [[Side Quests/22 - A Magesterial Amenity]]
+33. [[Main Quests/24 - An Unsettling Encounter]]
+34. [[Side Quests/25 - Every Rose Has Its Thorn]]
+35. [[Main Quests/44 - Feast of Deception]]
+
+**Dicas embutidas no fluxo:**
+
+- Tenha 2 kits de acampamento no inventário (opcional — reduz caminhada).
+- Após `Claw Them Into Shape` (pt.1 step 5), acampe ao lado do Borderwatch Training Grounds para esperar o dia passar.
+- Acampe ao lado do Moonglow Garden para liberar `Beren's Final Lesson` (pt.1 step 7).
+- Durma até a noite várias vezes para forçar encontros noturnos: Brant na taverna (pt.1 step 1), Saint of the Slums (pt.1 step 15), Albert/Beggar's Tale (pt.1 step 9), Till Death (pt.2 step 22 — janela de tempo compartilhada com Gift of the Bow).
+- Vocation Mystic Spearhand em Sigurd; Warrior Maister em Lennart após matar o Dragão.
+- Leve 1 Portcrystal (opcional) — pt.2 facilita voltar do Ancient Battleground e do Sphinx.
+- Leve arco no inventário (Wayfarer classe ou Arqueiro) — pt.2 usa extensivamente.
+- SphinxParent pawn: nomeie um pawn "SphinxParent" e coloque na party para o puzzle final do `A Game of Wits`.
+- `Till Death Do Us Part` (pt.2 step 22) é **time-sensitive** — não enrole, completa logo após Gift of the Bow.
+
 ## 📍 Locais do Stage 2 (ordem de progressão)
 
 | # | Local | Quando visitar |

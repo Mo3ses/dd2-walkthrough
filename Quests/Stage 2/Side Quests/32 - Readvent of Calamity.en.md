@@ -51,7 +51,9 @@ Complete [[15 - Seat of the Sovran]] and travel back to [[Locations/Melve]].
 
 - [ ] Return to Melve
 - [ ] Speak with the villagers
+- --- after the Ulrika cutscene (next morning) ---
 - [ ] Investigate the new threat
+- --- after locating Ulrika at Harve ---
 - [ ] Resolve the conflict
 
 ## Rewards

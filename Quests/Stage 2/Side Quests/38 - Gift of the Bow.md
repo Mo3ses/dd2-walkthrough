@@ -55,6 +55,7 @@ Concluir [[37 - Trouble on the Cape]] e voltar para Vernworth.
 
 - [ ] Volte a Vernworth
 - [ ] Fale com o quest giver
+- --- após demonstrar uso do arco nas ruínas ---
 - [ ] Receba o arco
 - [ ] Teste em combate
 

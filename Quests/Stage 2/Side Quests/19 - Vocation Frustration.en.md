@@ -49,6 +49,7 @@ Complete [[10 - A Place to Call Home]] and talk to a vocation-related NPC in [[L
 
 - [ ] Talk to the Vocation mentor
 - [ ] Test abilities in combat
+- --- after Trevo Mine (recover the weapons) ---
 - [ ] Choose a Vocation path
 - [ ] Confirm your choice
 

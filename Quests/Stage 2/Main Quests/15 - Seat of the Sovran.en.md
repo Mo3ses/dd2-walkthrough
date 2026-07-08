@@ -53,6 +53,7 @@ Complete [[Main Quests/08 - In Dragon's Wake]] and reach [[Locations/Vernworth]]
 
 - [ ] Cross the gates of Vernworth
 - [ ] Be escorted by Brant to the castle
+- --- after finding Brant at the tavern at night ---
 - [ ] Meet Sovran Disa formally
 - [ ] Receive royal recognition
 

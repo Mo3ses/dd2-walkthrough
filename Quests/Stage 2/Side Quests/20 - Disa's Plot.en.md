@@ -49,6 +49,7 @@ Start [[15 - Seat of the Sovran]] and talk to NPCs near Brant / castle.
 
 - [ ] Talk to key NPCs about Disa
 - [ ] Gather evidence
+- --- after invading the castle via the Guardhouse ---
 - [ ] Confront or report the conspiracy
 
 ## Rewards

@@ -53,6 +53,7 @@ Start [[15 - Seat of the Sovran]] and speak with Ser Berthold.
 
 - [ ] Speak with Ser Berthold
 - [ ] Investigate the magistrate's case
+- --- after visiting Waldhar in prison ---
 - [ ] Collect testimonies
 - [ ] Decide the magistrate's fate
 

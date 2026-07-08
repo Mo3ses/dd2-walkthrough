@@ -55,6 +55,7 @@ Concluir [[Main Quests/08 - In Dragon's Wake]] e chegar em [[Locations/Vernworth
 
 - [ ] Atravesse os portões de Vernworth
 - [ ] Seja escoltado por Brant ao castelo
+- --- após falar com Brant na taverna à noite ---
 - [ ] Conheça o Sovran Disa formalmente
 - [ ] Receba reconhecimento real
 

@@ -16,6 +16,68 @@ tags: [moc, stage-2, vermund, index]
 > - **Progression**: Vernworth → Harve Village → Moonglow Garden → Eini's House → Harve (return) → Sacred Arbor → Checkpoint Rest Town → Vernworth (finale)
 > - **Estimated duration**: 12–18 hours
 
+## 🎮 Recommended Execution Order
+
+> Step-by-step from the user's gameplay (2026-07-08, expanded with Vernworth pt.2 and pt.3 after feedback). This section sits before the tables below on purpose: `parse_stage_flow` reads wiki-links in document order with first-occurrence dedup — wiki-links here dominate the by-flow view. Multiple "START/CONTINUE/COMPLETE" steps for the same quest become objectives inside its card (use the divider `- --- label ---` in the MD to split it into parts on the flow — see In Dragon's Wake). The pt.1/2/3 subheaders below are pure visual organization: the parser sees the flow as a flat list.
+>
+> **Heads-up**: 7 quests the user named **don't have an MD file yet**: `Tolled To Rest`, `A Game of Wits`, `A Case of Sculptor's Block`, `Dulled Steel, Cold Forge`, `A Noble Exchange`, `Nation of the Lambert Flame`, `A Veil of Gossamer` — broken links until those files are created. Achievements (The Regriffining, Cyclops Abridged, I'm In) aren't modelled as quests in the current build.
+
+### Vernworth pt.1 — arrival + oxcart return
+
+1. [[Main Quests/15 - Seat of the Sovran]]
+2. [[Side Quests/38 - Gift of the Bow]]
+3. [[Side Quests/19 - Vocation Frustration]]
+4. [[Side Quests/10 - A Place to Call Home]]
+5. [[Side Quests/34 - Claw Them Into Shape]]
+6. [[Side Quests/12 - Oxcart Courier]]
+7. [[Side Quests/35 - Beren's Final Lesson]]
+8. [[Side Quests/11 - The Ornate Box]]
+9. [[Side Quests/29 - A Beggar's Tale]]
+10. [[Side Quests/14 - The Gift of Giving]]
+11. [[Side Quests/13 - The Heel of History]]
+12. [[Main Quests/17 - Monster Culling]]
+13. [[Side Quests/20 - Disa's Plot]]
+14. [[Main Quests/21 - The Caged Magistrate]]
+15. [[Side Quests/30 - Saint of the Slums]]
+16. [[Side Quests/31 - House of the Blue Sunbright]]
+17. [[Side Quests/18 - Scaly Invaders]]
+18. [[Main Quests/26 - The Nameless Village]]
+19. [[Main Quests/23 - The Stolen Throne]]
+20. [[Side Quests/27 - The Arisen's Shadow]]
+21. [[Side Quests/32 - Readvent of Calamity]]
+
+### Vernworth pt.2 — Battahl prep + archer chain
+
+22. [[Side Quests/28 - Till Death Do Us Part]]
+23. [[Side Quests/42 - Hunt for the Jadeite Orb]]
+24. [[Side Quests/41 - Prey for the Pack]]
+25. [[Side Quests/43 - The Sorcerer's Appraisal]]
+26. [[Side Quests/39 - A Trial of Archery]]
+27. [[Side Quests/36 - Spellbound]]
+28. [[Side Quests/40 - The Ailing Arborheart]]
+29. [[Side Quests/37 - Trouble on the Cape]]
+30. [[Side Quests/33 - Home Is Where the Hearth Is]]
+
+### Vernworth pt.3 — final political arc + Dragon ignited
+
+31. [[Side Quests/16 - Masked Correspondence]]
+32. [[Side Quests/22 - A Magesterial Amenity]]
+33. [[Main Quests/24 - An Unsettling Encounter]]
+34. [[Side Quests/25 - Every Rose Has Its Thorn]]
+35. [[Main Quests/44 - Feast of Deception]]
+
+**Flow tips baked into the order:**
+
+- Keep 2 camping kits in the inventory (optional — cuts down on walking).
+- After `Claw Them Into Shape` (pt.1 step 5), camp next to the Borderwatch Training Grounds to wait out the day.
+- Camp next to the Moonglow Garden to unlock `Beren's Final Lesson` (pt.1 step 7).
+- Sleep until nightfall repeatedly to force the night encounters: Brant at the tavern (pt.1 step 1), Saint of the Slums (pt.1 step 15), Albert / Beggar's Tale (pt.1 step 9), Till Death (pt.2 step 22 — time window shared with Gift of the Bow).
+- Mystic Spearhand vocation at Sigurd; Warrior Maister at Lennart after killing the Dragon.
+- Carry 1 Portcrystal (optional) — pt.2 makes it easy to come back from the Ancient Battleground and the Sphinx.
+- Carry a bow (Wayfarer class or Archer) — pt.2 uses bows extensively.
+- SphinxParent pawn: name a pawn "SphinxParent" and put it in the party for the final `A Game of Wits` puzzle.
+- `Till Death Do Us Part` (pt.2 step 22) is **time-sensitive** — don't stall; complete right after Gift of the Bow.
+
 ## 📍 Stage 2 Locations (progression order)
 
 | # | Location | When to visit |

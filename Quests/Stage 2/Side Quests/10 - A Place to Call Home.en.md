@@ -47,6 +47,7 @@ Complete [[Main Quests/08 - In Dragon's Wake]] and arrive at the gates of [[Loca
 
 - [ ] Meet Brant at the gates
 - [ ] Choose an accommodation (inn or room)
+- --- after learning the districts ---
 - [ ] Learn the main districts of the capital
 - [ ] Establish temporary residence
 

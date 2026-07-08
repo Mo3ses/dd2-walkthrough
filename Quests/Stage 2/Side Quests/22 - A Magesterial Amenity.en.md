@@ -45,6 +45,7 @@ Start [[10 - A Place to Call Home]] and talk to Gautstafr in the Tavern District
 
 - [ ] Talk to Gautstafr
 - [ ] Buy upgrade items
+- --- after the masked ball ---
 - [ ] Decorate / expand the tavern
 - [ ] Report to Gautstafr
 

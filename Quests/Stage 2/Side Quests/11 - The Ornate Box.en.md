@@ -47,7 +47,9 @@ Start [[10 - A Place to Call Home]] and explore [[Locations/Vernworth]].
 
 - [ ] Receive the ornate box
 - [ ] Investigate the contents
+- --- after talking to Sven at the well ---
 - [ ] Discover the sender
+- --- after talking to Sven again ---
 - [ ] Deliver to the correct recipient
 
 ## Rewards

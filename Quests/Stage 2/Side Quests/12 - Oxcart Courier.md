@@ -48,6 +48,7 @@ Iniciar [[15 - Seat of the Sovran]] e falar com Brant.
 
 - [ ] Fale com Brant
 - [ ] Encontre o oxcart designado
+- --- após chegar em Melve ---
 - [ ] Escolte o transporte até o destino
 - [ ] Reporte-se a Brant
 

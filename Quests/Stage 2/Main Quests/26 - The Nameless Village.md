@@ -51,6 +51,7 @@ Concluir [[24 - An Unsettling Encounter]] e falar com Brant no Stardrop Inn.
 
 - [ ] Fale com Brant
 - [ ] Vá à vila abandonada
+- --- após falar com Flaude de noite ---
 - [ ] Investigue as ruínas
 - [ ] Descubra a história
 - [ ] Reporte a Brant

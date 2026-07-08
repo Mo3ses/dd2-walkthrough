@@ -49,6 +49,7 @@ Start [[15 - Seat of the Sovran]] and speak with Brant.
 
 - [ ] Speak with Brant
 - [ ] Find the designated oxcart
+- --- after arriving at Melve ---
 - [ ] Escort the transport to its destination
 - [ ] Report to Brant
 

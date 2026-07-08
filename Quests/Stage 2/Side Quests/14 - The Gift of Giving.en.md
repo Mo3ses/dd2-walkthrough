@@ -46,6 +46,7 @@ Start [[10 - A Place to Call Home]] and talk to NPCs in the Merchant Quarter.
 
 - [ ] Talk to the quest giver
 - [ ] Buy the requested items
+- --- after delivering silver ore ---
 - [ ] Deliver to recipients
 
 ## Rewards

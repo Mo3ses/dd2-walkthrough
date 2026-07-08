@@ -51,6 +51,7 @@ Concluir [[10 - A Place to Call Home]] e falar com NPC relacionado a vocations e
 
 - [ ] Fale com o mentor de Vocation
 - [ ] Teste abilities em combate
+- --- após Trevo Mine (recupere as armas) ---
 - [ ] Escolha um path de Vocation
 - [ ] Confirme sua escolha
 

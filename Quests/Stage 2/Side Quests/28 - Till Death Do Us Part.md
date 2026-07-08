@@ -47,7 +47,9 @@ Iniciar [[10 - A Place to Call Home]] e conversar com Sigurd em Vernworth.
 
 - [ ] Fale com Sigurd
 - [ ] Conheça Nadina
+- --- após falar com Margit ---
 - [ ] Complete as tarefas pessoais
+- --- após salvar Gregor ---
 - [ ] Decida o outcome
 
 ## Recompensas
