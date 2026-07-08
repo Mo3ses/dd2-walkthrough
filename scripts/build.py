@@ -288,13 +288,16 @@ class Quest:
     def status(self) -> str:
         if not self.objectives:
             return "Sem objetivos"
-        done = sum(1 for o in self.objectives if o.done)
+        # The build-time badge is a *placeholder* — the real state lives
+        # in the user's localStorage and is overwritten by SHARED_JS's
+        # updateTotals() on every page load. Always render as 0/N here
+        # so users never see a misleading "✅ 6/6" flash on initial
+        # paint (or after a JS error) when the MD just happens to have
+        # all objectives authored as `- [x]`. The author-time hint is
+        # preserved in the MD file itself; this string is just the
+        # pre-JS default.
         total = len(self.objectives)
-        if done == total:
-            return f"✅ {done}/{total}"
-        if done == 0:
-            return f"⬜ 0/{total}"
-        return f"⏳ {done}/{total}"
+        return f"0/{total}"
 
 
 # ---------------------------------------------------------------------------
