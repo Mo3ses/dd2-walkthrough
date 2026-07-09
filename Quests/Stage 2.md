@@ -325,58 +325,6 @@ tags: [moc, stage-2, vermund, index]
 
 ---
 
-## 🗺️ Fluxo Recomendado
-
-```mermaid
-flowchart TD
-    Start([Stage 2 começa na chegada em Vernworth]) --> M1[[Main Quests/15 - Seat of the Sovran]]
-    M1 --> S10[Side 10 - A Place to Call Home]
-    S10 --> S11[Side 11 - The Ornate Box]
-    S11 --> M2[[Main Quests/17 - Monster Culling]]
-    M2 --> S14[Side 14 - The Gift of Giving]
-    S14 --> S19[Side 19 - Vocation Frustration]
-    S19 --> S12[Side 12 - Oxcart Courier]
-    S12 --> S13[Side 13 - Heel of History]
-
-    S13 --> Harve1[Harve Village - 1ª visita]
-    Harve1 --> S18[Side 18 - Scaly Invaders]
-
-    S18 --> Vern2[Volta a Vernworth - Block 2]
-    Vern2 --> S20[Side 20 - Disa's Plot]
-    S20 --> M3a[[Main Quests/21 - The Caged Magistrate]]
-    M3a --> M3b[[Main Quests/23 - The Stolen Throne]]
-    M3b --> M3c[[Main Quests/24 - An Unsettling Encounter]]
-    M3c --> M3d[[Main Quests/26 - The Nameless Village]]
-    M3d --> S22[Side 22 - Magesterial Amenity]
-    S22 --> SidesBlock2[Sides 25-31]
-    SidesBlock2 --> MelveRet[Side 32-33 - Melve return]
-    MelveRet --> Moonglow[Moonglow Garden]
-    Moonglow --> S34[Side 34 - Claw Them Into Shape]
-    S34 --> S35[Side 35 - Beren's Final Lesson]
-
-    S35 --> Eini[Eini's House]
-    Eini --> S36[Side 36 - Spellbound]
-
-    S36 --> Harve2[Harve Village - 2ª visita]
-    Harve2 --> S37[Side 37 - Trouble on the Cape]
-
-    S37 --> Vern3[Volta a Vernworth - Block 3]
-    Vern3 --> S38[Side 38 - Gift of the Bow]
-    S38 --> S39[Side 39 - Trial of Archery]
-
-    S39 --> Arbor[Sacred Arbor]
-    Arbor --> S40[Side 40 - Ailing Arborheart]
-
-    S40 --> Checkpoint[Checkpoint Rest Town]
-    Checkpoint --> S41[Side 41 - Prey for the Pack]
-    S41 --> S42[Side 42 - Jadeite Orb]
-    S42 --> S43[Side 43 - Sorcerer's Appraisal]
-
-    S43 --> Vern4[Volta a Vernworth - Block 4]
-    Vern4 --> M5[[Main Quests/44 - Feast of Deception]]
-    M5 --> Stage3([Início do Stage 3 em Battahl])
-```
-
 ## 📊 Checklist
 
 ### ⚔️ Main Quests
