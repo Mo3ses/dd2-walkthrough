@@ -79,7 +79,7 @@ flowchart TD
     Q2 --> Borderwatch[Chegada em Borderwatch]
 
     Borderwatch --> SQ_BW[Side Quests 03 + 04]
-    SQ_BW --> TravelMelve[Brant leva você até Melve]
+    SQ_BW --> TravelMelve[Justinn leva você até Melve]
 
     TravelMelve --> Q3[[Main Quests/08 - In Dragon's Wake]]
     Q3 --> MelveArrival[Chegada em Melve]
