@@ -48,7 +48,15 @@ NUMBERED_ITEM_RE = re.compile(r"^\s*\d+\.\s+(?P<body>.+?)\s*$")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(?P<text>.+?)\s*$")
 CHECKBOX_RE = re.compile(r"^\[(?P<state>[ xX])\]\s+(?P<text>.+?)\s*$")
 WIKILINK_RE = re.compile(r"\[\[([^\]]+)\]\]")
-CALLOUT_RE = re.compile(r"^>\s*\[!(?P<kind>[a-z]+)\]\s*(?P<title>[^*]*?)\*\s*$", re.IGNORECASE)
+# Combined inline-link regex: matches BOTH Obsidian wiki-links
+# (`[[target]]` or `[[target|alias]]`) and standard Markdown links
+# (`[label](url)`) in a single pass so neither escapes characters
+# inside the other.
+INLINE_LINK_RE = re.compile(
+    r"(?:\[\[(?P<wiki>[^\]|]+)(?:\|(?P<alias>[^\]]+))?\]\]"
+    r"|\[(?P<md_label>[^\]]+)\]\((?P<md_url>[^)]+)\))"
+)
+CALLOUT_RE = re.compile(r"^>\s*\[!(?P<kind>[a-z]+)\]\s*(?P<title>.+?)\s*$", re.IGNORECASE)
 HTML_INLINE_RE = re.compile(r"<(input|li|ul|ol|a)\b", re.IGNORECASE)
 
 
@@ -619,7 +627,8 @@ def collect_quests(roots: Iterable[Path]) -> list[Quest]:
 # ---------------------------------------------------------------------------
 
 def render_inline(text: str, from_path: str = "") -> str:
-    """Apply inline transforms: wiki-links → anchors, escape HTML, bold, code.
+    """Apply inline transforms: wiki-links → anchors, standard markdown
+    links [text](url) → anchors, escape HTML, bold, code.
 
     `from_path` is the path (relative to dist/) of the page being
     rendered. It's used to make wiki-link hrefs relative to the current
@@ -627,34 +636,35 @@ def render_inline(text: str, from_path: str = "") -> str:
     page). Pass an empty string to use absolute-from-root paths
     (suitable for the homepage and stage pages).
 
-    Walks the text once, splitting on wiki-link matches. Plain text
-    segments get html.escape()'d ONCE; wiki-link matches are
-    substituted with already-properly-escaped <a> HTML. Without this
-    split, calling html.escape() on the entire text and then again on
-    the wiki-link alias double-escapes characters like `'` (the
-    apostrophe in "Tale's Beginning"), surfacing as the literal entity
-    `&amp;#x27;` in the rendered page.
+    Walks the text once with a combined regex that matches EITHER a
+    wiki-link OR a markdown link, escaping the in-between plain text
+    segments ONCE. This avoids double-escaping the apostrophe in
+    "Dragon's Dogma Wiki" (and similar) by routing both link kinds
+    through the same single-escape path.
     """
     parts: list[str] = []
     last_end = 0
-    for m in WIKILINK_RE.finditer(text):
-        # Escape everything BEFORE the wiki-link match
+    for m in INLINE_LINK_RE.finditer(text):
+        # Escape everything BEFORE the link match
         parts.append(html.escape(text[last_end:m.start()]))
-        # Build the <a> with both href and alias escaped exactly once
-        target = m.group(1)
-        if "|" in target:
-            target, alias = target.split("|", 1)
+        if m.group("wiki") is not None:
+            # Obsidian wiki-link: [[target]] or [[target|alias]]
+            target = m.group("wiki")
+            alias = m.group("alias") or target.rsplit("/", 1)[-1].rsplit(".", 1)[0]
+            href = resolve_wikilink(target, from_path=from_path)
+            if href.startswith("<"):
+                # resolve_wikilink returned pre-rendered HTML (e.g. location-ref
+                # span when no per-location page is emitted). Use as-is, no <a>.
+                parts.append(href)
+            else:
+                parts.append(f'<a href="{html.escape(href)}">{html.escape(alias)}</a>')
         else:
-            alias = target.rsplit("/", 1)[-1].rsplit(".", 1)[0]
-        href = resolve_wikilink(target, from_path=from_path)
-        if href.startswith("<"):
-            # resolve_wikilink returned pre-rendered HTML (e.g. location-ref
-            # span when no per-location page is emitted). Use as-is, no <a>.
-            parts.append(href)
-        else:
-            parts.append(f'<a href="{html.escape(href)}">{html.escape(alias)}</a>')
+            # Standard Markdown link: [text](url)
+            label = m.group("md_label") or ""
+            url = m.group("md_url") or ""
+            parts.append(f'<a href="{html.escape(url)}">{html.escape(label)}</a>')
         last_end = m.end()
-    # Escape the trailing text after the last wiki-link (or all of it if none)
+    # Escape the trailing text after the last link (or all of it if none)
     parts.append(html.escape(text[last_end:]))
     text = "".join(parts)
     # Bold then inline code (these patterns don't collide with HTML tags)
@@ -791,19 +801,24 @@ def render_md_block(text: str, from_path: str = "") -> str:
             i += 1
             continue
 
-        # Callout: > [!kind] Title *
-        kind, body = strip_callout_marker(stripped)
+        # Callout: > [!kind] Title
+        # Title is `> [!kind] <title>`; continuation lines starting with `>`
+        # form the body. The title is rendered separately (not duplicated
+        # in the body).
+        kind, title_text = strip_callout_marker(stripped)
         if kind is not None:
-            callout_lines = [body]
+            body_lines: list[str] = []
             i += 1
             while i < len(lines):
                 cont = lines[i]
                 if not cont.lstrip().startswith(">"):
                     break
-                callout_lines.append(cont.lstrip()[1:].lstrip())
+                # Strip the leading `> ` from continuation lines
+                body_lines.append(cont.lstrip()[1:].lstrip())
                 i += 1
-            inner = "<br>".join(render_inline(l, from_path) for l in callout_lines if l.strip())
-            out.append(f'<div class="callout callout-{kind}"><div class="callout-title">{kind}</div><div class="callout-body">{inner}</div></div>')
+            inner = "<br>".join(render_inline(l, from_path) for l in body_lines if l.strip())
+            title_html = render_inline(title_text, from_path) if title_text else ""
+            out.append(f'<div class="callout callout-{kind}"><div class="callout-title">{title_html}</div><div class="callout-body">{inner}</div></div>')
             continue
 
         # Bullet list
@@ -2895,6 +2910,220 @@ def render_quest_detail_bilingual(
     )
 
 
+def _render_cross_stage_cards_for_stage_1(repo_root: Path) -> str:
+    """Render Claw Them Into Shape (34) + Spellbound (36) stub cards in
+    Stage 1's by-location view, immediately after Brother's Brave and
+    Timid (Melve side quest, quest_num 06). These are Stage 2 side quests
+    whose INICIAR happens on the Melve → Vernworth road.
+
+    Each stub shows ONLY the objectives whose action happens during Stage 1
+    (one per cross-stage quest) plus a notice that the rest continues in
+    Stage 2. Tracker IDs use the Stage 2 prefix (`s2-side-34-i`,
+    `s2-side-36-i`) so ticks in Stage 1 sync with Stage 2's view via
+    localStorage — both pages share the same checkbox state.
+    """
+    # Hardcoded mapping: cross-stage quest stem → which objective indices (1-based)
+    # actually happen in Stage 1. Everything else stays on Stage 2.
+    stage_1_obj_indices: dict[str, list[int]] = {
+        "34 - Claw Them Into Shape": [1],   # "Tenha 3 espadas no inventário"
+        "36 - Spellbound":           [1],   # "Fale com Trysha em Eini's House"
+    }
+
+    pairs = [
+        ("34 - Claw Them Into Shape", repo_root / "Quests" / "Stage 2" / "Side Quests" / "34 - Claw Them Into Shape.md"),
+        ("36 - Spellbound",            repo_root / "Quests" / "Stage 2" / "Side Quests" / "36 - Spellbound.md"),
+    ]
+    cards_html: list[str] = []
+    cards_html.append(
+        '<h4 class="cross-stage-header">'
+        '<span class="i18n" data-lang="en">Cross-Stage Quests — Stage 1 portion (rest in Stage 2)</span>'
+        '<span class="i18n" data-lang="pt" hidden>Quests Cross-Stage — porção Stage 1 (resto em Stage 2)</span>'
+        '</h4>'
+    )
+    for stem, pt_path in pairs:
+        if not pt_path.exists():
+            continue
+        en_path = pt_path.with_name(pt_path.stem + ".en" + pt_path.suffix)
+        pt_q = parse_quest(pt_path)
+        en_q = parse_quest(en_path) if en_path.exists() else None
+        cards_html.append(
+            _render_cross_stage_stub_card(
+                pt_q, en_q or pt_q,
+                stage_1_obj_indices=stage_1_obj_indices[stem],
+            )
+        )
+    return "\n".join(cards_html)
+
+
+def _render_cross_stage_stub_card(
+    q_pt: Quest,
+    q_en: Quest,
+    stage_1_obj_indices: list[int],
+) -> str:
+    """Render a single cross-stage stub card showing only the Stage 1
+    objectives plus a notice that the rest continues in Stage 2.
+
+    Unlike the full quest card (rendered on Stage 2 page), this stub
+    suppresses Stage 2 objectives so the player doesn't see misleading
+    checkboxes they can only complete later. Tracker IDs use Stage 2's
+    prefix so ticks sync across both pages.
+    """
+    objs_pt = q_pt.objectives
+    objs_en = q_en.objectives if q_en else []
+    stage_1_set = set(stage_1_obj_indices)
+    total_count = len(objs_pt)
+    remaining = total_count - len(stage_1_set)
+
+    parts: list[str] = []
+    parts.append('<details class="quest-card side cross-stage-stub">')
+    parts.append('<summary>')
+    parts.append('<span class="quest-card-caret" aria-hidden="true">▶</span>')
+    title_for_aria = q_en.title if q_en else q_pt.title
+    parts.append(
+        '<input type="checkbox" class="quest-master" '
+        f'aria-label="Side Quest {html.escape(title_for_aria)}: mark-all" '
+        'onclick="event.stopPropagation()">'
+    )
+    parts.append(
+        '<span class="quest-type-label">'
+        '<span class="i18n" data-lang="en">🗡️ Side Quest (Stage 1 portion)</span>'
+        '<span class="i18n" data-lang="pt" hidden>🗡️ Side Quest (porção Stage 1)</span>'
+        '</span>'
+    )
+    parts.append(f'<h3>{render_bilingual(q_en.title, q_pt.title)}</h3>')
+    parts.append(status_badge(q_pt.status, q_pt.track_prefix))
+    parts.append('</summary>')
+
+    parts.append('<div class="quest-card-body">')
+    # Brief summary so the player knows what they're starting
+    if q_pt.summary:
+        en_summary = q_en.summary if q_en and q_en.summary else (q_pt.summary or "")
+        pt_summary = q_pt.summary or ""
+        en_summary_html = render_inline(en_summary, from_path=q_en.from_path if q_en else q_pt.from_path)
+        pt_summary_html = render_inline(pt_summary, from_path=q_pt.from_path)
+        # Use render_bilingual_raw (not render_bilingual — the latter
+        # html.escape()s its inputs, turning `<p>` tags into literal text).
+        parts.append(f'<p class="summary-text">{render_bilingual_raw(en_summary_html, pt_summary_html)}</p>')
+
+    # Stage 1 objectives only
+    parts.append('<ul class="dd2-checklist">')
+    for i_obj in stage_1_obj_indices:
+        idx = i_obj - 1
+        if idx >= len(objs_pt):
+            continue
+        pt_obj = objs_pt[idx]
+        # Skip dividers — they're inline phase markers, not real objectives
+        if pt_obj.divider:
+            continue
+        en_text = objs_en[idx].text if idx < len(objs_en) and not objs_en[idx].divider else pt_obj.text
+        tid = f"{q_pt.track_prefix}-{i_obj}"
+        en_html = render_inline(en_text, from_path=q_en.from_path if q_en else q_pt.from_path)
+        pt_html = render_inline(pt_obj.text, from_path=q_pt.from_path)
+        parts.append(
+            f'<li data-track-id="{tid}"><label>'
+            f'<input type="checkbox" data-track-id="{tid}"> '
+            f'<span class="obj-text">'
+            f'<span class="i18n" data-lang="en">{en_html}</span>'
+            f'<span class="i18n" data-lang="pt" hidden>{pt_html}</span>'
+            '</span></label></li>'
+        )
+    parts.append('</ul>')
+
+    # Notice + Stage 2 link
+    parts.append(
+        '<p class="cross-stage-notice">'
+        f'<span class="i18n" data-lang="en">↘ The remaining {remaining} objective(s) for this quest '
+        'continue in Stage 2 — visit the Stage 2 page once you reach Vernworth.</span>'
+        f'<span class="i18n" data-lang="pt" hidden>↘ Os restantes {remaining} objetivo(s) desta quest '
+        'continuam em Stage 2 — volte à página de Stage 2 quando chegar a Vernworth.</span>'
+        '</p>'
+    )
+    parts.append(
+        '<p><small><a href="' + html.escape(q_pt.url) + '">'
+        '<span class="i18n" data-lang="en">View full quest details (Stage 2) →</span>'
+        '<span class="i18n" data-lang="pt" hidden>Ver detalhes completos (Stage 2) →</span>'
+        '</a></small></p>'
+    )
+    parts.append('</div>')  # /quest-card-body
+    parts.append('</details>')
+    return "\n".join(parts)
+
+
+def _render_moc_extras(stage_n: int, repo_root: Path) -> str:
+    """Render MOC body sections that the build does NOT auto-generate elsewhere.
+
+    Reads `Quests/Stage {n}.md` (or `Quests/Stage {n}/Stage {n}.md`), strips
+    frontmatter, and emits every `## ...` top-level section EXCEPT the ones
+    already represented by the auto-generated by-location / by-flow / TOC:
+
+      - `## 📍 Locais ...` (TOC + by-location already covers locations)
+      - `## ⚔️ Main Quests` tables (per-quest cards already cover)
+      - `## 🗡️ Side Quests` tables (same)
+      - `## 📊 Checklist` (per-quest objectives already emit checkboxes;
+        the MOC's checklist entry is informational, not a tracker — but
+        see notes below)
+      - `## 🎮 Ordem Recomendada de Execução` (feeds parse_stage_flow)
+      - `## 🗺️ Fluxo Recomendado` (Mermaid diagram — owned by Step 2 of
+        the plan; leaving untouched here so old diagram still loads)
+
+    Renders NPCs, Fatos, Cross-Stage Prep, Avisos Críticos, Fontes, and
+    any future `##` section via the existing render_md_block helper.
+    """
+    candidates = [
+        repo_root / "Quests" / f"Stage {stage_n}.md",
+        repo_root / "Quests" / f"Stage {stage_n}" / f"Stage {stage_n}.md",
+    ]
+    moc_path: Path | None = None
+    moc_text = ""
+    for moc in candidates:
+        if moc.exists():
+            moc_text = moc.read_text(encoding="utf-8")
+            moc_path = moc
+            break
+    if not moc_text or moc_path is None:
+        return ""
+
+    # Strip frontmatter (between --- ... --- at the very start).
+    body_text = re.sub(r"\A---\n.*?\n---\n", "", moc_text, count=1, flags=re.DOTALL)
+
+    # Sections auto-generated by other parts of the build — skip to avoid
+    # double-rendering. Match on the leading `## ` (level-2) prefix only;
+    # sub-sections nested inside them (e.g. `### Vernworth pt.1`) are
+    # consumed by the skip too.
+    skip_prefixes = (
+        "## ⚔️ Main Quests",
+        "## 🗡️ Side Quests",
+        "## 📍 Locais",
+        "## 📊 Checklist",
+        "## 🎮 Ordem Recomendada",
+        "## 🗺️ Fluxo Recomendado",
+    )
+
+    lines = body_text.split("\n")
+    skip_section = False
+    out: list[str] = []
+    for line in lines:
+        if line.startswith("## "):
+            skip_section = any(line.startswith(p) for p in skip_prefixes)
+            if skip_section:
+                continue
+            out.append(line)
+        elif skip_section:
+            continue
+        else:
+            out.append(line)
+
+    extras_md = "\n".join(out).strip()
+    if not extras_md:
+        return ""
+
+    return (
+        '<section class="moc-extras">\n'
+        + render_md_block(extras_md, from_path=str(moc_path))
+        + "\n</section>"
+    )
+
+
 def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root: Path) -> str:
     """Generate dist/stage-{n}.html — the cheat sheet (bilingual)."""
     # Flatten PT quests for location grouping + totals. Bilingual content
@@ -2962,6 +3191,12 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
         # on load from localStorage so the MD's `- [x]` markers can't
         # give a false "fully green" Excavation Site on a fresh visit.
         prefixes = ",".join(q.track_prefix for q in loc_quests)
+        # === Stage 1 cross-stage prefixes (Melve location) ===
+        # Claw Them Into Shape (s2-side-34) and Spellbound (s2-side-36) get
+        # their Stage 1 objective ticked here, so count their tracker
+        # prefixes in Melve's progress.
+        if stage_n == 1 and loc == "Melve":
+            prefixes += ",s2-side-34,s2-side-36"
         body.append('<div class="loc-card">')
         body.append(f'  <a href="#{slug}" class="loc-card-head">')
         body.append(f'    <span class="loc-emoji">{emoji}</span>')
@@ -3001,6 +3236,12 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
                 q_pt = bundle.get("pt") or q
                 q_en = bundle.get("en") or q
                 body.append(render_quest_block_bilingual(q_en, q_pt))
+                # === Stage 1 cross-stage injection ===
+                # After Brother's Brave and Timid (Melve side quest, quest_num "06"),
+                # render Claw Them Into Shape + Spellbound Stage 2 cards with
+                # real tracker IDs that sync with Stage 2's localStorage.
+                if stage_n == 1 and loc == "Melve" and q.quest_type == "side" and q.quest_num == "06":
+                    body.append(_render_cross_stage_cards_for_stage_1(repo_root))
     body.append('</div>')  # /by-location
 
     # "By recommended flow" view: flat list in MOC order, no location
@@ -3100,7 +3341,22 @@ def render_stage(stage_n: int, bundles: "dict[str, dict[str, Quest]]", repo_root
             # dividers is split into multiple cards for easier
             # following of the recommended order.
             body.append(render_quest_block_bilingual(q_en, q_pt, show_dividers=True, split_dividers=True))
+            # === Stage 1 cross-stage injection ===
+            # After Brother's Brave and Timid (s1-side-06), render Claw +
+            # Spellbound stub cards so the cross-stage actions show up in
+            # the by-flow view too (they're already in by-location).
+            if stage_n == 1 and q_pt.track_prefix == "s1-side-06":
+                body.append(_render_cross_stage_cards_for_stage_1(repo_root))
     body.append('</div>')  # /by-flow
+
+    # MOC body extras (sections that the build doesn't auto-generate
+    # elsewhere — Locations/Checklist/Main Quests/Side Quests/Ordem
+    # Recomendada/Fluxo Recomendado are skipped to avoid double-rendering).
+    # Renders NPCs, Fatos, Cross-Stage Prep, Avisos, Fontes, and any
+    # other top-level ## sections the build ignores.
+    moc_extras = _render_moc_extras(stage_n, repo_root)
+    if moc_extras:
+        body.append(moc_extras)
 
     # Footer tip
     body.append('<div class="callout callout-tip"><div class="callout-title">Tip</div>'
