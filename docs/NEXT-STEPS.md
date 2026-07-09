@@ -1,10 +1,71 @@
 # Próximos Passos — Dragon's Dogma 2 Walkthrough
 
-> Estado em 2026-07-09 (após sessão #6 — Stage 2 MOC restructure). Working tree: limpo (commit `5dd59da` em `feat/stage-2-flow-restructure`, PR #11 aberto contra `main`). Próximo batch = aguardar play-validation do usuário antes de fazer Steps 2/3 restantes (mermaid + tables).
+> Estado em 2026-07-09 (sessão #7 — build pipeline + MOC simplificação). Working tree: limpo (HEAD `e52d800` em `feat/stage-2-flow-restructure`, PR #12 atualizado com os 3 commits desta sessão). Próxima sessão: merge PR #12 → live no site; play-validation continua; Steps 2 (mermaid) e 3 (prereq tables) ainda pendentes.
 
-## Onde paramos (sessão #6 — Stage 2 MOC restructure)
+## Onde paramos (sessão #7 — build pipeline + MOC simplification)
 
-**Branch ativa: `feat/stage-2-flow-restructure`** (commit `5dd59da`) com **PR #11 aberto** contra `main`. **Aguardando merge do usuário** — GitHub Pages só rebuilda após `main` push, então mergear o PR também é o deploy step.
+**Branch ativa: `feat/stage-2-flow-restructure`** com **PR #12 aberto** contra `main` (3 commits ahead). Histórico de commits:
+
+```
+e52d800 docs(stage-1): simplify MOC body to Cross-Stage Prep + Avisos + Fontes
+536b4a6 feat(build): cross-stage stub cards + MOC body render + Obsidian callouts + markdown links
+43b130f feat(stage-1+2): move Claw Them Into Shape (34) START/CONTINUE + Spellbound (36) START to Stage 1 MOC Cross-Stage Prep
+```
+
+**What session #7 did**:
+
+1. **PR #11 foi merged** pelo usuário (`ca46d6c` em main). Stage 2 MOC restructure está live em https://mo3ses.github.io/dd2-walkthrough/stage-2.html.
+
+2. **Cross-stage stub cards** injetados em `dist/stage-1.html`:
+   - Logo depois de Brother's Brave (Melve side-quest, by-location view) E no by-flow view.
+   - Cada stub mostra APENAS objectives que acontecem em Stage 1 (e.g., "Have 3 swords in inventory"), com notice "resto em Stage 2" e link para a página de detalhe Stage 2.
+   - Tracker IDs reais `s2-side-34-i` e `s2-side-36-i` — ticks em Stage 1 sincronizam via localStorage com Stage 2.
+
+3. **MOC body extras rendering** adicionado:
+   - `_render_moc_extras()` em `scripts/build.py` renderiza seções do MOC que o build ignorava (NPCs, Fatos, Cross-Stage Prep, Avisos, Fontes).
+   - Filtra sections já representadas: Locations TOC, Main Quests tables, Side Quests tables, Checklist, Ordem Recomendada, Fluxo Recomendado (mermaid).
+
+4. **Stage 1 MOC simplificado**:
+   - Removidos `## 🎯 NPCs notáveis` e `## 🔑 Fatos verificados` (info redundante — já vive em per-quest MDs).
+   - Removida sub-section `### Quests iniciadas na estrada Melve → Vernworth` (agora tratada pelos cards stub cross-stage).
+   - Re-escrito bullet `🛒 3 espadas`: agora corretamente diz "compre e entregue direto a Beren em Moonglow Garden durante Stage 1" (antes implicava "Stage 2 prep" — errado).
+   - Re-escrito bullet `📜 Grimoires`: mantém só Fulminous Shield (Dudley em Melve) — o único grimoire com compra Stage 1 que avança Spellbound.
+   - Removido `> [!warning] Stage 2 Preparation` — block duplicado/errado (a info já está no stub card).
+
+5. **Build pipeline fixes**:
+   - **CALLOUT_RE regex fixado**: removido trailing `\*?` (Obsidian não requer `*` final). Title agora aparece no `callout-title`, não duplicado no body.
+   - **render_inline agora processa markdown links `[text](url)`** — antes passavam como texto literal (quebrado o Fontes block).
+   - **INLINE_LINK_RE combinado wiki+markdown** num único regex pass — evita double-escape em apóstrofos (ex.: `Dragon's` agora renderiza como `Dragon's`, não `Dragon&amp;#x27;s`).
+   - **Melve location-counter prefixes** agora inclui `s2-side-34,s2-side-36` — objective progress de Claw/Spellbound conta na barra de progresso da Melve.
+
+**Open scope (play-validation + minor polishes)**:
+
+- **A) Play-validate** — usuário joga contra `dist/stage-1.html` e `dist/stage-2.html` no live site (após merge PR #12) ou localmente, reporta qualquer bug. Cards stub podem ter objetivos faltando ou NPC errado.
+- **B) Merge PR #12** — assim que usuário confirma que está OK, mergear e GitHub Pages rebuilda.
+- **C) Step 2** — refresh mermaid diagram (lines 255-303). Espinha linear de 5 blocos está desatualizada vs. a nova flow de 6 sub-arcs. Pendente.
+- **D) Step 3** — update per-block prereq tables (lines 119-208). DAG antiga reflete pre-a149699. Pendente.
+- **E) Se play-validation achar bugs** → corrigir no mesmo branch → push update antes do merge.
+
+**Validated locally**:
+
+```
+python scripts/check_wikilinks.py  # OK, 1516 links, 0 broken
+python scripts/build.py            # OK, 51 per-quest pages across 3 stages
+```
+
+**Como retomar próxima sessão**:
+
+```bash
+git fetch origin
+git checkout feat/stage-2-flow-restructure
+git log --oneline -5                         # ver 43b130f / 536b4a6 / e52d800
+start dist/stage-1.html                      # preview local
+# ou após merge do PR #12: https://mo3ses.github.io/dd2-walkthrough/stage-1.html
+```
+
+---
+
+## Onde paramos (sessão #5 — cross-source fetcher + Stage 1 review, merged via PR #10)
 
 **What session #6 did**:
 
