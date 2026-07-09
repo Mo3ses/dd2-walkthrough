@@ -18,81 +18,159 @@ tags: [moc, stage-2, vermund, index]
 
 ## 🎮 Recommended Execution Order
 
-> Step-by-step from the user's gameplay (2026-07-08, expanded with Vernworth pt.2 and pt.3 after feedback). This section sits before the tables below on purpose: `parse_stage_flow` reads wiki-links in document order with first-occurrence dedup — wiki-links here dominate the by-flow view. Multiple "START/CONTINUE/COMPLETE" steps for the same quest become objectives inside its card (use the divider `- --- label ---` in the MD to split it into parts on the flow — see In Dragon's Wake). The pt.1/2/3 subheaders below are pure visual organization: the parser sees the flow as a flat list.
+> Step-by-step of the walkthrough (restructured on 2026-07-09 — integrates MELVE setup before VERNWORTH pt.1, cycles between pt.1↔pt.2 and pt.2↔pt.3, and Stage 3 transitions at the end of pt.3). This section sits before the tables below on purpose: `parse_stage_flow` reads wiki-links in document order with first-occurrence dedup — wiki-links here dominate the by-flow view. Multiple "START/CONTINUE/COMPLETE" steps for the same quest become objectives inside its card (use the divider `- --- label ---` in the MD to split it into parts on the flow — see In Dragon's Wake). The H3 sub-arcs (MELVE / pt.1 / pt.2 / pt.3) and the "(Cycle between ...)" markers are pure visual organization: the parser sees the flow as a flat list.
 >
-> **Heads-up**: 7 quests the user named **don't have an MD file yet**: `Tolled To Rest`, `A Game of Wits`, `A Case of Sculptor's Block`, `Dulled Steel, Cold Forge`, `A Noble Exchange`, `Nation of the Lambert Flame`, `A Veil of Gossamer` — broken links until those files are created. Achievements (The Regriffining, Cyclops Abridged, I'm In) aren't modelled as quests in the current build.
+> **Heads-up**: New structure adds (a) MELVE pre-section with cross-refs to Stage 1 via full path under `Quests/Stage 1/Side Quests/<slug>.md`; (b) transitional sub-arcs between the VERNWORTH pt.N; (c) Stage 3 transitions at the end of pt.3. Achievements (The Regriffining, Cyclops Abridged, I'm In) aren't modelled as quests in the current build — they appear as inline (parenthetical) lines in this section.
 
-### Vernworth pt.1 — arrival + oxcart return
+### MELVE setup (Stage 1 preface to Stage 2)
 
-1. [[Main Quests/15 - Seat of the Sovran]]
-2. [[Side Quests/38 - Gift of the Bow]]
-3. [[Side Quests/19 - Vocation Frustration]]
-4. [[Side Quests/10 - A Place to Call Home]]
-5. [[Side Quests/34 - Claw Them Into Shape]]
-6. [[Side Quests/12 - Oxcart Courier]]
-7. [[Side Quests/35 - Beren's Final Lesson]]
-8. [[Side Quests/11 - The Ornate Box]]
-9. [[Side Quests/29 - A Beggar's Tale]]
-10. [[Side Quests/14 - The Gift of Giving]]
-11. [[Side Quests/13 - The Heel of History]]
-12. [[Main Quests/17 - Monster Culling]]
-13. [[Side Quests/20 - Disa's Plot]]
-14. [[Main Quests/21 - The Caged Magistrate]]
-15. [[Side Quests/30 - Saint of the Slums]]
-16. [[Side Quests/31 - House of the Blue Sunbright]]
-17. [[Side Quests/18 - Scaly Invaders]]
-18. [[Main Quests/26 - The Nameless Village]]
-19. [[Main Quests/23 - The Stolen Throne]]
-20. [[Side Quests/27 - The Arisen's Shadow]]
-21. [[Side Quests/32 - Readvent of Calamity]]
+1. [[Stage 1/Main Quests/01 - Gaoled Awakening]] *(START / COMPLETE — main story)*
+2. [[Stage 1/Main Quests/02 - Tale's Beginning]] *(START / COMPLETE — main story)*
+3. [[Stage 1/Main Quests/08 - In Dragon's Wake]] *(START — main story)*
+4. [[Stage 1/Side Quests/03 - Ordeal's of a New Recruit]] *(START / COMPLETE — Phill at the camp exit; TIME-SENSITIVE — save his brother from harpies quickly)*
+5. [[Stage 1/Side Quests/04 - The Provisioner's Plight]] *(START / COMPLETE — Geoffrey at the camp)*
+6. [[Stage 2/Side Quests/34 - Claw Them Into Shape]] *(START / CONTINUE — Beren at Moonglow Garden; give 3 swords bought from [[Locations/Borderwatch Outpost]] first)*
+7. [[Stage 2/Side Quests/36 - Spellbound]] *(START — Trhysa at [[Locations/Eini's House]]; talk when no other NPC is in the house)*
+8. [[Stage 1/Main Quests/08 - In Dragon's Wake]] *(CONTINUE — to Melve)*
+9. [[Stage 2/Main Quests/15 - Seat of the Sovran]] *(START)*
+10. [[Stage 1/Side Quests/05 - Medicament Predicament]] *(START / COMPLETE — Flora at Runne's Apothecary door)*
+11. [[Stage 1/Side Quests/07 - Nesting Troubles]] *(START / COMPLETE — Lennart in Melve; throw the jars correctly at the indicated spot)*
+12. [[Stage 2/Main Quests/15 - Seat of the Sovran]] *(CONTINUE)*
+13. [[Stage 1/Side Quests/09 - One-Eyed Interloper]] *(START / COMPLETE — auto on the road to Vernworth; kill the Cyclops fast before it kills any other NPC)*
+14. [[Stage 2/Main Quests/15 - Seat of the Sovran]] *(CONTINUE — to Vernworth)*
 
-### Vernworth pt.2 — Arisen's Shadow finale + Battahl/Sphinx chain + archer chain
+### VERNWORTH pt.1 — Arrival + Claw chain
 
-22. [[Side Quests/28 - Till Death Do Us Part]] *(START — Margit; **time-sensitive**, complete before Gift of Bow timer expires)*
-23. Tolled To Rest *(START + COMPLETE in a single phase; elder Oscar)*
-24. A Game of Wits *(START + CONTINUE — Sphinx; 4 riddles, bring `SphinxParent` pawn + Nation's Death Knell)*
-25. [[Side Quests/42 - Hunt for the Jadeite Orb]] *(START — Offulve at Checkpoint entrance)*
-26. [[Side Quests/41 - Prey for the Pack]] *(START + COMPLETE — Morris; **time-sensitive**, sleep 2×)*
-27. [[Side Quests/43 - The Sorcerer's Appraisal]] *(START — Myrddin; **do NOT give him any tomes yet**, wear noble set)*
-28. [[Side Quests/39 - A Trial of Archery]] *(START — Glyndwr again in Vernworth)*
-29. Brothers Brave and Timid *(START + CONTINUE — Ian in Melve; **Stage 1 cross-ref**)*
-30. [[Side Quests/36 - Spellbound]] *(CONTINUE — 3 original grimoires to Trysha at once; Turquoise Ring. CONTINUE — rampage event: do NOT attack Trysha, tackle when she pauses. COMPLETE)*
-31. [[Side Quests/40 - The Ailing Arborheart]] *(START — Doireann, follow the tree, accept Taliesin's outing invite)*
-32. [[Side Quests/32 - Readvent of Calamity]] *(CONTINUE — Ulrika fled to Harve; Lennart asks you to locate her)*
+15. [[Stage 1/Main Quests/08 - In Dragon's Wake]] *(COMPLETE)*
+16. [[Stage 2/Main Quests/15 - Seat of the Sovran]] *(CONTINUE — stop at the objective to talk to Brant at night in the tavern)*
+17. [[Stage 2/Side Quests/38 - Gift of the Bow]] *(START — Glyndwr in front of the weapon shop; give a bow)*
+18. [[Stage 2/Side Quests/19 - Vocation Frustration]] *(START / CONTINUE — Klaus at the Vocation Guild; stop at the objective to recover weapons at Trevo Mine)*
+19. [[Stage 2/Side Quests/10 - A Place to Call Home]] *(START / CONTINUE — Mildred near the tavern; stop at the objective to occupy the house)*
+20. [[Stage 2/Side Quests/34 - Claw Them Into Shape]] *(CONTINUE — walk around Vernworth near the barbershop; Humphrey will interact — send him to train with Beren)*
+21. [[Stage 2/Side Quests/12 - Oxcart Courier]] *(START / CONTINUE — Donavan at Vernworth entrance; TIME-SENSITIVE; deliver the letter to Melve; keep 2 camping kits in the inventory)*
+22. [[Stage 2/Side Quests/34 - Claw Them Into Shape]] *(COMPLETE — Beren at Borderwatch Training Grounds; CAMP next to it to wait out the day)*
+23. [[Stage 2/Side Quests/35 - Beren's Final Lesson]] *(START — Beren at Moonglow Garden; fight the Cyclops)*
+24. [[Stage 2/Side Quests/35 - Beren's Final Lesson]] *(COMPLETE — talk to Beren)*
+25. [[Stage 2/Side Quests/12 - Oxcart Courier]] *(COMPLETE — return to Vernworth)*
+26. [[Stage 2/Side Quests/11 - The Ornate Box]] *(START / CONTINUE — Sven at the fountain; wait for the cutscene; buy the box; DO NOT give the money)*
+27. [[Side Quests/29 - A Beggar's Tale]] *(START / COMPLETE — Benton in front of the fountain; follow Albert; when he gets home wait for him to leave; steal the clothes; return them the next day)*
+28. [[Stage 2/Side Quests/14 - The Gift of Giving]] *(START / CONTINUE — Daphne in the Slums; deliver bouquets of silver ore)*
+29. [[Stage 2/Side Quests/13 - The Heel of History]] *(START / COMPLETE — Kendrick in the Slums; donate food twice; SLEEP UNTIL NIGHT)*
+30. [[Stage 2/Main Quests/15 - Seat of the Sovran]] *(COMPLETE)*
 
-### Vernworth pt.3 — final political arc + Stage 3 transition
+### (Cycle between VERNWORTH pt.1 and pt.2) — Monster Culling + Disa + Saint of the Slums + House of the Blue Sunbright + Nameless Village
 
-33. [[Side Quests/37 - Trouble on the Cape]] *(auto-dispatched at the end of Readvent Calamity)*
-34. A Case of Sculptor's Block *(START — Klark in the noble quarter; try after Stolen Throne if it stalls)*
-35. Dulled Steel, Cold Forge *(START — Roman in the castle gardens; try after Stolen Throne if it stalls)*
-36. [[Side Quests/16 - Masked Correspondence]] *(START — Sven in the castle; COMPLETE at the masked ball: letter to man with blue cloak + Magesterial Amenity goggles)*
-37. [[Side Quests/22 - A Magesterial Amenity]] *(START + COMPLETE — Gautstafr; goggles collected at the ball)*
-38. [[Side Quests/20 - Disa's Plot]] *(CONTINUE — invade the castle, guard set, letter to Sven, leave via window; COMPLETE — Waldhar at the Gracious Hand, Towering Earth)*
-39. [[Main Quests/21 - The Caged Magistrate]] *(CONTINUE + COMPLETE — Waldhar in the prison with guard set equipped: "The Arisen" / "Urge to leave" / "Helping hands")*
-40. [[Main Quests/23 - The Stolen Throne]] *(COMPLETE)*
-41. [[Main Quests/24 - An Unsettling Encounter]] *(START + COMPLETE — Brant at the tavern at night)*
-42. [[Side Quests/33 - Home Is Where the Hearth Is]] *(COMPLETE — Brant at Melve)*
-43. [[Side Quests/25 - Every Rose Has Its Thorn]] *(START + COMPLETE; **time-sensitive, 3 days** — Wilhelmina, Sven, Murder Report, Allard, Brant, flee the city)*
-44. [[Main Quests/44 - Feast of Deception]] *(START + CONTINUE + COMPLETE — Brant, noble set + mask, banquet, Godsway)*
-45. A Noble Exchange *(START + COMPLETE — staff from the NPC at the ball, drop it, grab back when guards announce)*
-46. Nation of the Lambert Flame *(START — Stage 3 transition)*
-47. A Veil of Gossamer *(START — Stage 3 setup)*
+31. [[Stage 2/Main Quests/17 - Monster Culling]] *(START — Brant)*
+32. [[Stage 2/Side Quests/20 - Disa's Plot]] *(START — Brant)*
+33. [[Stage 2/Main Quests/21 - The Caged Magistrate]] *(START — Brant; SLEEP UNTIL DAY)*
+34. [[Stage 2/Side Quests/11 - The Ornate Box]] *(CONTINUE — Sven at the well)*
+35. [[Stage 2/Side Quests/14 - The Gift of Giving]] *(COMPLETE — gold for Daphne; then anti-poison medicine)*
+36. [[Stage 2/Side Quests/30 - Saint of the Slums]] *(START / CONTINUE — The Gracious Hand; father complains about his son; talk to Elena; then Lubomir and Lottie; SLEEP UNTIL NIGHT)*
+37. [[Stage 2/Side Quests/10 - A Place to Call Home]] *(COMPLETE — Mildred buys the house)*
+38. [[Stage 2/Side Quests/30 - Saint of the Slums]] *(CONTINUE — meeting at night; return to The Gracious Hands; secret room downstairs; grab Records of Treatment and Unlabeled Medicine; SLEEP UNTIL MORNING)*
+39. [[Stage 2/Side Quests/11 - The Ornate Box]] *(CONTINUE — Sven again)*
+40. [[Stage 2/Side Quests/31 - House of the Blue Sunbright]] *(START / CONTINUE — Diana in the Slums; after visiting the mansion, take Daphne to the mansion; when Sebastian requests items give Detoxifying Decoction, Waking Powder and Rugged Bone (or Cyclops eye); SLEEP UNTIL MORNING)*
+41. [[Stage 2/Side Quests/11 - The Ornate Box]] *(COMPLETE — talk to Sven)*
+42. [[Stage 2/Side Quests/31 - House of the Blue Sunbright]] *(COMPLETE — return to the mansion for Sebastian's ending)*
+43. [[Stage 2/Main Quests/17 - Monster Culling]] *(CONTINUE — North toward Nameless Village; Trevo Mine (grab greatsword and staff for Vocation Frustration); going toward Halle you'll see a griffin — grapple it for The Regriffining)*
+44. [[Stage 2/Main Quests/17 - Monster Culling]] *(COMPLETE)*
+45. [[Stage 2/Main Quests/26 - The Nameless Village]] *(START — Brant)*
+46. [[Stage 2/Main Quests/23 - The Stolen Throne]] *(START — Brant)*
+47. [[Stage 2/Side Quests/27 - The Arisen's Shadow]] *(START / CONTINUE — leaving the tavern watch your back; do NOT accept the bribe; hold onto him without killing him; if you kill him, revive with a Wakestone; SLEEP UNTIL MORNING)*
+48. [[Stage 2/Side Quests/18 - Scaly Invaders]] *(START / CONTINUE — back to Harve; talk to Fyoran; defeat the saurians; SLEEP TWICE UNTIL MORNING)*
+49. [[Stage 2/Side Quests/19 - Vocation Frustration]] *(COMPLETE)*
+50. [[Stage 2/Side Quests/18 - Scaly Invaders]] *(COMPLETE)*
+51. [[Stage 2/Side Quests/32 - Readvent of Calamity]] *(START / CONTINUE — Melve; objective "Visit Melve in a few days". Talk to Sigurd for Mystic Spearhand (and Warrior Maister if you killed the dragon); talk to Lennart for Warrior Maister)*
+52. [[Stage 2/Main Quests/26 - The Nameless Village]] *(COMPLETE — after talking to Flaude, wait until night; find the hidden hole on the outside; follow the path; full ending)*
+
+### VERNWORTH pt.2 — Arisen's Shadow finale + Sphinx + Checkpoint + Elves
+
+53. [[Stage 2/Side Quests/27 - The Arisen's Shadow]] *(COMPLETE)*
+54. (Talk to Oswald at the noble quarter fountain — rumor about Sir Ludolph. Carry 1 Portcrystal in the inventory, optional; carry a bow in the inventory as Wayfarer or Archer.)
+55. [[Stage 2/Side Quests/28 - Till Death Do Us Part]] *(START — Margit in the noble quarter; TIME-SENSITIVE; BEFORE continuing, complete Gift of the Bow)*
+56. [[Stage 2/Side Quests/28 - Till Death Do Us Part]] *(CONTINUE — save Gregor; don't stall — the quest timer is rolling)*
+57. [[Stage 2/Side Quests/45 - Tolled To Rest]] *(START / COMPLETE — Oscar at the Ancient Battleground entrance; escort him to the objective)*
+58. (Climb the Ancient Battleground up to the Sphinx; place a Portcrystal there; grab the book NATION'S DEATH KNELL)
+59. [[Stage 2/Side Quests/46 - A Game of Wits]] *(START / CONTINUE — Sphinx; Riddle of Eyes (Sealing Phial in the chest on top of the cave entrance), Riddle of Madness (Main Pawn on the pedestal); listen to all other riddles — you now have 7 days for Rumination; return to the first Seeker's Token and collect the Finder's Token; add the pawn `SphinxParent` to the party)*
+60. (Go to Checkpoint Rest Town)
+61. [[Stage 2/Side Quests/42 - Hunt for the Jadeite Orb]] *(START / CONTINUE — Offulve at the Checkpoint entrance; talk to Everard too; buy the Jadeite Orb at Ibrahim's Shop; give the Fulminous Shield to be copied at Ibrahim's)*
+62. [[Stage 2/Side Quests/41 - Prey for the Pack]] *(START / COMPLETE — Morris at his shop in Checkpoint; TIME-SENSITIVE)*
+63. [[Stage 2/Side Quests/30 - Saint of the Slums]] *(CONTINUE — Radcliff in Checkpoint; give the Unlabeled Medicine for analysis)*
+64. [[Stage 2/Side Quests/43 - The Sorcerer's Appraisal]] *(START — Myrddin at his mansion in Checkpoint; equip noble set; do NOT give any tomes; SLEEP 2 DAYS)*
+65. (Grab the book copy at Ibrahim's Shop and put Nation's Death Knell on the forge)
+66. [[Stage 2/Side Quests/30 - Saint of the Slums]] *(CONTINUE — talk to Radcliff again)*
+67. [[Stage 2/Side Quests/46 - A Game of Wits]] *(CONTINUE — Riddle of Wisdom (SphinxParent pawn on pedestal), Rumination, Conviction (Jadeite Orb to the Sphinx))*
+68. [[Stage 2/Side Quests/42 - Hunt for the Jadeite Orb]] *(COMPLETE — give both original orbs to Everard and Offulve)*
+69. (Return to Vernworth)
+70. [[Stage 2/Side Quests/39 - A Trial of Archery]] *(START — Glyndwr again, in front of the weapons merchant in Vernworth)*
+71. [[Stage 2/Side Quests/28 - Till Death Do Us Part]] *(COMPLETE — Gregor's house)*
+72. (Go to Nameless Village; give a copy of Fulminous Shield to Wendy → receive a copy of HOWLING)
+73. (Take a cart to Melve)
+74. [[Stage 1/Side Quests/06 - Brother's Brave and Timid]] *(START / CONTINUE — Ian in Melve at the tavern; save the brother in danger, then go to Enid's house for spellbound; **Stage 1 cross-ref**)*
+75. [[Stage 2/Side Quests/36 - Spellbound]] *(CONTINUE — give 3 ORIGINAL grimoires to Trysha)*
+76. [[Stage 2/Side Quests/32 - Readvent of Calamity]] *(CONTINUE — Ulrika's house; cutscene; talk to her the next morning; leave and talk to Lennart and Martin)*
+77. [[Stage 2/Side Quests/36 - Spellbound]] *(CONTINUE — Trisha's house; do NOT attack her; run toward her and grapple when she tires; SLEEP 1 DAY at the camp near the house)*
+78. [[Stage 2/Side Quests/36 - Spellbound]] *(COMPLETE)*
+79. (Exhaust dialogue with Trhysa + 2 other residents → 2 Maister Skills)
+80. [[Stage 2/Side Quests/39 - A Trial of Archery]] *(COMPLETE — be careful Doireann doesn't die from the ogre; exhaust dialogue with Taliesin)*
+81. (Return to the elf city; sleep)
+82. [[Stage 2/Side Quests/40 - The Ailing Arborheart]] *(START — Doireann at the great tree; follow her and talk again to grab the quest)*
+83. (Taliesin's office; talk until he invites you out; accept; after returning talk again → elf Maister Skills; if it doesn't trigger, give a flower bouquet to raise affinity)
+
+### (Cycle between VERNWORTH pt.2 and pt.3) — Readvent of Calamity return
+
+84. [[Stage 2/Side Quests/32 - Readvent of Calamity]] *(CONTINUE — go to Harve and talk to Ulrika)*
+
+### VERNWORTH pt.3 — Final political arc + Stage 3 transitions
+
+85. [[Stage 2/Side Quests/37 - Trouble on the Cape]] *(START / COMPLETE — auto-triggered by continuing Readvent Calamity)*
+86. [[Stage 2/Side Quests/32 - Readvent of Calamity]] *(COMPLETE — Melve; Lennart)*
+87. (Return to Vernworth)
+88. [[Stage 2/Side Quests/47 - A Case of Sculptor's Block]] *(START — Klark in the noble quarter)*
+89. [[Stage 2/Side Quests/48 - Dulled Steel, Cold Forge]] *(START — Roman in the castle gardens)*
+90. [[Stage 2/Side Quests/16 - Masked Correspondence]] *(START — Sven in the castle; if you can't grab Dulled Steel/Masked Correspondence, try after The Stolen Throne)*
+91. (Sleep until night)
+92. [[Stage 2/Side Quests/20 - Disa's Plot]] *(CONTINUE — invade the castle; guardhouse; grab and equip the guard set; grab the letter; talk to Sven; leave via the window; head to the prison for The Caged Magistrate)*
+93. [[Stage 2/Main Quests/21 - The Caged Magistrate]] *(CONTINUE / COMPLETE — visit Waldhar in the prison with the guard set equipped; answer: 1) The Arisen, 2) Urge to leave, 3) Helping hands; escort him out)*
+94. [[Stage 2/Side Quests/20 - Disa's Plot]] *(COMPLETE)*
+95. (Sleep until morning; Waldhar under The Helping Hands → exhaust dialogue → Towering Earth; equip noble set + mask; sleep until night)
+96. [[Stage 2/Side Quests/22 - A Magesterial Amenity]] *(START — Gautstafr)*
+97. [[Stage 2/Side Quests/16 - Masked Correspondence]] *(COMPLETE — masked ball; deliver the letter to the man with blue cloak and golden mask; last room on the right of the corridor grab the Magesterial Amenity goggles; if the goggles aren't there, return the next day after The Stolen Throne)*
+98. [[Stage 2/Main Quests/23 - The Stolen Throne]] *(COMPLETE)*
+99. [[Stage 2/Side Quests/22 - A Magesterial Amenity]] *(COMPLETE)*
+100. (Sleep until the night of the next day; tavern, talk to Brant)
+101. [[Stage 2/Main Quests/24 - An Unsettling Encounter]] *(START / COMPLETE)*
+102. [[Stage 2/Side Quests/33 - Home Is Where the Hearth Is]] *(COMPLETE — Brant in Melve; sleep and go to Melve)*
+103. (Go to Vernworth)
+104. [[Stage 2/Side Quests/25 - Every Rose Has Its Thorn]] *(START / COMPLETE — TIME-SENSITIVE, 3 days; Wilhelmina ("Here I am"), Sven, Murder Report, Allard, Brant, flee the city — details in [[Side Quests/25 - Every Rose Has Its Thorn]])*
+105. [[Stage 2/Main Quests/44 - Feast of Deception]] *(START / CONTINUE — Brant; equip noble set; talk to Brant; go to the Godsway; enjoy the night and head to the masked ball)*
+106. [[Stage 3/Main Quests/01 - A Noble Exchange]] *(START / COMPLETE — NPC at the ball gives you a staff; drop it between the chest and the divider; grapple the NPC when the guards announce)*
+107. [[Stage 2/Main Quests/44 - Feast of Deception]] *(COMPLETE)*
+108. [[Stage 3/Main Quests/02 - Nation of the Lambert Flame]] *(START — Stage 3 transition)*
+109. (Sleep until morning; talk to Sven)
+110. [[Stage 3/Main Quests/03 - A Veil of Gossamer]] *(START — Sven)*
+111. [[Stage 2/Side Quests/30 - Saint of the Slums]] *(COMPLETE — The Gracious Hands → Lubomir in bed → downstairs room → grapple Elena → cutscene → Lottie at the door → cart to Checkpoint → Radcliff saves Lubomir → return to Lottie)*
+112. (Go to Checkpoint Rest Town)
+113. [[Stage 2/Side Quests/43 - The Sorcerer's Appraisal]] *(COMPLETE — equip Turquoise Ring + Noble Set; give remaining tomes (copies or not); talk about Trhysa; sleep next morning; exhaust dialogue → Maister Skill + outfit)*
+114. (I'm In achievement — store your border permits in the chest; sleep morning; wait in the afternoon on the bench; run to the city entrance bridge; hop in the elegant cart and wait for the crossing)
 
 **Flow tips baked into the order:**
 
 - Keep 2 camping kits in the inventory (optional — cuts down on walking).
-- **`Claw Them Into Shape` (pt.1 step 5) can start in Stage 1**: buy the 3 swords from Kassandra in [[Locations/Borderwatch Outpost]] **before** leaving Stage 1. Without them the Stage 2 quest becomes impossible to complete. Cross-ref Stage 1 MOC.
-- After `Claw Them Into Shape` (pt.1 step 5), camp next to the Borderwatch Training Grounds to wait out the day.
-- Camp next to the Moonglow Garden to unlock `Beren's Final Lesson` (pt.1 step 7).
-- Sleep until nightfall repeatedly to force the night encounters: Brant at the tavern (pt.1 step 1), Saint of the Slums (pt.1 step 15), Albert / Beggar's Tale (pt.1 step 9), Till Death (pt.2 step 22 — time window shared with Gift of the Bow).
+- **`Claw Them Into Shape` (MELVE step 6) requires 3 swords bought at [[Locations/Borderwatch Outpost]] in Stage 1**: buy from Kassandra before leaving Stage 1. Cross-ref Stage 1 MOC.
+- After `Claw Them Into Shape` (pt.1 step 22), CAMP next to the Borderwatch Training Grounds to wait out the day.
+- CAMP next to the Moonglow Garden to unlock `Beren's Final Lesson` (pt.1 step 23).
+- SLEEP UNTIL NIGHTFALL repeatedly to force night encounters: Brant at the tavern (pt.1 step 16), Saint of the Slums (cycle pt.1↔pt.2 steps 36/38), Albert / Beggar's Tale (pt.1 step 27), Till Death (pt.2 step 55 — time window shared with Gift of the Bow).
 - Mystic Spearhand vocation at Sigurd; Warrior Maister at Lennart after killing the Dragon.
-- Carry 1 Portcrystal (optional) — pt.2 makes it easy to come back from the Ancient Battleground and the Sphinx (A Game of Wits step 24).
-- Carry a bow (Wayfarer class or Archer) — pt.2 uses bows extensively (Glyndwr training, bridge Cyclops Abridged).
-- SphinxParent pawn: name a pawn "SphinxParent" and put it in the party for the final `A Game of Wits` (pt.2 step 24) puzzle.
-- `Till Death Do Us Part` (pt.2 step 22) is **time-sensitive** — don't stall; complete right after Gift of the Bow.
-- `Spellbound` (pt.2 step 30) has a rampage event at Trysha's house — do NOT attack her, tackle when she pauses to recover.
-- `Every Rose Has Its Thorn` (pt.3 step 43) has a 3-day in-game window — Wilhelmina accepts, Murder Report from Allard's room, Brant → flee the city.
-- `House of the Blue Sunbright` (pt.1 step 16) has a soft prerequisite: needs Daphne in the Slums (Daphne appears after The Gift of Giving) — check pre-req if it stalls.
+- Carry 1 Portcrystal (optional) — pt.2 makes it easy to return from the Ancient Battleground and the Sphinx (A Game of Wits step 59).
+- Carry a bow (Wayfarer class or Archer) — pt.2 uses bows extensively (Glyndwr training).
+- SphinxParent pawn: name a pawn "SphinxParent" and put it in the party for the final `A Game of Wits` (pt.2 step 67) puzzle.
+- `Till Death Do Us Part` (pt.2 steps 55-56) is **time-sensitive** — don't stall; complete right after Gift of the Bow.
+- `Spellbound` (pt.2 steps 74-78) has a rampage event at Trisha's house — do NOT attack her, tackle when she pauses to recover.
+- `Every Rose Has Its Thorn` (pt.3 step 104) has a 3-day in-game window — Wilhelmina accepts, Murder Report from Allard's room, Brant → flee the city.
+- `House of the Blue Sunbright` (cycle pt.1↔pt.2 step 40) has a soft prerequisite: needs Daphne in the Slums (appears after The Gift of Giving) — check pre-req if it stalls.
+- If you can't grab `Dulled Steel, Cold Forge` or `Masked Correspondence` (pt.3 steps 89-90), try after `The Stolen Throne` (pt.3 step 98).
+- Achievements outside the main flow: Cyclops Abridged (shoot an arrow at the Cyclops from across the bridge and cross it as a bridge when it falls); The Regriffining (included in step 43 — grapple the griffin and wait for it to fly).
 
 ## 📍 Stage 2 Locations (progression order)
 
