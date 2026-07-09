@@ -70,25 +70,6 @@ tags: [moc, stage-1, vermund, index]
 
 ---
 
-## 🗺️ Recommended Flow
-
-```mermaid
-flowchart TD
-    Start([Game start]) --> Q1[[Main Quests/01 - Gaoled Awakening]]
-    Q1 --> Q2[[Main Quests/02 - Tale's Beginning]]
-    Q2 --> Borderwatch[Arrive at Borderwatch]
-
-    Borderwatch --> SQ_BW[Side Quests 03 + 04]
-    SQ_BW --> TravelMelve[Justinn escorts you to Melve]
-
-    TravelMelve --> Q3[[Main Quests/08 - In Dragon's Wake]]
-    Q3 --> MelveArrival[Arrive at Melve]
-
-    MelveArrival --> SQ_Melve[Side Quests 05 + 06 + 07]
-    SQ_Melve --> Cyclops[Side Quest 09<br/>One-Eyed Interloper]
-    Cyclops --> Vernworth[Arrive at Vernworth]
-```
-
 ## 📊 Checklist
 
 ### ⚔️ Main Quests
