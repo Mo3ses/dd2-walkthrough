@@ -1,8 +1,58 @@
 # Próximos Passos — Dragon's Dogma 2 Walkthrough
 
-> Estado em 2026-07-09 (após sessão #5 — cross-source fetcher + Stage 1 review). Working tree limpo. Continuar deste ponto em qualquer máquina.
+> Estado em 2026-07-09 (após sessão #6 — Stage 2 MOC restructure). Working tree: limpo (commit `5dd59da` em `feat/stage-2-flow-restructure`, PR #11 aberto contra `main`). Próximo batch = aguardar play-validation do usuário antes de fazer Steps 2/3 restantes (mermaid + tables).
 
-## Onde paramos (sessão #5 — committed, needs push)
+## Onde paramos (sessão #6 — Stage 2 MOC restructure)
+
+**Branch ativa: `feat/stage-2-flow-restructure`** (commit `5dd59da`) com **PR #11 aberto** contra `main`. **Aguardando merge do usuário** — GitHub Pages só rebuilda após `main` push, então mergear o PR também é o deploy step.
+
+**What session #6 did**:
+
+- Reescreveu a `## 🎮 Ordem Recomendada de Execução` em ambos MOC files (PT + EN): 47 entries → **113 entries** em **6 sub-arcs** (parser vê como lista flat — H3 markers são visual only):
+  - **MELVE setup** (Stage 1 preface, steps 1-14): Gaoled, Tale's, In Dragon's Wake, Ordeal's, Provisioner's, Claw prep, Spellbound @ Eini's, Seat @ Melve, Medicament, Nesting, One-Eyed Interloper, Seat → Vernworth.
+  - **VERNWORTH pt.1** (steps 15-30): In Dragon's Wake COMPLETAR, Claw chain, Beren's Final Lesson, Ornate Box, Beggar's Tale, Gift of Giving, Heel of History, Seat COMPLETAR.
+  - **Cycle pt.1↔pt.2** (steps 31-52): Monster Culling, Disa's Plot, Caged Magistrate, Ornate continuations, Saint of the Slums, A Place to Call Home, House of Blue Sunbright, Monster Culling @ Trevo Mine + grifo, Nameless Village, Stolen Throne, Arisen's Shadow, Scaly Invaders, Readvent @ Melve, Nameless COMPLETAR.
+  - **VERNWORTH pt.2** (steps 53-82): Arisen's Shadow COMPLETAR, Till Death, Tolled To Rest, A Game of Wits (sphinx), Hunt Jadeite, Prey for Pack, Saint of Slums (Radcliff), Sorcerer's Appraisal, Trial of Archery, Till Death COMPLETAR, Wendy/Howling, **Brother's Brave and Timid (EN-only cross-ref @ step 74)**, Spellbound continuations + COMPLETAR, Trial COMPLETAR, Ailing Arborheart, Taliesin.
+  - **Cycle pt.2↔pt.3** (step 83): Readvent of Calamity @ Harve/Ulrika.
+  - **VERNWORTH pt.3** (steps 84-113): Trouble on Cape, Sculptor's Block, Dulled Steel, Masked Correspondence, Disa's Plot (castelo/prisão), Caged Magistrate CONTINUAR/COMPLETAR, Magesterial Amenity, Stolen Throne COMPLETAR, Every Rose, Feast of Deception, **Stage 3 transitions** (A Noble Exchange, Nation of the Lambert Flame, A Veil of Gossamer), Saint of Slums COMPLETAR (Lubomir), Sorcerer's Appraisal COMPLETAR, **I'm In achievement**.
+
+- Cross-refs entre stages via path completo: `[[Stage 1/Side Quests/<slug>]]`, `[[Stage 3/Main Quests/<slug>]]`.
+- Corrigiu typo PT `39.` (que era um número repetido) via renumeração completa.
+- Validação local:
+  - `python scripts/check_wikilinks.py` → **OK, 1521 links, 0 broken**.
+  - `python scripts/build.py` → **OK, 51 per-quest pages across 3 stages** (Stage 1: 9, Stage 2: 39, Stage 3: 3).
+- Commited em `feat/stage-2-flow-restructure` (commit `5dd59da`); PR #11 aberto.
+
+**Open scope (próxima sessão / após play-validation)**:
+
+- **A) Play-validate a nova flow** — usuário vai jogar contra `dist/stage-2.html` e reportar bugs. Capture:
+  - Qualquer step com ordem errada ou estado (INICIAR/CONTINUAR/COMPLETAR) mal marcado.
+  - Prereq violado (quest aparece antes da side quest que a desbloqueia).
+  - Action annotations erradas (NPC, localização, item).
+- **B) Step 2 — refresh mermaid** (lines 255-303) — diagrama atual é spine linear de 5 blocos, desatualizado vs. nova flow de 6 sub-arcs. Use subgraphs para cluster sub-arcs, short labels (e.g. `S15_Sovran`), validate em mermaid.live antes de commitar.
+- **C) Step 3 — update per-block prereq tables** (lines 119-208) — DAG antiga reflete pre-a149699. Default: minimal change (move row only if quest changed blocks).
+- **D) Merge PR #11 → GitHub Pages rebuilds** (`dist/stage-2.html`).
+- **E) Se bugs surgirem do play-validation → corrigir no mesmo branch → push update** antes do merge.
+- **F) Stage 3 bodies (01 A Noble Exchange / 02 Nation Lambert Flame / 03 A Veil of Gossamer) — frontmatter-only stubs**, sem `## Objectives`. Work-research pesado.
+
+**Skipped nesta sessão (consciente)**:
+
+- Houve um falso-positivo no `check_wikilinks.py` por causa do template `[[Stage 1/Side Quests/<slug>]]` que coloquei na callout do intro — o regex apanhou como wikilink real. Corrigido reescrevendo a callout sem os colchetes literais (`path absoluto a partir de `Quests/Stage 1/Side Quests/<slug>.md``).
+- Não rodei Step 2 (mermaid) nem Step 3 (tables) ainda — risco de refazer se a play-validation achar bugs na Step 1.
+
+**Como retomar**:
+
+```bash
+git checkout feat/stage-2-flow-restructure
+python scripts/check_wikilinks.py        # 0 broken
+python scripts/build.py                  # gera dist/stage-2.html local
+start dist/stage-2.html                  # preview local
+# ou abre https://mo3ses.github.io/dd2-walkthrough/stage-2.html após merge do PR #11
+```
+
+---
+
+## Onde paramos (sessão #5 — committed, merged via PR #10)
 
 > **Branch ativa: `feat/stage-2-recommended-flow`**, 9 commits ahead de `main`. **Working tree limpo** (próximo batch = `git push`).
 
