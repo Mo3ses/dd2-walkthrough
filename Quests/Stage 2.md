@@ -209,7 +209,7 @@ tags: [moc, stage-2, vermund, index]
 
 > 28 side quests. Estão em `Stage 2/Side Quests/`.
 
-### Block 1: Vernworth (chegada)
+### Block 1: Vernworth (chegada — pt.1)
 
 | # | Quest | Pré-requisito | Tipo |
 |---|---|---|---|
@@ -229,52 +229,52 @@ tags: [moc, stage-2, vermund, index]
 | 30 | [[Side Quests/30 - Saint of the Slums]] | — | ❤️ Charity |
 | 31 | [[Side Quests/31 - House of the Blue Sunbright]] | [[Main Quests/15 - Seat of the Sovran]] *(concluída)* | 🏛️ Noble intrigue |
 
-### Harve Village (1ª visita)
+### Harve Village (1ª visita — pt.1)
 
 | # | Quest | Pré-requisito | Tipo |
 |---|---|---|---|
 | 18 | [[Side Quests/18 - Scaly Invaders]] | [[Side Quests/10 - A Place to Call Home]] | 🦎 Coastal hunt |
 
-### Melve (retorno)
+### Melve (retorno — cycle pt.1↔pt.2)
 
 | # | Quest | Pré-requisito | Tipo |
 |---|---|---|---|
 | 32 | [[Side Quests/32 - Readvent of Calamity]] | [[Main Quests/15 - Seat of the Sovran]] *(concluída)* | ⚠️ Calamity |
 | 33 | [[Side Quests/33 - Home Is Where the Hearth Is]] | [[Main Quests/15 - Seat of the Sovran]] *(concluída)* | 🏠 Reconstruction |
 
-### Moonglow Garden
+### Moonglow Garden (pt.2)
 
 | # | Quest | Pré-requisito | Tipo |
 |---|---|---|---|
 | 34 | [[Side Quests/34 - Claw Them Into Shape]] | [[Main Quests/15 - Seat of the Sovran]] + **3 espadas de Stage 1** | 🗡️ Weapon shaping |
 | 35 | [[Side Quests/35 - Beren's Final Lesson]] | [[Side Quests/34 - Claw Them Into Shape]] *(concluída)* | 🏹 Final training |
 
-### Eini's House
+### Eini's House (pt.2)
 
 | # | Quest | Pré-requisito | Tipo |
 |---|---|---|---|
 | 36 | [[Side Quests/36 - Spellbound]] | [[Side Quests/35 - Beren's Final Lesson]] *(concluída)* | 📖 Magic study |
 
-### Harve Village (2ª visita)
+### Harve Village (2ª visita — pt.2)
 
 | # | Quest | Pré-requisito | Tipo |
 |---|---|---|---|
 | 37 | [[Side Quests/37 - Trouble on the Cape]] | [[Side Quests/36 - Spellbound]] *(concluída)* | ⚓ Coastal incident |
 
-### Vernworth Block 3 (archer chain)
+### Vernworth pt.3 — Archer chain
 
 | # | Quest | Pré-requisito | Tipo |
 |---|---|---|---|
 | 38 | [[Side Quests/38 - Gift of the Bow]] | [[Side Quests/37 - Trouble on the Cape]] *(concluída)* | 🎁 Bow gift |
 | 39 | [[Side Quests/39 - A Trial of Archery]] | [[Side Quests/38 - Gift of the Bow]] *(concluída)* | 🏹 Trial |
 
-### Sacred Arbor
+### Sacred Arbor (pt.3)
 
 | # | Quest | Pré-requisito | Tipo |
 |---|---|---|---|
 | 40 | [[Side Quests/40 - The Ailing Arborheart]] | [[Side Quests/39 - A Trial of Archery]] *(concluída)* | 🌳 Treant heal |
 
-### Checkpoint Rest Town
+### Checkpoint Rest Town (pt.3)
 
 | # | Quest | Pré-requisito | Tipo |
 |---|---|---|---|
