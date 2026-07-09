@@ -132,11 +132,22 @@ flowchart TD
 ### 🗡️ Side Quest de Estrada
 - [ ] [[Side Quests/09 - One-Eyed Interloper]]
 
+### 🗡️ Side Quests iniciadas na estrada Melve → Vernworth (continuam em Stage 2)
+- [ ] [[Stage 2/Side Quests/34 - Claw Them Into Shape]] *(INICIAR / CONTINUAR @ Moonglow Garden)*
+- [ ] [[Stage 2/Side Quests/36 - Spellbound]] *(INICIAR @ Eini's House)*
+
 ## 🌉 Cross-Stage Prep (Stage 2 começa aqui)
 
-> Esta seção lista prep de quests que **iniciam** em Stage 1 mas terminam em Stage 2. Comprar/obter os itens listados AGORA evita quest locks em Stage 2.
+> Esta seção lista prep de quests que **iniciam** em Stage 1 mas terminam em Stage 2. Marque as caixas no checklist acima conforme você joga; a continuação e a finalização acontecem no `Quests/Stage 2.md` `## 🎮 Ordem Recomendada de Execução`.
 
-- ⚔️ **`Claw Them Into Shape` (Stage 2, side quest #34)** — compre **3 espadas** de [[Locations/Borderwatch Outpost]] (Kassandra) **antes** de sair de Stage 1. Sem as 3 espadas, a quest em Stage 2 vira impossível de completar (Borderwatch não é revisitável). Preço: ~850 G cada.
+### Quests iniciadas na estrada Melve → Vernworth (completam em Stage 2)
+
+- ⚔️ **`Claw Them Into Shape` (Stage 2, side quest #34)** *(INICIAR / CONTINUAR)* — na estrada Melve → Vernworth, vá para [[Locations/Moonglow Garden]] e fale com Beren; dê as 3 espadas compradas de [[Locations/Borderwatch Outpost]]/Kassandra. **COMPLETAR** acontece em Stage 2 pt.1 (fale com Beren no Borderwatch Training Grounds).
+- 📖 **`Spellbound` (Stage 2, side quest #36)** *(INICIAR)* — norte de Moonglow Garden, em [[Locations/Eini's House]]; fale com Trhysa quando nenhum outro NPC estiver na casa. **CONTINUAR + COMPLETAR** acontecem em Stage 2 pt.2 (Trhysa — 3 grimórios ORIGINAIS; depois a casa da Trisha tem um rampage event — NÃO ataque, agarre quando ela parar).
+
+### Compras antecipadas (evita quest locks)
+
+- 🛒 **3 espadas** de [[Locations/Borderwatch Outpost]] (Kassandra) **antes** de sair de Stage 1 — sem elas, Claw Them Into Shape vira impossível de completar (Borderwatch não é revisitável). Preço: ~850 G cada.
 - 📜 **Grimoires (Stage 2 quests #36 Spellbound + #43 The Sorcerer's Appraisal + #46 A Game of Wits)** — se quiser reservar originals cedo, `Let There Be Light` (Myrddin's Home upstairs), `Fulminous Shield` (Dudley em Melve), `Nation's Death Knell` (Ancient Battleground cenotaph — 2 originais no jogo), `Howling Blizzard` (Wendy em Nameless Village), `Towering Earth` (Waldhar no Gracious Hand's Vaults).
 
 ## ⚠️ Avisos Críticos
