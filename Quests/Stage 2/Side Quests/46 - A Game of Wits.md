@@ -14,7 +14,8 @@ tags:
   - stage-2
   - side-quest
   - sphinx-chain
-sources_verified: []
+sources_verified:
+  - fextralife
 needs_verification: true
 ---
 
@@ -48,11 +49,16 @@ A Esfinge propõe uma sequência de riddles (enigmas) ao Arisen. Complete todos 
 6. Dê o **Jadeite Orb** (obtido em `Hunt for the Jadeite Orb`) para a Esfinge.
 7. Após isso, você recebe a **Maister Skill de Sorcerer** + roupa Enchanted.
 
+## Recompensas
+
+- Recompensas dependem do outcome (Fextralife: "x XP x Dcp" no template — valores exatos não tabulados; IGN não tem página separada)
+- **Eternal Wakestone** (item-chave do outcome vitorioso)
+
 ## Notas Importantes
 
 - **IMPORTANTE**: Ter `SphinxParent` pawn na party ANTES de chegar na Esfinge (não dá pra renomear in-place).
 - Leve **Nation's Death Knell** (do Tolled To Rest) para dar como oferenda se quiser a versão mais completa do diálogo.
-- Adicionada 2026-07-08 via transcript do usuário (stub inicial).
+- Adicionada 2026-07-08 via transcript do usuário; recompensas cross-sourced em 2026-07-08 (Fextralife only — IGN 404, Fandom 403).
 
 ## Related
 

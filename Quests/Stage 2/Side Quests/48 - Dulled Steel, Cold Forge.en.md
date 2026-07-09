@@ -13,7 +13,9 @@ tags:
   - stage-2
   - side-quest
   - castle-chain
-sources_verified: []
+sources_verified:
+  - fextralife
+  - ign
 needs_verification: true
 ---
 
@@ -28,10 +30,15 @@ Roman, a blacksmith in the castle gardens of Vernworth, needs help to reignite t
 1. Talk to **Roman** in the castle gardens of Vernworth.
 2. If the quest isn't available, try after [[23 - The Stolen Throne]].
 
+## Rewards
+
+- 6,000 XP
+- 35,000 G
+- Unlocks: Steeled Resolve, Blazing Forge
+
 ## Important Notes
 
-- Added 2026-07-08 from user's gameplay transcript (initial stub).
-- Do NOT touch until cross-source confirms walkthrough + rewards.
+- Added 2026-07-08 from user's gameplay transcript; rewards cross-sourced 2026-07-08 (Fextralife + IGN).
 - Pre-finale quest (Stage 2). Becomes unavailable once Feast of Deception closes.
 
 ## Related

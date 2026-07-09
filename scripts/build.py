@@ -204,7 +204,9 @@ LOCATION_ORDER: list[tuple[str, str]] = [
     ("Moonglow Garden", "🌸"),
     ("Eini's House", "🏠"),
     ("Sacred Arbor", "🌳"),
+    ("Ancient Battleground", "🏛️"),
     ("Checkpoint Rest Town", "🛏️"),
+    ("Battahl", "🌋"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -645,7 +647,12 @@ def render_inline(text: str, from_path: str = "") -> str:
         else:
             alias = target.rsplit("/", 1)[-1].rsplit(".", 1)[0]
         href = resolve_wikilink(target, from_path=from_path)
-        parts.append(f'<a href="{html.escape(href)}">{html.escape(alias)}</a>')
+        if href.startswith("<"):
+            # resolve_wikilink returned pre-rendered HTML (e.g. location-ref
+            # span when no per-location page is emitted). Use as-is, no <a>.
+            parts.append(href)
+        else:
+            parts.append(f'<a href="{html.escape(href)}">{html.escape(alias)}</a>')
         last_end = m.end()
     # Escape the trailing text after the last wiki-link (or all of it if none)
     parts.append(html.escape(text[last_end:]))
@@ -724,11 +731,10 @@ def resolve_wikilink(target: str, from_path: str = "") -> str:
         return _relative_path(from_path, abs_path) if from_path else abs_path
     if target.startswith("Locations/"):
         # Locations are not stage-scoped — they live at the top of the
-        # vault. resolve_wikilink does not know if a Locations/ page has
-        # been emitted; the build may 404 if not, but the path stays
-        # stable across stages.
-        abs_path = f"locations/{slug}.html"
-        return _relative_path(from_path, abs_path) if from_path else abs_path
+        # vault. The build does not emit per-location HTML pages, so
+        # render the link as plain text (the location name) instead of
+        # a 404 href. Users find locations via the stage page TOC.
+        return f'<span class="location-ref">{html.escape(slug.replace("-", " ").title())}</span>'
     if target.lower().startswith("quest"):
         abs_path = f"stage-1.html#{slugify(target)}"
         return _relative_path(from_path, abs_path) if from_path else abs_path
@@ -2864,13 +2870,15 @@ def render_quest_detail_bilingual(
     # Prev / Next navigation at the bottom of the page.
     nav_links: list[str] = []
     if prev_quest is not None:
+        prev_sub = "main-quests" if prev_quest.quest_type == "main" else "side-quests"
         nav_links.append(
-            f'<a class="quest-nav-prev" href="../../{sub}/{prev_quest.slug}.html">'
+            f'<a class="quest-nav-prev" href="../{prev_sub}/{prev_quest.slug}.html">'
             f'← {html.escape(prev_quest.title)}</a>'
         )
     if next_quest is not None:
+        next_sub = "main-quests" if next_quest.quest_type == "main" else "side-quests"
         nav_links.append(
-            f'<a class="quest-nav-next" href="../../{sub}/{next_quest.slug}.html">'
+            f'<a class="quest-nav-next" href="../{next_sub}/{next_quest.slug}.html">'
             f'{html.escape(next_quest.title)} →</a>'
         )
     if nav_links:

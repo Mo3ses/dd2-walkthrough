@@ -13,7 +13,9 @@ tags:
   - stage-2
   - side-quest
   - castle-chain
-sources_verified: []
+sources_verified:
+  - fextralife
+  - ign
 needs_verification: true
 ---
 
@@ -28,10 +30,15 @@ Roman, ferreiro nos jardins do castelo de Vernworth, precisa de ajuda para reace
 1. Fale com **Roman** nos jardins do castelo de Vernworth.
 2. Se a quest não estiver disponível, tente após [[23 - The Stolen Throne]].
 
+## Recompensas
+
+- 6.000 XP
+- 35.000 G
+- Unlocks: Steeled Resolve, Blazing Forge
+
 ## Notas Importantes
 
-- Adicionada 2026-07-08 via transcript do usuário (stub inicial).
-- NÃO tocar até cross-source confirmar walkthrough + recompensas.
+- Adicionada 2026-07-08 via transcript do usuário; recompensas cross-sourced em 2026-07-08 (Fextralife + IGN).
 - Quest pre-finale (Stage 2). Fica indisponível se Feast of Deception fechar.
 
 ## Related

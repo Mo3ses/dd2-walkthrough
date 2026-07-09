@@ -13,7 +13,9 @@ tags:
   - stage-2
   - side-quest
   - noble-chain
-sources_verified: []
+sources_verified:
+  - fextralife
+  - ign
 needs_verification: true
 ---
 
@@ -28,10 +30,14 @@ Klark, a sculptor in the noble quarter of Vernworth, suffers from creative block
 1. Talk to **Klark** in the noble quarter of Vernworth (in his workshop).
 2. If the quest isn't available, try after [[23 - The Stolen Throne]].
 
+## Rewards
+
+- 4,500 XP
+- 18,500 G (sculpted perfectly) or 7,000 G (sculpted poorly)
+
 ## Important Notes
 
-- Added 2026-07-08 from user's gameplay transcript (initial stub).
-- Do NOT touch until cross-source confirms walkthrough + rewards.
+- Added 2026-07-08 from user's gameplay transcript; rewards cross-sourced 2026-07-08 (Fextralife + IGN).
 - Pre-finale quest (Stage 2). Becomes unavailable once Feast of Deception closes.
 
 ## Related
