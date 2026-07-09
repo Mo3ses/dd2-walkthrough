@@ -70,30 +70,6 @@ tags: [moc, stage-1, vermund, index]
 
 ---
 
-## 🎯 NPCs notáveis
-
-| NPC | Onde | Papel |
-|---|---|---|
-| **Fiska** | Excavation Site | Overseer que acompanha você em Gaoled Awakening |
-| **Rook** | Excavation Site | Acompanha a fuga |
-| **The Pathfinder** (beastren) | Excavation Site | Liberta você da cela |
-| **Medusa** (Gorgon) | Excavation Site | Mini-boss da primeira quest |
-| **Brant** | Borderwatch / Melve / estrada | Capitão da Guarda |
-| **Phill** | Borderwatch Outpost | Soldado portão sul — quest giver |
-| **Geoffrey** | Borderwatch Outpost | Aprovisionador |
-| **Kassandra** | Borderwatch Outpost | Merchant — compre 3 espadas aqui |
-| **Ulrika** | Melve | Mulher que abriga o Arisen |
-| **Gregor** | Estrada → Vernworth | Cavaleiro escolta — **deve sobreviver** |
-
-## 🔑 Fatos verificados
-
-1. **In Dragon's Wake**: 6.000 G + Troféu "Arisen" (bronze)
-2. **Gaoled Awakening**: Arma inicial + Troféu "First Taste of Freedom" (bronze)
-3. **Medicament**: 500 XP + 100 G + Ring of Exultation
-4. **Brothers Brave**: 400 XP + 1.500 G + Homespun Cloak
-5. **Gregor morrer** = bloqueia Northern Vermund Checkpoint
-6. **Gold Trove Beetles** (Borderwatch → Melve): +0.15 carry capacity cada
-
 ## 🗺️ Fluxo Recomendado
 
 ```mermaid
@@ -138,17 +114,12 @@ flowchart TD
 
 ## 🌉 Cross-Stage Prep (Stage 2 começa aqui)
 
-> Esta seção lista prep de quests que **iniciam** em Stage 1 mas terminam em Stage 2. Marque as caixas no checklist acima conforme você joga; a continuação e a finalização acontecem no `Quests/Stage 2.md` `## 🎮 Ordem Recomendada de Execução`.
+> Esta seção lista compras a fazer durante Stage 1. As quests cross-stage Claw (34) e Spellbound (36) são iniciadas aqui — mas são rastreadas pelos cards stub injetados no by-location/by-flow (logo depois de Brother's Brave) e só completam em Stage 2.
 
-### Quests iniciadas na estrada Melve → Vernworth (completam em Stage 2)
+### Compras antecipadas
 
-- ⚔️ **`Claw Them Into Shape` (Stage 2, side quest #34)** *(INICIAR / CONTINUAR)* — na estrada Melve → Vernworth, vá para [[Locations/Moonglow Garden]] e fale com Beren; dê as 3 espadas compradas de [[Locations/Borderwatch Outpost]]/Kassandra. **COMPLETAR** acontece em Stage 2 pt.1 (fale com Beren no Borderwatch Training Grounds).
-- 📖 **`Spellbound` (Stage 2, side quest #36)** *(INICIAR)* — norte de Moonglow Garden, em [[Locations/Eini's House]]; fale com Trhysa quando nenhum outro NPC estiver na casa. **CONTINUAR + COMPLETAR** acontecem em Stage 2 pt.2 (Trhysa — 3 grimórios ORIGINAIS; depois a casa da Trisha tem um rampage event — NÃO ataque, agarre quando ela parar).
-
-### Compras antecipadas (evita quest locks)
-
-- 🛒 **3 espadas** de [[Locations/Borderwatch Outpost]] (Kassandra) **antes** de sair de Stage 1 — sem elas, Claw Them Into Shape vira impossível de completar (Borderwatch não é revisitável). Preço: ~850 G cada.
-- 📜 **Grimoires (Stage 2 quests #36 Spellbound + #43 The Sorcerer's Appraisal + #46 A Game of Wits)** — se quiser reservar originals cedo, `Let There Be Light` (Myrddin's Home upstairs), `Fulminous Shield` (Dudley em Melve), `Nation's Death Knell` (Ancient Battleground cenotaph — 2 originais no jogo), `Howling Blizzard` (Wendy em Nameless Village), `Towering Earth` (Waldhar no Gracious Hand's Vaults).
+- 🛒 **3 espadas** em [[Locations/Borderwatch Outpost]] (Kassandra) — compre e **entregue direto a Beren** em [[Locations/Moonglow Garden]] durante Stage 1 para abrir `Claw Them Into Shape`. Preço: ~850 G cada.
+- 📜 **Fulminous Shield** — compre de **Dudley em Melve** durante Stage 1; grimoire é um dos 3 originais que Trysha aceita em `Spellbound` (continuação em Stage 2).
 
 ## ⚠️ Avisos Críticos
 
@@ -156,9 +127,6 @@ flowchart TD
 > 1. **Ordeal's of a New Recruit** — quest **com tempo limitado**
 > 2. **One-Eyed Interloper** — ciclope pode matar Gregor; morte = checkpoint bloqueado
 > 3. **Side quests de Borderwatch** — não voltam depois de sair do posto
-
-> [!warning] **Stage 2 Preparation**
-> Compre **3 espadas** com Kassandra em Borderwatch — você vai precisar em `Claw Them Into Shape` (Stage 2).
 
 ## 📚 Fontes
 
