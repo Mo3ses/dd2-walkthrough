@@ -1,10 +1,57 @@
 # Próximos Passos — Dragon's Dogma 2 Walkthrough
 
-> Estado em 2026-07-08 (após push de batch #4 — cross-source 45-48 + Stage 3 stubs). Working tree limpo. Continuar deste ponto em qualquer máquina.
+> Estado em 2026-07-09 (após sessão #5 — cross-source fetcher + Stage 1 review). Working tree limpo. Continuar deste ponto em qualquer máquina.
 
-## Onde paramos (batch #4 — committed + pushed)
+## Onde paramos (sessão #5 — committed, needs push)
 
-> **Branch ativa: `feat/stage-2-recommended-flow`**, 7 commits ahead de `main`. **Working tree limpo** (próximo batch precisa de pull + push).
+> **Branch ativa: `feat/stage-2-recommended-flow`**, 9 commits ahead de `main`. **Working tree limpo** (próximo batch = `git push`).
+
+**What session #5 did** (2 commits novos, este branch):
+
+- **dff6bb2** feat(scripts): cross-source fetcher + checker coverage report — `scripts/fetch_sources.py` novo (CLI; sequential por quest; sleep+retry no Fandom 403; soft-404 detector); checker agora reporta `Source coverage: 3/3=X, 2/3=Y, 1/3=Z`
+- **6e0b99d** feat(scripts): TITLE_OVERRIDES + checker includes Stage 1 — Ordeal's→Ordeals, Brother's→Brothers; removed `needs_verification: false` gate; skip `.en.md` siblings
+
+**URL patterns (verified 2026-07-09)**:
+
+- **Fextralife:** `dragonsdogma2.wiki.fextralife.com/<Title+With+Plusses>` (apóstrofo raw, preposições lowercase)
+- **Fandom:** `dragonsdogma.fandom.com/wiki/<Title_With_Underscores>` (%27, preposições lowercase). RATE-LIMITED — 403 após burst; precisa 1.5s sleep + retry
+- **IGN:** `www.ign.com/wikis/dragons-dogma-2/<Title_With_Underscores>` (%27). Algumas páginas 404 (estrutura mudou)
+
+**Stage 1 review (9 quests × 3 fontes)**:
+
+- ✅ **6 OK sem conflito:** 03, 04, 05, 06, 07, 08 (Ordeals/Brothers via TITLE_OVERRIDES)
+- ⚠️ **2 Fandom=None (não-conflitos reais):** 01 Gaoled Awakening (fex=The Pathfinder), 02 Tale's Beginning (fex=Brant). Fandom literalmente não registrou quest_giver nessas páginas; Fextralife é fonte. **Decisão:** confiar no Fextralife.
+- ⚠️ **1 partial:** 09 One-Eyed Interloper — Fandom rate-limit persistente + IGN não tem página.
+
+**Como usar a pipeline nova**:
+
+```bash
+python3 scripts/fetch_sources.py --quest-num 45    # 1 quest
+python3 scripts/fetch_sources.py --all             # todas as Stage quests (~80s)
+python3 scripts/check_cross_source.py              # diff
+```
+
+**Open scope (próxima sessão)**:
+
+- **A) Push + abrir PR manual** — `feat/stage-2-recommended-flow` → `main` (9 commits). GitHub Actions rebuilda Pages automaticamente.
+- **B) Fetch restante do Stage 2** — 14 quests ainda em 1/3 sources (apenas Fextralife via MD). Rodar `python3 scripts/fetch_sources.py --all` e re-check.
+- **C) EN translations** — 41 files PT sem `.en.md` irmão (7 Main + 28 Side Stage 2 + 5 Locations + 1 MOC). Estimativa 4-6h manual.
+- **D) Preencher `sources_verified: []`** — 11 side quests Stage 2 (10,11,12,13,14,16,18,20,25,28,30) + 3 com `needs_verification: true` (22, 27, 29).
+- **E) Stage 3 bodies** — Main Quests 01-03 são frontmatter-only stubs; precisa de walkthrough/Objectives/Summary/Rewards.
+- **F) Out of scope from batch #3**: 7 untranslated STRINGS keys (Main/Side Quests em PT), a11y, light/dark toggle, print CSS, OG meta, sitemap, PWA.
+
+**Skipped nesta sessão (consciente)**:
+
+- **IGN extractor para quest_giver** — IGN não usa template "Quest Giver" como Fandom, é texto solto. Extractor regex não acha. Próxima sessão: refinar regex com lookbehind ou usar BeautifulSoup.
+- **Auto-update MD frontmatter** — você escolheu "mínimo"; checker reporta mas não escreve nos MDs.
+- **Fandom rate-limit persistente** — sleep+retry ajuda mas IP-level block em rajada. Workaround futuro: proxy rotativo ou curl com `--cookie-jar` pra reusar sessão.
+
+**Decidido nesta sessão**:
+
+- ❌ `docs/REWRITE-PROPOSAL.md` (24KB, untracked) — deletado.
+- ✅ Confiança no Fextralife para quests 01 e 02 (Fandom=None não é erro).
+
+## Onde paramos (anterior — batch #4)
 
 **What batch #4 did** (7 commits, este branch):
 
@@ -25,17 +72,6 @@
 - 48: 6.000 XP / 35.000 G / Unlocks: Steeled Resolve, Blazing Forge
 - Bônus: 45 `quest_giver: Oscar` (Fextra image alt)
 - All 4 stay `needs_verification: true` (1-2/3 sources only)
-
-**Open scope (próxima sessão)**:
-
-- **A) Push + abrir PR manual** — feat/stage-2-recommended-flow → main. GitHub Actions rebuilda Pages.
-- **B) EN translations** — 41 files PT sem `.en.md` irmão (7 Main + 28 Side Stage 2 + 5 Locations + 1 MOC). Estimativa 4-6h manual.
-- **C) Preencher `sources_verified: []`** — 11 side quests Stage 2 (10,11,12,13,14,16,18,20,25,28,30) + 3 com `needs_verification: true` (22, 27, 29).
-- **D) Stage 3 bodies** — Main Quests 01-03 são frontmatter-only stubs; precisa de walkthrough/Objectives/Summary/Rewards quando os sources carregarem.
-- **E) Out of scope from batch #3**: 7 untranslated STRINGS keys (Main/Side Quests em PT), a11y, light/dark toggle, print CSS, OG meta, sitemap, PWA.
-
-**Decidido nesta sessão**:
-- ❌ `docs/REWRITE-PROPOSAL.md` (24KB, untracked desde 2026-07-07 19:12) — deletado. Não era fonte de verdade.
 
 ## Onde paramos (anterior — batch #3)
 
