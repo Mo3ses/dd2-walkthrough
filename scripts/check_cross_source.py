@@ -171,15 +171,19 @@ def load_html_facts(path: Path) -> Fact:
 
 def find_three_source_quests() -> list[Path]:
     """Return PT quest MDs that list fandom + fextralife + ign under
-    sources_verified (single-line or YAML multi-line list) AND have
-    needs_verification: false in frontmatter."""
+    sources_verified (single-line or YAML multi-line list).
+
+    `needs_verification` is intentionally NOT a gate here — Stage 1 MDs
+    often omit it because the data was trusted on first write. This script
+    checks the cross-source claim regardless of that flag.
+    """
     out: list[Path] = []
     for md in sorted(QUEST_ROOT.rglob("*.md")):
-        if "/Stage " not in str(md):
+        # Skip EN siblings — they're translations of the same quest; the
+        # PT MD is canonical for sourcing.
+        if "/Stage " not in str(md) or md.name.endswith(".en.md"):
             continue
         text = md.read_text(encoding="utf-8")
-        if "needs_verification: false" not in text:
-            continue
         # Capture everything between `sources_verified:` and the next YAML key
         # (a non-indented line) so multi-line YAML lists parse correctly.
         m = re.search(

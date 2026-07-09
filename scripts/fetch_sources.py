@@ -52,6 +52,18 @@ UA = ("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
 PREPOSITIONS = {"a", "an", "the", "of", "in", "on", "at", "by",
                 "for", "from", "and", "or", "to", "but", "as"}
 
+# Some in-game titles diverge from wiki URL slugs (pluralization,
+# apostrophe stripping). Map quest-name → canonical wiki slug.
+TITLE_OVERRIDES: dict[str, str] = {
+    "Ordeal's of a New Recruit": "Ordeals of a New Recruit",
+    "Brother's Brave and Timid": "Brothers Brave and Timid",
+}
+
+
+def resolve_title(title: str) -> str:
+    """Apply TITLE_OVERRIDES if present, else return title as-is."""
+    return TITLE_OVERRIDES.get(title, title)
+
 
 def title_case(title: str) -> list[str]:
     """'Beren's Final Lesson' -> ['Beren's', 'Final', 'Lesson'] (preserve case).
@@ -185,10 +197,11 @@ def main() -> int:
 
     full = partial = zero = 0
     for title, num in targets:
+        resolved = resolve_title(title)
         results: dict[str, tuple[int, int]] = {}
         # Fextralife → IGN → Fandom (Fandom last because rate-limited).
         for src, base, slug_fn in SOURCES:
-            results[src] = fetch_with_retry(src, base, slug_fn(title), num)
+            results[src] = fetch_with_retry(src, base, slug_fn(resolved), num)
             if src == "fan":
                 time.sleep(FANDOM_SLEEP_SECONDS)
         ok = sum(1 for c, _ in results.values() if c == 200)
